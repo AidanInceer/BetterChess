@@ -3,42 +3,31 @@ import chess
 import chess.engine
 import chess.pgn
 import functions
-import sqlalchemy
 
 
 def main():
-
-    # Checks to see how many games are allready in the database
-    engine_game_check = sqlalchemy.create_engine('mysql+pymysql://root:SQL_Aeiou123@localhost:3306/chess_raw_data')
-    df_game_check = pd.read_sql_table("output_game_data", engine_game_check, columns=["Game_number"])
-    db_data_check = len(df_game_check)
-
-    # Import data from SQL database as panda dataframe
-    engine = sqlalchemy.create_engine('mysql+pymysql://root:SQL_Aeiou123@localhost:3306/chess_raw_data')
-    all_games_df = pd.read_sql_table("all_games_data", engine)
-
-    print(all_games_df)
+    # Import data from csv
+    all_games_df = pd.read_csv(f".\data\game_data_pgn.csv")
 
     # Initialises Stockfish, sets engine depth
+    # Update the stockfish location if required
     engine = chess.engine.SimpleEngine.popen_uci(
-        r"C:\Users\Aidan\Desktop\stockfish_14_win_x64_avx2\stockfish_14_x64_avx2")
-    engine_depth = 16
+        r"C:\Users\Aidan\Desktop\stockfish_14.1_win_x64_avx2\stockfish_14.1_win_x64_avx2.exe")
+    engine_depth = 3
+    game_num = 0
 
-    # Initialise game number iterator
-    game_num = db_data_check
-
-    for game in all_games_df["game_data"][db_data_check:]:
+    for game in all_games_df["game_data"]:
         # Displays the number of games that have been analysed
         game_num += 1
         print(f"-[{game_num}]-")
 
         # Writes the temp pgn file from: get_game_data(), all_games, chess_game_string
-        f = open(r"C:\Users\Aidan\PycharmProjects\Learning python\chess_data_folder\chess_game_temp.pgn", "w")
+        f = open(r"data\temp.pgn", "w")
         f.write(game)
         f.close()
 
         # Opens the pgn file, reads the pgn file and sets up the game
-        chess_game_pgn = open(r"C:\Users\Aidan\PycharmProjects\Learning python\chess_data_folder\chess_game_temp.pgn")
+        chess_game_pgn = open(r"data\temp.pgn")
         chess_game = chess.pgn.read_game(chess_game_pgn)
         board = chess_game.board()
 
@@ -124,11 +113,9 @@ def main():
                                "Move accuracy": move_accuracy,
                                "Move_type": move_type,
                                }, index=[0])
-            engine3 = sqlalchemy.create_engine('mysql+pymysql://root:SQL_Aeiou123@localhost:3306/chess_raw_data')
-            df.to_sql(name='output_move_data',
-                      con=engine3,
-                      index=False,
-                      if_exists='append')
+
+            # copy move data to csv file
+            df.to_csv(".\data\move_data.csv", mode='a', header=False)
 
         # Game accuracy calculations
         white_game_acc = functions.game_acc_calc_white(chess_game_move_acc)
@@ -156,7 +143,7 @@ def main():
                             "Black_rating": rating_black,
                             "My_colour": ainceer,
                             "My_rating": my_rating,
-                            "Winner": win ner,
+                            "Winner": winner,
                             "User_winner": True if ainceer == winner else False,
                             "number_of_moves": move_num / 2,
 
@@ -199,11 +186,9 @@ def main():
                             "No_blunder_user": w_blunder if ainceer == "White" else w_blunder,
                             "Improvement_user": improvement_white if ainceer == "White" else improvement_black,
                             }, index=[0])
-        engine2 = sqlalchemy.create_engine('mysql+pymysql://root:SQL_Aeiou123@localhost:3306/chess_raw_data')
-        df2.to_sql(name='output_game_data',
-                   con=engine2,
-                   index=False,
-                   if_exists='append')
+
+        # copy game data to csv file
+        df2.to_csv(".\data\game_data.csv", mode='a', header=False)
 
         # reset lists
         chess_game_best_move = []
