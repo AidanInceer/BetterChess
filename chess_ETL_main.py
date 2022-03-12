@@ -13,7 +13,7 @@ def main():
     # Update the stockfish location if required
     engine = chess.engine.SimpleEngine.popen_uci(
         r"C:\Users\Aidan\Desktop\stockfish_14.1_win_x64_avx2\stockfish_14.1_win_x64_avx2.exe")
-    engine_depth = 3
+    engine_depth = 10
     game_num = 0
 
     for game in all_games_df["game_data"]:
