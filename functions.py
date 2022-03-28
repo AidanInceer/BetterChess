@@ -2,6 +2,7 @@ import numpy as np
 import math
 from datetime import datetime
 import logging
+import pandas as pd
 
 
 def move_best_eval_calc(get_eval_best_move_init):
@@ -183,10 +184,32 @@ def sum_move_type(chess_game_move_type):
     return w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder
 
 def log_date_checker():
+    logging.basicConfig(filename ="./chess_game_logger.txt", format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+    logger = logging.getLogger(__name__)
+
+    game_number = 0
+
+    # unclean_df = pd.read_csv('./data/move_data.csv')
+
+
+
     with open("chess_game_logger.txt","r") as log_file:
         lines = log_file.readlines()
 
-    llog = lines[-1]
-    llog_date_str = llog.split("|")[1].strip()
-    llog_date = datetime.strptime(llog_date_str, '%Y-%m-%d %H:%M:%S')
-    return llog_date
+    if not lines:
+        with open("chess_game_logger.txt","w") as f:
+            init_dt = datetime.strptime("2000-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+            logger.info(f"DateTime of last game entry |{init_dt} |{game_number}")
+
+    else:
+        llog = lines[-1]
+        llog_date_str = llog.split("|")[1].strip()
+        llog_date = datetime.strptime(llog_date_str, '%Y-%m-%d %H:%M:%S')
+        return llog_date
+
+
+    # unclean_df = pd.read_csv('./data/move_data.csv')
+
+
+    
+
