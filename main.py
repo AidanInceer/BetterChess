@@ -1,3 +1,4 @@
+from msilib import init_database
 import pandas as pd
 import chess
 import chess.engine
@@ -6,6 +7,7 @@ import functions
 import extract
 import logging
 from datetime import datetime
+
 
 logging.basicConfig(filename ="./chess_game_logger.txt", format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
 logger = logging.getLogger(__name__)
@@ -23,13 +25,14 @@ def main(username="Ainceer"):
     all_games_df = pd.read_csv(f".\data\game_data_pgn.csv")
 
     # Init logging file and collect last game date logged
-    llogged_init = functions.log_date_checker()
-    llogged_datetime = functions.log_date_checker()
+    init_datatime = functions.rerun_filter()
+    llogged_datetime = functions.rerun_filter()
+    functions.clean_rerun_files()
 
     # Initialises Stockfish, sets engine depth (Update the stockfish location if required)
     engine = chess.engine.SimpleEngine.popen_uci(
         r"C:\Users\Aidan\Desktop\stockfish_14.1_win_x64_avx2\stockfish_14.1_win_x64_avx2.exe")
-    engine_depth = 1
+    engine_depth = 10
     game_num = 0
     total_games = len(all_games_df["game_data"])
 
@@ -90,7 +93,7 @@ def main(username="Ainceer"):
                 board.push_san(str(best_move.move))
 
                 # Best_move move and evaluation calculation
-                get_eval_best_move_init = engine.analyse(board, chess.engine.Limit(depth=engine_depth), game=object())
+                get_eval_best_move_init = engine.analyse(board, chess.engine.Limit( depth=engine_depth), game=object())
                 get_eval_best_move = functions.move_best_eval_calc(get_eval_best_move_init)
 
                 # Reset board
@@ -152,7 +155,7 @@ def main(username="Ainceer"):
             w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder = functions.sum_move_type(chess_game_move_type)
 
             # Phase of game accuracy calculations
-            ow, mw, ew, ob, mb, eb = functions.game_phase_acc_calc(chess_game_move_acc)
+            ow, mw, ew, ob, mb, eb = functions.game_phase_acc_calc( chess_game_move_acc)
 
             # Least accurate game section
             improvement_white = functions.game_section_improvement_white(ow, mw, ew)

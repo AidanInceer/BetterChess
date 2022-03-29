@@ -3,6 +3,9 @@ import math
 from datetime import datetime
 import logging
 import pandas as pd
+from os.path import exists
+
+from sympy import false
 
 
 def move_best_eval_calc(get_eval_best_move_init):
@@ -183,15 +186,10 @@ def sum_move_type(chess_game_move_type):
     b_blunder = chess_game_move_type[1::2].count(-3)
     return w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder
 
-def log_date_checker():
+def rerun_filter():
     logging.basicConfig(filename ="./chess_game_logger.txt", format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
     logger = logging.getLogger(__name__)
-
     game_number = 0
-
-    # unclean_df = pd.read_csv('./data/move_data.csv')
-
-
 
     with open("chess_game_logger.txt","r") as log_file:
         lines = log_file.readlines()
@@ -199,17 +197,40 @@ def log_date_checker():
     if not lines:
         with open("chess_game_logger.txt","w") as f:
             init_dt = datetime.strptime("2000-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
-            logger.info(f"DateTime of last game entry |{init_dt} |{game_number}")
-
+            logger.info(f"DateTime of last game entry | {init_dt} | {game_number}")
     else:
         llog = lines[-1]
         llog_date_str = llog.split("|")[1].strip()
         llog_date = datetime.strptime(llog_date_str, '%Y-%m-%d %H:%M:%S')
-        return llog_date
+        return llog_date    
 
 
-    # unclean_df = pd.read_csv('./data/move_data.csv')
+def clean_rerun_files():
+    file_exists = exists('./data/move_data.csv')
 
+    if file_exists:
+        pass
+    else:
+        init_file = pd.DataFrame(list())
+        init_file.to_csv('./data/move_data.csv')
+
+    with open("chess_game_logger.txt","r") as log_file:
+        lines = log_file.readlines()
+
+    if not lines:
+        pass
+    else:
+        if file_exists:
+            llog = lines[-1]
+            llog_gn = int(int(llog.split("|")[2].strip())+1)
+            col_names = ["Date","Game_number","Engine_Depth","Game_date","Move_number",
+                         "Move","Best_move","Move_eval","Best_move_eval","Move_eval_diff",
+                         "Move accuracy","Move_type"]
+            unclean_df = pd.read_csv('./data/move_data.csv', names=col_names)
+            df_filter = unclean_df["Game_number"] != llog_gn
+            clean_df = unclean_df[df_filter]
+            clean_df.to_csv('./data/move_data.csv', mode="w", index=False, header=False)
+        else:
+            pass
 
     
-
