@@ -1,28 +1,24 @@
-from msilib import init_database
 import pandas as pd
 import chess
 import chess.engine
 import chess.pgn
-import functions
-import extract
 import logging
+from chess_etl import extract
+from chess_etl import functions
 from datetime import datetime
 
-
-logging.basicConfig(filename ="./chess_game_logger.txt", format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-logger = logging.getLogger(__name__)
-
+logging.basicConfig(filename =r".\docs\chess_game_logger.txt", format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+logger = logging.getLogger(__name__)    
 
 def main(username="Ainceer"):
     '''
     Main function to analyse chess games
     '''
-
     # Update game csv
     extract.data_extract(username)
 
     # Import data from csv
-    all_games_df = pd.read_csv(f".\data\game_data_pgn.csv")
+    all_games_df = pd.read_csv(r".\data\game_data_pgn.csv")
 
     # Init logging file and collect last game date logged
     init_datatime = functions.rerun_filter()
@@ -32,7 +28,7 @@ def main(username="Ainceer"):
     # Initialises Stockfish, sets engine depth (Update the stockfish location if required)
     engine = chess.engine.SimpleEngine.popen_uci(
         r"C:\Users\Aidan\Desktop\stockfish_14.1_win_x64_avx2\stockfish_14.1_win_x64_avx2.exe")
-    engine_depth = 10
+    engine_depth = 16
     game_num = 0
     total_games = len(all_games_df["game_data"])
 
@@ -43,12 +39,12 @@ def main(username="Ainceer"):
         print(f"{game_num} / {total_games}")
 
         # Writes the temp pgn file from: get_game_data(), all_games, chess_game_string
-        f = open(r"data\temp.pgn", "w")
+        f = open(r".\data\temp.pgn", "w")
         f.write(game)
         f.close()
 
         # Opens the pgn file, reads the pgn file and sets up the game
-        chess_game_pgn = open(r"data\temp.pgn")
+        chess_game_pgn = open(r".\data\temp.pgn")
         chess_game = chess.pgn.read_game(chess_game_pgn)
         board = chess_game.board()
 
@@ -143,7 +139,7 @@ def main(username="Ainceer"):
                                 }, index=[0])
 
                 # copy move data to csv file
-                df.to_csv(".\data\move_data.csv", mode='a', header=False, index=False)
+                df.to_csv(r".\data\move_data.csv", mode='a', header=False, index=False)
 
             logger.info(f"DateTime of last game entry |{game_datetime}|{game_num}")
 
@@ -192,7 +188,7 @@ def main(username="Ainceer"):
                                 }, index=[0])
 
             # copy game data to csv file
-            df2.to_csv(".\data\game_data.csv", mode='a', header=False, index=False)
+            df2.to_csv(r".\data\game_data.csv", mode='a', header=False, index=False)
 
             # reset lists
             chess_game_best_move = []
