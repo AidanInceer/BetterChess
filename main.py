@@ -3,11 +3,17 @@ import chess
 import chess.engine
 import chess.pgn
 import logging
-from chess_etl import extract
-from chess_etl import functions
+from src import extract
+from src import functions
 from datetime import datetime
+import os
 
-logging.basicConfig(filename =r".\docs\chess_game_logger.txt", format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+dirname = os.path.dirname(__file__)
+file_stockfish = os.path.join(dirname, r"./stockfish_14.1_win_x64_avx2/stockfish_14.1_win_x64_avx2.exe")
+file_logger = os.path.join(dirname, r"./docs/chess_game_logger.txt")
+
+
+logging.basicConfig(filename =file_logger, format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
 logger = logging.getLogger(__name__)    
 
 def main(username="Ainceer"):
@@ -26,8 +32,7 @@ def main(username="Ainceer"):
     functions.clean_rerun_files()
 
     # Initialises Stockfish, sets engine depth (Update the stockfish location if required)
-    engine = chess.engine.SimpleEngine.popen_uci(
-        r"C:\Users\Aidan\Desktop\stockfish_14.1_win_x64_avx2\stockfish_14.1_win_x64_avx2.exe")
+    engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
     engine_depth = 16
     game_num = 0
     total_games = len(all_games_df["game_data"])
