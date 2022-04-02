@@ -8,48 +8,52 @@ from src import functions
 from datetime import datetime
 import os
 
+# Set up file path references
 dirname = os.path.dirname(__file__)
 file_stockfish = os.path.join(dirname, r"./stockfish_14.1_win_x64_avx2/stockfish_14.1_win_x64_avx2.exe")
 file_logger = os.path.join(dirname, r"./docs/chess_game_logger.txt")
+file_gd_pgn = os.path.join(dirname, r"./data/game_data_pgn.csv")
+file_temp = os.path.join(dirname, r"./data/temp.pgn")
+file_m_data = os.path.join(dirname, r"./data/move_data.csv")
+file_g_data = os.path.join(dirname, r"./data/game_data.csv")
 
+# Set up logging
+logging.basicConfig(filename=file_logger,
+                    format='[%(levelname)s %(module)s] %(asctime)s - %(message)s',
+                    level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename =file_logger, format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level = logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-logger = logging.getLogger(__name__)    
 
 def main(username="Ainceer"):
     '''
     Main function to analyse chess games
     '''
-    # Update game csv
+    # Import/ update game data from csv
     extract.data_extract(username)
-
-    # Import data from csv
-    all_games_df = pd.read_csv(r".\data\game_data_pgn.csv")
+    all_games_df = pd.read_csv(file_gd_pgn)
+    game_num = 0
+    total_games = len(all_games_df["game_data"])
 
     # Init logging file and collect last game date logged
-    init_datatime = functions.rerun_filter()
     llogged_datetime = functions.rerun_filter()
     functions.clean_rerun_files()
 
-    # Initialises Stockfish, sets engine depth (Update the stockfish location if required)
+    # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
     engine_depth = 8
-    game_num = 0
-    total_games = len(all_games_df["game_data"])
 
     for game in all_games_df["game_data"]:
         # Displays the number of games that have been analysed
         game_num += 1
-        
         print(f"{game_num} / {total_games}")
 
-        # Writes the temp pgn file from: get_game_data(), all_games, chess_game_string
-        f = open(r".\data\temp.pgn", "w")
+        # Writes the temp pgn file from
+        f = open(file_temp, "w")
         f.write(game)
         f.close()
 
         # Opens the pgn file, reads the pgn file and sets up the game
-        chess_game_pgn = open(r".\data\temp.pgn")
+        chess_game_pgn = open(file_temp)
         chess_game = chess.pgn.read_game(chess_game_pgn)
         board = chess_game.board()
 
@@ -58,7 +62,8 @@ def main(username="Ainceer"):
         game_time = chess_game.headers["UTCTime"]
         game_date_time = f"{game_date} {game_time}"
         game_datetime = datetime.strptime(game_date_time, '%Y.%m.%d %H:%M:%S')
-        
+
+        # Run based analysis based on dates after last logged date
         if game_datetime >= llogged_datetime:
 
             # Sets up header output data
@@ -89,21 +94,18 @@ def main(username="Ainceer"):
             move_num = 0
             # calculates move by move output data
             for move in chess_game.mainline_moves():
-                # Determine best move
+
+                # Determine best move and calculation
                 best_move = engine.play(board, chess.engine.Limit(depth=engine_depth), game=object())
                 board.push_san(str(best_move.move))
-
-                # Best_move move and evaluation calculation
                 get_eval_best_move_init = engine.analyse(board, chess.engine.Limit( depth=engine_depth), game=object())
                 get_eval_best_move = functions.move_best_eval_calc(get_eval_best_move_init)
 
                 # Reset board
                 board.pop()
 
-                # Determine mainline move
+                # Determine mainline move & calculation
                 str_move = str(move)
-
-                # Mainline move and evaluation calculation
                 board.push_san(str_move)
                 get_eval_mainline_init = engine.analyse(board, chess.engine.Limit(depth=engine_depth), game=object())
                 get_eval_mainline = functions.move_mainline_eval_calc(get_eval_mainline_init)
@@ -144,7 +146,7 @@ def main(username="Ainceer"):
                                 }, index=[0])
 
                 # copy move data to csv file
-                df.to_csv(r".\data\move_data.csv", mode='a', header=False, index=False)
+                df.to_csv(file_m_data, mode='a', header=False, index=False)
 
             logger.info(f"DateTime of last game entry |{game_datetime}|{game_num}")
 
@@ -156,7 +158,7 @@ def main(username="Ainceer"):
             w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder = functions.sum_move_type(chess_game_move_type)
 
             # Phase of game accuracy calculations
-            ow, mw, ew, ob, mb, eb = functions.game_phase_acc_calc( chess_game_move_acc)
+            ow, mw, ew, ob, mb, eb = functions.game_phase_acc_calc(chess_game_move_acc)
 
             # Least accurate game section
             improvement_white = functions.game_section_improvement_white(ow, mw, ew)
@@ -188,12 +190,12 @@ def main(username="Ainceer"):
                                 "No_ok_user": w_ok if username == "White" else b_ok,
                                 "No_inaccuracy_user": w_inaccuracy if username == "White" else b_inaccuracy,
                                 "No_mistake_user": w_mistake if username == "White" else b_mistake,
-                                "No_blunder_user": w_blunder if username == "White" else w_blunder,
+                                "No_blunder_user": w_blunder if username == "White" else b_blunder,
                                 "Improvement_user": improvement_white if username == "White" else improvement_black,
                                 }, index=[0])
 
             # copy game data to csv file
-            df2.to_csv(r".\data\game_data.csv", mode='a', header=False, index=False)
+            df2.to_csv(file_g_data, mode='a', header=False, index=False)
 
             # reset lists
             chess_game_best_move = []
@@ -205,7 +207,7 @@ def main(username="Ainceer"):
             chess_game_move_acc = []
             chess_game_move_type = []
 
-        # In game allready in csv skip analysis
+        # In game already in csv skip analysis
         else:
             pass
     
