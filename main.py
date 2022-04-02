@@ -3,8 +3,7 @@ import chess
 import chess.engine
 import chess.pgn
 import logging
-from src import extract
-from src import functions
+from src import extract, game_funcs, move_funcs, misc_funcs
 from datetime import datetime
 import os
 
@@ -35,12 +34,12 @@ def main(username="Ainceer"):
     total_games = len(all_games_df["game_data"])
 
     # Init logging file and collect last game date logged
-    llogged_datetime = functions.rerun_filter()
-    functions.clean_rerun_files()
+    llogged_datetime = misc_funcs.rerun_filter()
+    misc_funcs.clean_rerun_files()
 
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
-    engine_depth = 8
+    edepth = 8
 
     for game in all_games_df["game_data"]:
         # Displays the number of games that have been analysed
@@ -96,10 +95,10 @@ def main(username="Ainceer"):
             for move in chess_game.mainline_moves():
 
                 # Determine best move and calculation
-                best_move = engine.play(board, chess.engine.Limit(depth=engine_depth), game=object())
+                best_move = engine.play(board, chess.engine.Limit(depth=edepth), game=object())
                 board.push_san(str(best_move.move))
-                get_eval_best_move_init = engine.analyse(board, chess.engine.Limit( depth=engine_depth), game=object())
-                get_eval_best_move = functions.move_best_eval_calc(get_eval_best_move_init)
+                eval_bm_init = engine.analyse(board, chess.engine.Limit(depth=edepth), game=object())
+                eval_bm = move_funcs.move_eval(eval_bm_init)
 
                 # Reset board
                 board.pop()
@@ -107,21 +106,19 @@ def main(username="Ainceer"):
                 # Determine mainline move & calculation
                 str_move = str(move)
                 board.push_san(str_move)
-                get_eval_mainline_init = engine.analyse(board, chess.engine.Limit(depth=engine_depth), game=object())
-                get_eval_mainline = functions.move_mainline_eval_calc(get_eval_mainline_init)
+                eval_ml_init = engine.analyse(board, chess.engine.Limit(depth=edepth), game=object())
+                get_eval_mainline = move_funcs.move_eval(eval_ml_init)
 
-                # Calculation of eval diff
-                move_eval_diff = functions.eval_diff(move_num, get_eval_best_move, get_eval_mainline)
-
-                # Move accuracy and type calculations
-                move_accuracy = functions.move_acc_func(move_eval_diff)
-                move_type = functions.move_type_func(move_accuracy)
+                # Eval diff, move accuracy and type calculations
+                move_eval_diff = move_funcs.eval_diff(move_num, eval_bm, get_eval_mainline)
+                move_accuracy = move_funcs.move_acc(move_eval_diff)
+                move_type = move_funcs.move_type(move_accuracy)
 
                 # Append data to respective lists
                 chess_game_move_num.append(move_num)
                 chess_game_move.append(str_move)
                 chess_game_best_move.append(best_move.move)
-                chess_game_best_move_eval.append(get_eval_best_move)
+                chess_game_best_move_eval.append(eval_bm)
                 chess_game_mainline_eval.append(get_eval_mainline)
                 chess_game_move_eval_diff.append(move_eval_diff)
                 chess_game_move_acc.append(move_accuracy)
@@ -132,18 +129,18 @@ def main(username="Ainceer"):
 
                 # Initialise DataFrame and export move_data
                 df = pd.DataFrame({"Date": game_datetime,
-                                "Game_number": game_num,
-                                "Engine_Depth": engine_depth,
-                                "Game_date": game_date,
-                                "Move_number": move_num,
-                                "Move": str_move,
-                                "Best_move": best_move.move,
-                                "Move_eval": get_eval_mainline,
-                                "Best_move_eval": get_eval_best_move,
-                                "Move_eval_diff": move_eval_diff,
-                                "Move accuracy": move_accuracy,
-                                "Move_type": move_type,
-                                }, index=[0])
+                                   "Game_number": game_num,
+                                   "edepth": edepth,
+                                   "Game_date": game_date,
+                                   "Move_number": move_num,
+                                   "Move": str_move,
+                                   "Best_move": best_move.move,
+                                   "Move_eval": get_eval_mainline,
+                                   "Best_move_eval": eval_bm,
+                                   "Move_eval_diff": move_eval_diff,
+                                   "Move accuracy": move_accuracy,
+                                   "Move_type": move_type,
+                                   }, index=[0])
 
                 # copy move data to csv file
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
@@ -151,48 +148,49 @@ def main(username="Ainceer"):
             logger.info(f"DateTime of last game entry |{game_datetime}|{game_num}")
 
             # Game accuracy calculations
-            white_game_acc = functions.game_acc_calc_white(chess_game_move_acc)
-            black_game_acc = functions.game_acc_calc_black(chess_game_move_acc)
+            white_game_acc = game_funcs.game_acc_calc_white(chess_game_move_acc)
+            black_game_acc = game_funcs.game_acc_calc_black(chess_game_move_acc)
 
             # Sum of move types white and black
-            w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder = functions.sum_move_type(chess_game_move_type)
+            w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder = move_funcs.sum_move_type(chess_game_move_type)
 
             # Phase of game accuracy calculations
-            ow, mw, ew, ob, mb, eb = functions.game_phase_acc_calc(chess_game_move_acc)
+            ow, mw, ew, ob, mb, eb = game_funcs.game_phase_acc_calc(chess_game_move_acc)
 
             # Least accurate game section
-            improvement_white = functions.game_section_improvement_white(ow, mw, ew)
-            improvement_black = functions.game_section_improvement_black(ob, mb, eb)
+            improvement_white = game_funcs.game_section_improvement_white(ow, mw, ew)
+            improvement_black = game_funcs.game_section_improvement_black(ob, mb, eb)
 
             # Initialise DataFrame and export game data
-            df2 = pd.DataFrame({"Date": game_datetime,
-                                "Game_number": game_num,
-                                "Engine_Depth": engine_depth,
-                                "Game_date": game_date,
-                                "Game_type": chess_game_time_control,
-                                "White_player": white,
-                                "Black_player": black,
-                                "White_rating": rating_white,
-                                "Black_rating": rating_black,
-                                "My_colour": username,
-                                "My_rating": my_rating,
-                                "Winner": winner,
-                                "User_winner": True if username == winner else False,
-                                "number_of_moves": move_num / 2,
+            df2 = pd.DataFrame(
+                {"Date": game_datetime,
+                    "Game_number": game_num,
+                    "edepth": edepth,
+                    "Game_date": game_date,
+                    "Game_type": chess_game_time_control,
+                    "White_player": white,
+                    "Black_player": black,
+                    "White_rating": rating_white,
+                    "Black_rating": rating_black,
+                    "My_colour": username,
+                    "My_rating": my_rating,
+                    "Winner": winner,
+                    "User_winner": True if username == winner else False,
+                    "number_of_moves": move_num / 2,
 
-                                "User_accuracy": white_game_acc if username == "White" else black_game_acc,
-                                "User_opening_accuracy": ow if username == "White" else ob,
-                                "User_middle_accuracy": mw if username == "White" else mb,
-                                "User_end_accuracy": ew if username == "White" else eb,
-                                "No_best_user": w_best if username == "White" else b_best,
-                                "No_great_user": w_great if username == "White" else b_great,
-                                "No_good_user": w_good if username == "White" else b_good,
-                                "No_ok_user": w_ok if username == "White" else b_ok,
-                                "No_inaccuracy_user": w_inaccuracy if username == "White" else b_inaccuracy,
-                                "No_mistake_user": w_mistake if username == "White" else b_mistake,
-                                "No_blunder_user": w_blunder if username == "White" else b_blunder,
-                                "Improvement_user": improvement_white if username == "White" else improvement_black,
-                                }, index=[0])
+                    "User_accuracy": white_game_acc if username == "White" else black_game_acc,
+                    "User_opening_accuracy": ow if username == "White" else ob,
+                    "User_middle_accuracy": mw if username == "White" else mb,
+                    "User_end_accuracy": ew if username == "White" else eb,
+                    "No_best_user": w_best if username == "White" else b_best,
+                    "No_great_user": w_great if username == "White" else b_great,
+                    "No_good_user": w_good if username == "White" else b_good,
+                    "No_ok_user": w_ok if username == "White" else b_ok,
+                    "No_inaccuracy_user": w_inaccuracy if username == "White" else b_inaccuracy,
+                    "No_mistake_user": w_mistake if username == "White" else b_mistake,
+                    "No_blunder_user": w_blunder if username == "White" else b_blunder,
+                    "Improvement_user": improvement_white if username == "White" else improvement_black,
+                }, index=[0])
 
             # copy game data to csv file
             df2.to_csv(file_g_data, mode='a', header=False, index=False)
@@ -210,7 +208,6 @@ def main(username="Ainceer"):
         # In game already in csv skip analysis
         else:
             pass
-    
 
 
 if __name__ == "__main__":
