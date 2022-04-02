@@ -34,12 +34,13 @@ def main(username="Ainceer"):
     total_games = len(all_games_df["game_data"])
 
     # Init logging file and collect last game date logged
+    misc_funcs.rerun_filter()
     llogged_datetime = misc_funcs.rerun_filter()
     misc_funcs.clean_rerun_files()
 
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
-    edepth = 8
+    edepth = 12
 
     for game in all_games_df["game_data"]:
         # Displays the number of games that have been analysed
@@ -92,6 +93,8 @@ def main(username="Ainceer"):
 
             move_num = 0
             # calculates move by move output data
+
+            logger.info(f"DateTime of last game entry |{game_datetime}|{game_num}")
             for move in chess_game.mainline_moves():
 
                 # Determine best move and calculation
@@ -145,7 +148,7 @@ def main(username="Ainceer"):
                 # copy move data to csv file
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
 
-            logger.info(f"DateTime of last game entry |{game_datetime}|{game_num}")
+            
 
             # Game accuracy calculations
             white_game_acc = game_funcs.game_acc_calc_white(chess_game_move_acc)
