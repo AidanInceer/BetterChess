@@ -33,7 +33,7 @@ def main(username="Ainceer"):
 
     # Initialises Stockfish, sets engine depth (Update the stockfish location if required)
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
-    engine_depth = 16
+    engine_depth = 8
     game_num = 0
     total_games = len(all_games_df["game_data"])
 
