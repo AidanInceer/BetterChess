@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def game_acc_calc_white(chess_game_move_acc):
+def w_accuracy(chess_game_move_acc):
     '''
     stuff
     '''
@@ -15,7 +15,7 @@ def game_acc_calc_white(chess_game_move_acc):
     return white_game_acc
 
 
-def game_acc_calc_black(chess_game_move_acc):
+def b_accuracy(chess_game_move_acc):
     '''
     stuff
     '''
@@ -29,7 +29,7 @@ def game_acc_calc_black(chess_game_move_acc):
     return black_game_acc
 
 
-def game_phase_acc_calc(chess_game_move_acc):
+def phase_accuracy(chess_game_move_acc):
     '''
     stuff
     '''

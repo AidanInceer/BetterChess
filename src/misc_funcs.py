@@ -1,9 +1,8 @@
-from datetime import datetime
 import logging
 import pandas as pd
-from os.path import exists
 import os
-from IPython.display import display
+from os.path import exists
+from datetime import datetime
 
 dirname = os.path.dirname(__file__)
 file_logger = os.path.join(dirname, r"../docs/chess_game_logger.txt")
@@ -14,7 +13,9 @@ def rerun_filter():
     '''
     stuff
     '''
-    logging.basicConfig(filename=file_logger, format='[%(levelname)s %(module)s] %(asctime)s - %(message)s', level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+    logging.basicConfig(filename=file_logger,
+                        format='[%(levelname)s %(module)s] %(message)s',
+                        level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
     logger = logging.getLogger(__name__)
     game_number = 0
 
@@ -23,8 +24,9 @@ def rerun_filter():
 
     if not lines:
         with open(file_logger, "w") as _:
-            init_dt = datetime.strptime("2000-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
-            logger.info(f"DateTime of last game entry | {init_dt} | {game_number}")
+            init_dt = datetime.strptime("2000-01-01 00:00:00",
+                                        '%Y-%m-%d %H:%M:%S')
+            logger.info(f"Game info | {init_dt} | {game_number}")
     else:
         llog = lines[-1]
         llog_date_str = llog.split("|")[1].strip()
