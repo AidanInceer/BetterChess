@@ -7,6 +7,7 @@ import os
 dirname = os.path.dirname(__file__)
 filename = os.path.join(dirname, r"..\data\game_data_pgn.csv")
 
+
 def data_extract(username="Ainceer"):
     # Getting game data from Chess.com
     urls = get_player_game_archives(username).json
@@ -24,8 +25,4 @@ def data_extract(username="Ainceer"):
 
     game_dict = {"game_data": all_games}
     df = pd.DataFrame(game_dict, columns=["game_data"])
-    df.to_csv(filename,index=False)
-
-
-
-
+    df.to_csv(filename, index=False)
