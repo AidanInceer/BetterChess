@@ -1,17 +1,17 @@
 import numpy as np
 
 
-def w_accuracy(chess_game_move_acc):
+def w_accuracy(gm_mv_ac):
     '''
     stuff
     '''
     # White
-    white_move_acc_list = chess_game_move_acc[::2]
-    white_move_acc_len = len(chess_game_move_acc[::2])
-    if white_move_acc_len == 0:
+    w_move_acc_list = gm_mv_ac[::2]
+    w_move_acc_len = len(gm_mv_ac[::2])
+    if w_move_acc_len == 0:
         white_game_acc = 0
     else:
-        white_game_acc = round(sum(white_move_acc_list) / white_move_acc_len * 100, 2)
+        white_game_acc = round(sum(w_move_acc_list) / w_move_acc_len * 100, 2)
     return white_game_acc
 
 
@@ -20,12 +20,12 @@ def b_accuracy(chess_game_move_acc):
     stuff
     '''
     # Black
-    black_move_acc_list = chess_game_move_acc[1::2]
-    black_move_acc_len = len(chess_game_move_acc[1::2])
-    if black_move_acc_len == 0:
+    b_move_acc_list = chess_game_move_acc[1::2]
+    b_move_acc_len = len(chess_game_move_acc[1::2])
+    if b_move_acc_len == 0:
         black_game_acc = 0
     else:
-        black_game_acc = round(sum(black_move_acc_list) / black_move_acc_len * 100, 2)
+        black_game_acc = round(sum(b_move_acc_list) / b_move_acc_len * 100, 2)
     return black_game_acc
 
 

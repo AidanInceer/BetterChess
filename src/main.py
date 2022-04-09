@@ -12,8 +12,8 @@ from datetime import datetime
 
 # Set up file path references
 dirname = os.path.dirname(__file__)
-stckfsh_path = r"../stockfish_14.1_win_x64_avx2/stockfish_14.1_win_x64_avx2.exe"
-file_stockfish = os.path.join(dirname, stckfsh_path)
+stk_path = r"../stockfish_14.1_win_x64_avx2/stockfish_14.1_win_x64_avx2.exe"
+file_stockfish = os.path.join(dirname, stk_path)
 file_logger = os.path.join(dirname, r"../docs/chess_game_logger.txt")
 file_gd_pgn = os.path.join(dirname, r"../data/game_data_pgn.csv")
 file_temp = os.path.join(dirname, r"../data/temp.pgn")
@@ -85,14 +85,14 @@ def main(username="Ainceer"):
                 winner = "Draw"
 
             # Initialises game output lists
-            chess_game_best_move = []
-            chess_game_move_num = []
-            chess_game_move = []
-            chess_game_mainline_eval = []
-            chess_game_best_move_eval = []
-            chess_game_move_eval_diff = []
-            chess_game_move_acc = []
-            chess_game_move_type = []
+            gm_best_mv = []
+            gm_mv_num = []
+            gm_mv = []
+            mainline_eval = []
+            best_move_eval = []
+            move_eval_diff = []
+            gm_mv_ac = []
+            move_type_list = []
 
             move_num = 0
             # calculates move by move output data
@@ -127,14 +127,14 @@ def main(username="Ainceer"):
                 move_type = move_funcs.move_type(move_accuracy)
 
                 # Append data to respective lists
-                chess_game_move_num.append(move_num)
-                chess_game_move.append(str_move)
-                chess_game_best_move.append(best_move.move)
-                chess_game_best_move_eval.append(eval_bm)
-                chess_game_mainline_eval.append(eval_ml)
-                chess_game_move_eval_diff.append(mv_eval_diff)
-                chess_game_move_acc.append(move_accuracy)
-                chess_game_move_type.append(move_type)
+                gm_mv_num.append(move_num)
+                gm_mv.append(str_move)
+                gm_best_mv.append(best_move.move)
+                best_move_eval.append(eval_bm)
+                mainline_eval.append(eval_ml)
+                move_eval_diff.append(mv_eval_diff)
+                gm_mv_ac.append(move_accuracy)
+                move_type_list.append(move_type)
 
                 # Move number iterator
                 move_num += 1
@@ -158,18 +158,24 @@ def main(username="Ainceer"):
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
 
             # Game accuracy calculations
-            white_game_acc = game_funcs.w_accuracy(chess_game_move_acc)
-            black_game_acc = game_funcs.b_accuracy(chess_game_move_acc)
+            w_gm_acc = game_funcs.w_accuracy(gm_mv_ac)
+            b_gm_acc = game_funcs.b_accuracy(gm_mv_ac)
 
             # Sum of move types white and black
-            w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder = move_funcs.sum_move_type(chess_game_move_type)
+            w_best, b_best = move_funcs.sum_best_mv(move_type_list)
+            w_great, b_great = move_funcs.sum_great_mv(move_type_list)
+            w_good, b_good = move_funcs.sum_good_mv(move_type_list)
+            w_ok, b_ok = move_funcs.sum_ok_mv(move_type_list)
+            w_inac, b_inac = move_funcs.sum_inac_mv(move_type_list)
+            w_mist, b_mist = move_funcs.sum_mist_mv(move_type_list)
+            w_blndr, b_blndr = move_funcs.sum_blndr_mv(move_type_list)
 
             # Phase of game accuracy calculations
-            ow, mw, ew, ob, mb, eb = game_funcs.phase_accuracy(chess_game_move_acc)
+            ow, mw, ew, ob, mb, eb = game_funcs.phase_accuracy(gm_mv_ac)
 
             # Least accurate game section
-            improvement_white = game_funcs.game_section_improvement_white(ow, mw, ew)
-            improvement_black = game_funcs.game_section_improvement_black(ob, mb, eb)
+            impve_w = game_funcs.game_section_improvement_white(ow, mw, ew)
+            impve_b = game_funcs.game_section_improvement_black(ob, mb, eb)
 
             # Initialise DataFrame and export game data
             df2 = pd.DataFrame(
@@ -188,7 +194,7 @@ def main(username="Ainceer"):
                     "User_winner": True if username == winner else False,
                     "number_of_moves": move_num / 2,
 
-                    "accuracy": white_game_acc if username == "White" else black_game_acc,
+                    "accuracy": w_gm_acc if username == "White" else b_gm_acc,
                     "pening_accuracy": ow if username == "White" else ob,
                     "mid_accuracy": mw if username == "White" else mb,
                     "end_accuracy": ew if username == "White" else eb,
@@ -196,24 +202,24 @@ def main(username="Ainceer"):
                     "No_great": w_great if username == "White" else b_great,
                     "No_good": w_good if username == "White" else b_good,
                     "No_ok": w_ok if username == "White" else b_ok,
-                    "No_inaccuracyr": w_inaccuracy if username == "White" else b_inaccuracy,
-                    "No_mistake": w_mistake if username == "White" else b_mistake,
-                    "No_blunder": w_blunder if username == "White" else b_blunder,
-                    "Improvement": improvement_white if username == "White" else improvement_black,
+                    "No_inaccuracy": w_inac if username == "White" else b_inac,
+                    "No_mistake": w_mist if username == "White" else b_mist,
+                    "No_blunder": w_blndr if username == "White" else b_blndr,
+                    "Improvement": impve_w if username == "White" else impve_b,
                  }, index=[0])
 
             # copy game data to csv file
             df2.to_csv(file_g_data, mode='a', header=False, index=False)
 
             # reset lists
-            chess_game_best_move = []
-            chess_game_move_num = []
-            chess_game_move = []
-            chess_game_mainline_eval = []
-            chess_game_best_move_eval = []
-            chess_game_move_eval_diff = []
-            chess_game_move_acc = []
-            chess_game_move_type = []
+            gm_best_mv = []
+            gm_mv_num = []
+            gm_mv = []
+            mainline_eval = []
+            best_move_eval = []
+            move_eval_diff = []
+            gm_mv_ac = []
+            move_type_list = []
 
         # In game already in csv skip analysis
         else:

@@ -70,6 +70,7 @@ def clean_rerun_files():
             unclean_df = pd.read_csv(file_move_data, names=col_names)
             df_filter = unclean_df["Game_number"] != llog_gn
             clean_df = unclean_df[df_filter]
-            clean_df.to_csv(file_move_data, mode="w", index=False, header=False)
+            clean_df.to_csv(file_move_data, mode="w",
+                            index=False, header=False)
         else:
             pass

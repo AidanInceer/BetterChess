@@ -61,30 +61,43 @@ def move_type(move_acc):
     return move_type
 
 
-def sum_move_type(chess_game_move_type):
-    '''
-    stuff
-    '''
-    global w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder
-    # Best
-    w_best = chess_game_move_type[::2].count(3)
-    b_best = chess_game_move_type[1::2].count(3)
-    # Great
-    w_great = chess_game_move_type[::2].count(2)
-    b_great = chess_game_move_type[1::2].count(2)
-    # Good
-    w_good = chess_game_move_type[::2].count(1)
-    b_good = chess_game_move_type[1::2].count(1)
-    # Ok
-    w_ok = chess_game_move_type[::2].count(0)
-    b_ok = chess_game_move_type[1::2].count(0)
-    # Inaccuracy
-    w_inaccuracy = chess_game_move_type[::2].count(-1)
-    b_inaccuracy = chess_game_move_type[1::2].count(-1)
-    # Mistake
-    w_mistake = chess_game_move_type[::2].count(-2)
-    b_mistake = chess_game_move_type[1::2].count(-2)
-    # Blunder
-    w_blunder = chess_game_move_type[::2].count(-3)
-    b_blunder = chess_game_move_type[1::2].count(-3)
-    return w_best, b_best, w_great, b_great, w_good, b_good, w_ok, b_ok, w_inaccuracy, b_inaccuracy, w_mistake, b_mistake, w_blunder, b_blunder
+def sum_best_mv(move_type_list):
+    w_best = move_type_list[::2].count(3)
+    b_best = move_type_list[1::2].count(3)
+    return w_best, b_best
+
+
+def sum_great_mv(move_type_list):
+    w_good = move_type_list[::2].count(1)
+    b_good = move_type_list[1::2].count(1)
+    return w_good, b_good
+
+
+def sum_good_mv(move_type_list):
+    w_good = move_type_list[::2].count(1)
+    b_good = move_type_list[1::2].count(1)
+    return w_good, b_good
+
+
+def sum_ok_mv(move_type_list):
+    w_ok = move_type_list[::2].count(0)
+    b_ok = move_type_list[1::2].count(0)
+    return w_ok, b_ok
+
+
+def sum_inac_mv(move_type_list):
+    w_inaccuracy = move_type_list[::2].count(-1)
+    b_inaccuracy = move_type_list[1::2].count(-1)
+    return w_inaccuracy, b_inaccuracy
+
+
+def sum_mist_mv(move_type_list):
+    w_mistake = move_type_list[::2].count(-2)
+    b_mistake = move_type_list[1::2].count(-2)
+    return w_mistake, b_mistake
+
+
+def sum_blndr_mv(move_type_list):
+    w_blunder = move_type_list[::2].count(-3)
+    b_blunder = move_type_list[1::2].count(-3)
+    return w_blunder, b_blunder
