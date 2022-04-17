@@ -84,6 +84,13 @@ def get_user_data(username="Ainceer"):
                 winner = "Black"
             else:
                 winner = "Draw"
+            
+            if (winner == "White" and player == "White"):
+                user_winner = True
+            elif (winner == "Black" and player == "Black"):
+                user_winner = True
+            else:
+                False
 
             # Initialises game output lists
             gm_best_mv = []
@@ -202,7 +209,7 @@ def get_user_data(username="Ainceer"):
                     "My_colour": username,
                     "My_rating": my_rating,
                     "Winner": winner,
-                    "User_winner": True if username == winner else False,
+                    "User_winner": user_winner,
                     "number_of_moves": move_num / 2,
 
                     "accuracy": w_gm_acc if username == "White" else b_gm_acc,
