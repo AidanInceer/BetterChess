@@ -90,7 +90,7 @@ def get_user_data(username="Ainceer"):
             elif (winner == "Black" and player == "Black"):
                 user_winner = True
             else:
-                False
+                user_winner = False
 
             # Initialises game output lists
             gm_best_mv = []
