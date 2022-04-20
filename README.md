@@ -6,17 +6,15 @@
 
 ### Python
 
-1. Fix bottlenecks / speed up processing
+1. Fix bottlenecks / speed up processing **
 
     - Look into multi processing
     - Look into numpy arrays for elements instead of list
     - allocate more cpu to stockfish?
 
-2. Implement optional variable to determine "deep" or "shallow" analysis.
-3. Link usernames up properly to file names (allows separate storage of analysis)
+2. Implement optional variable to determine "deep" or "shallow" analysis. **
 4. doc strings
 5. Simplify the "get_user_data" main function -> export to separate functions
-6. remove redundant functions
 
 
 ### Web App (javascript, html, css, flask)

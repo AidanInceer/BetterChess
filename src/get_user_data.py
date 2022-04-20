@@ -9,12 +9,13 @@ import extract
 import file_funcs
 import game_funcs
 import move_funcs
+import extract
 from datetime import datetime
-from extract import username
+
 
 # Set up file path references
 dirname = os.path.dirname(__file__)
-stk_path = r"../stockfish_14.1_win_x64_avx2/stockfish_14.1_win_x64_avx2.exe"
+stk_path = r"../librarys/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
 file_stockfish = os.path.join(dirname, stk_path)
 file_logger = os.path.join(dirname, r"../docs/chess_game_logger.txt")
 file_temp = os.path.join(dirname, r"../data/temp.pgn")
@@ -26,7 +27,7 @@ logging.basicConfig(filename=file_logger,
 logger = logging.getLogger(__name__)
 
 
-def get_user_data(username=username):
+def get_user_data(username=extract.username):
     '''
     Main function to analyse chess games
     '''

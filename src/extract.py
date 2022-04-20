@@ -12,7 +12,7 @@ def data_extract(username=username):
     Extracts user data for a given username
     '''
     # file paths
-    filename = os.path.join(dirname, rf"..\data\pgn_data_{username}.csv")
+    filename = os.path.join(dirname, rf"../data/pgn_data_{username}.csv")
     # Getting game data from Chess.com
     urls = get_player_game_archives(username).json
     # Iterate through each months data
