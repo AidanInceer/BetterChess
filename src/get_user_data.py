@@ -10,16 +10,14 @@ import file_funcs
 import game_funcs
 import move_funcs
 from datetime import datetime
+from extract import username
 
 # Set up file path references
 dirname = os.path.dirname(__file__)
 stk_path = r"../stockfish_14.1_win_x64_avx2/stockfish_14.1_win_x64_avx2.exe"
 file_stockfish = os.path.join(dirname, stk_path)
 file_logger = os.path.join(dirname, r"../docs/chess_game_logger.txt")
-file_gd_pgn = os.path.join(dirname, r"../data/game_data_pgn.csv")
 file_temp = os.path.join(dirname, r"../data/temp.pgn")
-file_m_data = os.path.join(dirname, r"../data/move_data.csv")
-file_g_data = os.path.join(dirname, r"../data/game_data.csv")
 
 # Set up logging
 logging.basicConfig(filename=file_logger,
@@ -28,13 +26,17 @@ logging.basicConfig(filename=file_logger,
 logger = logging.getLogger(__name__)
 
 
-def get_user_data(username="Ainceer"):
+def get_user_data(username=username):
     '''
     Main function to analyse chess games
     '''
+    # data file paths
+    file_m_data = os.path.join(dirname, rf"../data/move_data_{username}.csv")
+    file_g_data = os.path.join(dirname, rf"../data/game_data_{username}.csv")
+    file_pgn_data = os.path.join(dirname, rf"../data/pgn_data_{username}.csv")
     # Import/ update game data from csv
     extract.data_extract(username)
-    all_games_df = pd.read_csv(file_gd_pgn)
+    all_games_df = pd.read_csv(file_pgn_data)
     total_games = len(all_games_df["game_data"])
     game_num = 0
 
@@ -84,8 +86,6 @@ def get_user_data(username="Ainceer"):
                 winner = "Black"
             else:
                 winner = "Draw"
-            
-            # determine if user is winner
             if (winner == "White" and player == "White"):
                 user_winner = True
             elif (winner == "Black" and player == "Black"):
