@@ -85,6 +85,7 @@ def get_user_data(username="Ainceer"):
             else:
                 winner = "Draw"
             
+            # determine if user is winner
             if (winner == "White" and player == "White"):
                 user_winner = True
             elif (winner == "Black" and player == "Black"):
