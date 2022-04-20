@@ -7,29 +7,28 @@ from datetime import datetime
 
 
 dirname = os.path.dirname(__file__)
-file_logger = os.path.join(dirname, r"../docs/chess_game_logger.txt")
+file_logger = os.path.join(dirname, rf"../docs/game_log_{extract.username}.txt")
 file_move_data = os.path.join(dirname,
                               rf'../data/move_data_{extract.username}.csv')
 
 
 def rerun_filter():
-    '''
-    stuff
-    '''
+    '''Collects the date of most recent game played for a given user'''
+    game_number = 0
     logging.basicConfig(filename=file_logger,
                         format='[%(levelname)s %(module)s] %(message)s',
                         level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
     logger = logging.getLogger(__name__)
-    game_number = 0
-
+    # Opens log file
     with open(file_logger, "r") as log_file:
         lines = log_file.readlines()
-
+    # If log file empty set inital date.
     if not lines:
         with open(file_logger, "w") as _:
             init_dt = datetime.strptime("2000-01-01 00:00:00",
                                         '%Y-%m-%d %H:%M:%S')
             logger.info(f"Game info | {init_dt} | {game_number}")
+    # gets .
     else:
         llog = lines[-1]
         llog_date_str = llog.split("|")[1].strip()
@@ -38,20 +37,18 @@ def rerun_filter():
 
 
 def clean_rerun_files():
-    '''
-    stuff
-    '''
+    '''Removes last unfinished games moves from the move_data csv.'''
+    # Check to see whether move data file exists
     file_exists = exists(file_move_data)
-
     if file_exists:
         pass
     else:
         with open(file_move_data, "w") as _:
             pass
-
+    # Opens logging file
     with open(file_logger, "r") as log_file:
         lines = log_file.readlines()
-
+    # Cleans csv file if not empty
     if not lines:
         pass
     else:

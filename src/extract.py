@@ -8,8 +8,12 @@ dirname = os.path.dirname(__file__)
 
 
 def data_extract(username=username):
-    '''
-    Extracts user data for a given username
+    '''Extracts user data for a given username.
+
+    Args:
+        username: specified username input.
+    Returns:
+        outputs a csv file of the users pgn game data.
     '''
     # file paths
     filename = os.path.join(dirname, rf"../data/pgn_data_{username}.csv")

@@ -5,7 +5,6 @@ import chess.engine
 import chess.pgn
 import logging
 import os
-import extract
 import file_funcs
 import game_funcs
 import move_funcs
@@ -17,7 +16,7 @@ from datetime import datetime
 dirname = os.path.dirname(__file__)
 stk_path = r"../librarys/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
 file_stockfish = os.path.join(dirname, stk_path)
-file_logger = os.path.join(dirname, r"../docs/chess_game_logger.txt")
+file_logger = os.path.join(dirname, rf"../docs/game_log_{extract.username}.txt")
 file_temp = os.path.join(dirname, r"../data/temp.pgn")
 
 # Set up logging
@@ -27,9 +26,25 @@ logging.basicConfig(filename=file_logger,
 logger = logging.getLogger(__name__)
 
 
-def get_user_data(username=extract.username):
-    '''
-    Main function to analyse chess games
+def get_user_data(username=extract.username,
+                  depth="3", tf_type="2020", tf_num="10"):
+    '''This function analyses a users games and outputs move and game analysis
+    to csv files.
+
+    Args:
+        username: specified username input.
+        depth: Set the stockfish engine depth: (TBI)
+            - "1" (simple) corresponds to engine depth of 8.
+            - "2" (low) corresponds to engine depth of 12.
+            - "3" (default) corresponds to engine depth of 16.
+            - "4" (high) corresponds to engine depth of 20.
+            - "5" (extreme) corresponds to engine depth of 24.
+        tf_type: "d" = Days,"m" = Months,"y" = Years.
+        tf_num: number of e.g. months/years/days.
+
+    Returns:
+        game_data.csv: game data for a specific user.
+        move_data.csv: move data for all games analysed for a specific user.
     '''
     # data file paths
     file_m_data = os.path.join(dirname, rf"../data/move_data_{username}.csv")
@@ -110,9 +125,8 @@ def get_user_data(username=extract.username):
             logger.info(f"Game info | {game_datetime} |{game_num}")
             for move in chess_game.mainline_moves():
                 move_timer_1 = time.perf_counter()
-                # Determine best move and calculation
 
-                bm_timer1 = time.perf_counter()
+                # Determine best move and calculation
                 best_move = engine.play(board,
                                         chess.engine.Limit(depth=edepth),
                                         game=object())
@@ -121,11 +135,10 @@ def get_user_data(username=extract.username):
                                               chess.engine.Limit(depth=edepth),
                                               game=object())
                 eval_bm = move_funcs.move_eval(eval_bm_init)
-                bm_timer2 = time.perf_counter()
 
-                ml_timer1 = time.perf_counter()
                 # Reset board
                 board.pop()
+
                 # Determine mainline move & calculation
                 str_move = str(move)
                 board.push_san(str_move)
@@ -133,7 +146,6 @@ def get_user_data(username=extract.username):
                                               chess.engine.Limit(depth=edepth),
                                               game=object())
                 eval_ml = move_funcs.move_eval(eval_ml_init)
-                ml_timer2 = time.perf_counter()
 
                 # Eval diff, move accuracy and type calculations
                 mv_eval_diff = move_funcs.eval_diff(move_num, eval_bm, eval_ml)
@@ -171,11 +183,8 @@ def get_user_data(username=extract.username):
                 # copy move data to csv file
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
                 move_timer_2 = time.perf_counter()
-
-                bm_t = bm_timer2-bm_timer1
-                ml_t = ml_timer2-ml_timer1
                 tot_t = move_timer_2-move_timer_1
-                print(f"{move_num} B:{bm_t:0.4f} M:{ml_t:0.4f} T:{tot_t:0.4f}")
+                print(f"{move_num} Total Time:{tot_t:0.4f}")
 
             # Game accuracy calculations
             w_gm_acc = game_funcs.w_accuracy(gm_mv_ac)
@@ -213,7 +222,6 @@ def get_user_data(username=extract.username):
                     "Winner": winner,
                     "User_winner": user_winner,
                     "number_of_moves": move_num / 2,
-
                     "accuracy": w_gm_acc if username == "White" else b_gm_acc,
                     "pening_accuracy": ow if username == "White" else ob,
                     "mid_accuracy": mw if username == "White" else mb,

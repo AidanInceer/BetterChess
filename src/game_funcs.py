@@ -2,10 +2,7 @@ import numpy as np
 
 
 def w_accuracy(gm_mv_ac):
-    '''
-    stuff
-    '''
-    # White
+    '''returns white players game accuracy.'''
     w_move_acc_list = gm_mv_ac[::2]
     w_move_acc_len = len(gm_mv_ac[::2])
     if w_move_acc_len == 0:
@@ -16,10 +13,7 @@ def w_accuracy(gm_mv_ac):
 
 
 def b_accuracy(chess_game_move_acc):
-    '''
-    stuff
-    '''
-    # Black
+    '''returns black players game accuracy.'''
     b_move_acc_list = chess_game_move_acc[1::2]
     b_move_acc_len = len(chess_game_move_acc[1::2])
     if b_move_acc_len == 0:
@@ -30,10 +24,7 @@ def b_accuracy(chess_game_move_acc):
 
 
 def phase_accuracy(chess_game_move_acc):
-    '''
-    stuff
-    '''
-    global ow, mw, ew, ob, mb, eb
+    '''Calculates the game phase accuracy for black and white.'''
     # White
     list_w = chess_game_move_acc[::2]
     list_w_split = np.array_split(list_w, 3)
@@ -54,7 +45,7 @@ def phase_accuracy(chess_game_move_acc):
             ew = 0
         else:
             ew = round(sum(list_w_e) / len_lwe * 100, 2)
-            # Black
+    # Black
     list_b = chess_game_move_acc[1::2]
     list_b_split = np.array_split(list_b, 3)
     for _ in list_b_split:
@@ -78,9 +69,7 @@ def phase_accuracy(chess_game_move_acc):
 
 
 def game_section_improvement_white(ow, mw, ew):
-    '''
-    stuff
-    '''
+    '''Returns the area of improvement for the white player'''
     # White
     if ow < mw and ow < ew:
         improvement_white = 0
@@ -92,9 +81,7 @@ def game_section_improvement_white(ow, mw, ew):
 
 
 def game_section_improvement_black(ob, mb, eb):
-    '''
-    stuff
-    '''
+    '''Returns the area of improvement for the black player'''
     # black
     if ob < mb and ob < eb:
         improvement_black = 0
