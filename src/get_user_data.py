@@ -14,7 +14,7 @@ from datetime import datetime
 
 # Set up file path references
 dirname = os.path.dirname(__file__)
-stk_path = r"../librarys/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
+stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
 file_stockfish = os.path.join(dirname, stk_path)
 file_logger = os.path.join(dirname, rf"../docs/game_log_{extract.username}.txt")
 file_temp = os.path.join(dirname, r"../data/temp.pgn")
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_user_data(username=extract.username,
-                  depth="3", tf_type="2020", tf_num="10"):
+                  set_depth="3", tf_type="2020", tf_num="10"):
     '''This function analyses a users games and outputs move and game analysis
     to csv files.
 
