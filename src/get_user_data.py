@@ -85,7 +85,7 @@ def get_user_data(username=extract.username,
         game_date_time = f"{game_date} {game_time}"
         game_datetime = datetime.strptime(game_date_time, '%Y.%m.%d %H:%M:%S')
 
-        # Run based analysis based on dates after last logged date
+        # Run analysis based on dates after last logged date
         if game_datetime >= llogged_datetime:
 
             # Sets up header output data
