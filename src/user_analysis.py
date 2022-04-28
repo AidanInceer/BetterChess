@@ -27,20 +27,19 @@ logger = logging.getLogger(__name__)
 
 
 def get_user_data(username=extract.username,
-                  set_depth="3", tf_type="2020", tf_num="10"):
+                  set_depth=8, start_datetime="2000-01-01 00:00:00"):
     '''This function analyses a users games and outputs move and game analysis
     to csv files.
 
     Args:
-        username: specified username input.     
+        username: specified username input.
         depth: Set the stockfish engine depth: (TBI)
             - "1" (simple) corresponds to engine depth of 8.
             - "2" (low) corresponds to engine depth of 12.
             - "3" (default) corresponds to engine depth of 16.
             - "4" (high) corresponds to engine depth of 20.
             - "5" (extreme) corresponds to engine depth of 24.
-        tf_type: "d" = Days,"m" = Months,"y" = Years.
-        tf_num: number of e.g. months/years/days.
+        start_date:
 
     Returns:
         game_data.csv: game data for a specific user.
@@ -63,7 +62,7 @@ def get_user_data(username=extract.username,
 
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
-    edepth = 6
+    edepth = set_depth
 
     for game_num, game in enumerate(all_games_df["game_data"]):
         # Writes the temp pgn file from
@@ -83,7 +82,7 @@ def get_user_data(username=extract.username,
         game_datetime = datetime.strptime(game_date_time, '%Y.%m.%d %H:%M:%S')
 
         # Run analysis based on dates after last logged date
-        if game_datetime >= llogged_datetime:
+        if (game_datetime >= llogged_datetime) and (game_datetime >= start_datetime):
             # Displays the number of games that have been analysed
             print(f"{game_num} / {total_games}")
 
