@@ -8,6 +8,7 @@ import os
 import file_funcs
 import game_funcs
 import move_funcs
+import header_funcs
 import extract
 import input_parameters
 from datetime import datetime
@@ -18,7 +19,6 @@ def get_user_data(username=input_parameters.username,
                   start_dt=input_parameters.start_datetime):
     '''This function analyses a users games and outputs move and game analysis
     to csv files.
-
     Args:
         username: specified username input.
         depth: Set the stockfish engine depth: (TBI)
@@ -28,7 +28,6 @@ def get_user_data(username=input_parameters.username,
             - "4" (high) corresponds to engine depth of 20.
             - "5" (extreme) corresponds to engine depth of 24.
         start_date:
-
     Returns:
         game_data.csv: game data for a specific user.
         move_data.csv: move data for all games analysed for a specific user.
@@ -92,6 +91,9 @@ def get_user_data(username=input_parameters.username,
             player = "White" if white == username else "Black"
             rating_white = chess_game.headers["WhiteElo"]
             rating_black = chess_game.headers["BlackElo"]
+            opening_class = chess_game.headers["ECO"]
+            opening_name_raw = chess_game.headers["ECOUrl"]
+            opening_name = header_funcs.opening_name_cleaner(opening_name_raw)
             my_rating = rating_white if player == "White" else rating_black
             if chess_game.headers["Result"] == "1-0":
                 winner = "White"
@@ -201,7 +203,7 @@ def get_user_data(username=input_parameters.username,
             df2 = pd.DataFrame(
                 {"Date": game_datetime,
                     "Game_number": game_num,
-                    "edepth": edepth,
+                    "Engine_depth": edepth,
                     "Game_date": game_date,
                     "Game_type": chess_game_time_control,
                     "White_player": white,
@@ -211,12 +213,14 @@ def get_user_data(username=input_parameters.username,
                     "My_colour": username,
                     "My_rating": my_rating,
                     "Winner": winner,
+                    "Opening_class": opening_class,
+                    "Opening_name": opening_name,
                     "User_winner": user_winner,
-                    "number_of_moves": move_num / 2,
-                    "accuracy": w_gm_acc if username == white else b_gm_acc,
-                    "pening_accuracy": ow if username == white else ob,
-                    "mid_accuracy": mw if username == white else mb,
-                    "end_accuracy": ew if username == white else eb,
+                    "Number_of_moves": move_num / 2,
+                    "Accuracy": w_gm_acc if username == white else b_gm_acc,
+                    "Opening_accuracy": ow if username == white else ob,
+                    "Mid_accuracy": mw if username == white else mb,
+                    "End_accuracy": ew if username == white else eb,
                     "No_best": w_best if username == white else b_best,
                     "No_great": w_great if username == white else b_great,
                     "No_good": w_good if username == white else b_good,
