@@ -1,5 +1,6 @@
 import pandas as pd
 import time
+import math
 import chess
 import chess.engine
 import chess.pgn
@@ -63,6 +64,7 @@ def get_user_data(username=input_parameters.username,
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
     edepth = set_depth
+    game_time_list = []
 
     for game_num, game in enumerate(all_games_df["game_data"]):
         # Writes the temp pgn file from
@@ -178,7 +180,7 @@ def get_user_data(username=input_parameters.username,
 
                 # copy move data to csv file
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
-
+            total_moves = math.ceil(move_num/2)
             # Game accuracy calculations
             w_gm_acc = game_funcs.w_accuracy(gm_mv_ac)
             b_gm_acc = game_funcs.b_accuracy(gm_mv_ac)
@@ -198,7 +200,6 @@ def get_user_data(username=input_parameters.username,
             # Least accurate game section
             impve_w = game_funcs.game_section_improvement_white(ow, mw, ew)
             impve_b = game_funcs.game_section_improvement_black(ob, mb, eb)
-
             # Initialise DataFrame and export game data
             df2 = pd.DataFrame(
                 {"Date": game_datetime,
@@ -216,7 +217,7 @@ def get_user_data(username=input_parameters.username,
                     "Opening_class": opening_class,
                     "Opening_name": opening_name,
                     "User_winner": user_winner,
-                    "Number_of_moves": move_num / 2,
+                    "Number_of_moves": total_moves,
                     "Accuracy": w_gm_acc if username == white else b_gm_acc,
                     "Opening_accuracy": ow if username == white else ob,
                     "Mid_accuracy": mw if username == white else mb,
@@ -245,12 +246,21 @@ def get_user_data(username=input_parameters.username,
             move_type_list = []
 
             game_timer_end = time.perf_counter()
-            tot_t = game_timer_end-game_timer_start
-            print(f"{game_num} / {total_games}  Analysis Time:{tot_t:0.4f}")
-        # In game already in csv skip analysis
+            game_time = game_timer_end-game_timer_start
+            game_time_list.append(game_time)
+            avg_game_time = sum(game_time_list)/len(game_time_list)
+            time_r = ((total_games-game_num)*(avg_game_time))/3600
+            hours_r = int(time_r)
+            mins_r = (time_r - hours_r) * 60
+            if hours_r == 1:
+                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hour,  {mins_r:.1f} Minutes | Analysis time: {game_time:.1f}s")
+            else:
+                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hours,  {mins_r:.1f} Minutes | Analysis time: {game_time:.1f}s")
+        # If game already in csv skip analysis
         else:
             pass
     print(f"User: {username} data extract and analysis complete")
+    game_time_list = []
 
 
 if __name__ == "__main__":
