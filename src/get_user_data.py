@@ -66,9 +66,6 @@ def get_user_data(username=extract.username,
     edepth = 16
 
     for game_num, game in enumerate(all_games_df["game_data"]):
-        # Displays the number of games that have been analysed
-        print(f"{game_num} / {total_games}")
-
         # Writes the temp pgn file from
         f = open(file_temp, "w")
         f.write(game)
@@ -87,6 +84,8 @@ def get_user_data(username=extract.username,
 
         # Run analysis based on dates after last logged date
         if game_datetime >= llogged_datetime:
+            # Displays the number of games that have been analysed
+            print(f"{game_num} / {total_games}")
 
             # Sets up header output data
             chess_game_time_control = chess_game.headers["TimeControl"]
