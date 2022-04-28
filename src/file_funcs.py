@@ -1,15 +1,15 @@
 import logging
 import pandas as pd
 import os
-import extract
 from os.path import exists
 from datetime import datetime
+import input_parameters
 
 
 dirn = os.path.dirname(__file__)
-file_logger = os.path.join(dirn, rf"../docs/{extract.username}_game_log.txt")
+file_logger = os.path.join(dirn, rf"../docs/{input_parameters.username}_game_log.txt")
 file_move_data = os.path.join(dirn,
-                              rf'../data/{extract.username}_move_data.csv')
+                              rf'../data/{input_parameters.username}_move_data.csv')
 
 
 def rerun_filter():

@@ -9,25 +9,13 @@ import file_funcs
 import game_funcs
 import move_funcs
 import extract
+import input_parameters
 from datetime import datetime
 
 
-# Set up file path references
-dirn = os.path.dirname(__file__)
-stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
-file_stockfish = os.path.join(dirn, stk_path)
-file_logger = os.path.join(dirn, rf"../docs/{extract.username}_game_log.txt")
-file_temp = os.path.join(dirn, r"../data/temp.pgn")
-
-# Set up logging
-logging.basicConfig(filename=file_logger,
-                    format='[%(levelname)s %(module)s] %(message)s',
-                    level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-logger = logging.getLogger(__name__)
-
-
-def get_user_data(username=extract.username,
-                  set_depth=8, start_datetime="2000-01-01 00:00:00"):
+def get_user_data(username=input_parameters.username,
+                  set_depth=input_parameters.engine_depth,
+                  start_dt=input_parameters.start_datetime):
     '''This function analyses a users games and outputs move and game analysis
     to csv files.
 
@@ -45,10 +33,23 @@ def get_user_data(username=extract.username,
         game_data.csv: game data for a specific user.
         move_data.csv: move data for all games analysed for a specific user.
     '''
+
     # data file paths
+    dirn = os.path.dirname(__file__)
+    stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
+    file_stockfish = os.path.join(dirn, stk_path)
+    file_logger = os.path.join(dirn, rf"../docs/{username}_game_log.txt")
+    file_temp = os.path.join(dirn, r"../data/temp.pgn")
     file_m_data = os.path.join(dirn, rf"../data/{username}_move_data.csv")
     file_g_data = os.path.join(dirn, rf"../data/{username}_game_data.csv")
     file_pgn_data = os.path.join(dirn, rf"../data/{username}_pgn_data.csv")
+
+    # Set up logging
+    logging.basicConfig(filename=file_logger,
+                        format='[%(levelname)s %(module)s] %(message)s',
+                        level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+    logger = logging.getLogger(__name__)
+
     # Import/ update game data from csv
     extract.data_extract(username)
     all_games_df = pd.read_csv(file_pgn_data)
@@ -82,7 +83,7 @@ def get_user_data(username=extract.username,
         game_datetime = datetime.strptime(game_date_time, '%Y.%m.%d %H:%M:%S')
 
         # Run analysis based on dates after last logged date
-        if (game_datetime >= llogged_datetime) and (game_datetime >= start_datetime):
+        if (game_datetime >= llogged_datetime) and (game_datetime >= start_dt):
             # Displays the number of games that have been analysed
             print(f"{game_num} / {total_games}")
 

@@ -2,12 +2,13 @@ from chessdotcom import get_player_game_archives
 import requests
 import pandas as pd
 import os
+import input_parameters
 
-username = "LucidKoala"
+
 dirname = os.path.dirname(__file__)
 
 
-def data_extract(username=username):
+def data_extract(username=input_parameters.username):
     '''Extracts user data for a given username.
 
     Args:
