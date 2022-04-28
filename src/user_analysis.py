@@ -84,9 +84,7 @@ def get_user_data(username=input_parameters.username,
 
         # Run analysis based on dates after last logged date
         if (game_datetime >= llogged_datetime) and (game_datetime >= start_dt):
-            # Displays the number of games that have been analysed
-            print(f"{game_num} / {total_games}")
-
+            game_timer_start = time.perf_counter()
             # Sets up header output data
             chess_game_time_control = chess_game.headers["TimeControl"]
             white = chess_game.headers["White"]
@@ -120,11 +118,8 @@ def get_user_data(username=input_parameters.username,
 
             move_num = 0
             # calculates move by move output data
-
             logger.info(f"Game info | {game_datetime} |{game_num}")
             for move in chess_game.mainline_moves():
-                move_timer_1 = time.perf_counter()
-
                 # Determine best move and calculation
                 best_move = engine.play(board,
                                         chess.engine.Limit(depth=edepth),
@@ -181,9 +176,6 @@ def get_user_data(username=input_parameters.username,
 
                 # copy move data to csv file
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
-                move_timer_2 = time.perf_counter()
-                tot_t = move_timer_2-move_timer_1
-                print(f"{move_num} Total Time:{tot_t:0.4f}")
 
             # Game accuracy calculations
             w_gm_acc = game_funcs.w_accuracy(gm_mv_ac)
@@ -248,10 +240,13 @@ def get_user_data(username=input_parameters.username,
             gm_mv_ac = []
             move_type_list = []
 
+            game_timer_end = time.perf_counter()
+            tot_t = game_timer_end-game_timer_start
+            print(f"{game_num} / {total_games}  Analysis Time:{tot_t:0.4f}")
         # In game already in csv skip analysis
         else:
             pass
-    print("Data Extract Complete")
+    print(f"User: {username} data extract and analysis complete")
 
 
 if __name__ == "__main__":
