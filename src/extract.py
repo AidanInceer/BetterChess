@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 import os
 
-username = "Ainceer"
+username = "LucidKoala"
 dirname = os.path.dirname(__file__)
 
 
@@ -16,7 +16,7 @@ def data_extract(username=username):
         outputs a csv file of the users pgn game data.
     '''
     # file paths
-    filename = os.path.join(dirname, rf"../data/pgn_data_{username}.csv")
+    filename = os.path.join(dirname, rf"../data/{username}_pgn_data.csv")
     # Getting game data from Chess.com
     urls = get_player_game_archives(username).json
     # Iterate through each months data

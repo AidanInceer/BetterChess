@@ -6,10 +6,10 @@ from os.path import exists
 from datetime import datetime
 
 
-dirname = os.path.dirname(__file__)
-file_logger = os.path.join(dirname, rf"../docs/game_log_{extract.username}.txt")
-file_move_data = os.path.join(dirname,
-                              rf'../data/move_data_{extract.username}.csv')
+dirn = os.path.dirname(__file__)
+file_logger = os.path.join(dirn, rf"../docs/{extract.username}_game_log.txt")
+file_move_data = os.path.join(dirn,
+                              rf'../data/{extract.username}_move_data.csv')
 
 
 def rerun_filter():

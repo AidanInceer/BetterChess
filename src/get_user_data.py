@@ -13,11 +13,11 @@ from datetime import datetime
 
 
 # Set up file path references
-dirname = os.path.dirname(__file__)
+dirn = os.path.dirname(__file__)
 stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
-file_stockfish = os.path.join(dirname, stk_path)
-file_logger = os.path.join(dirname, rf"../docs/game_log_{extract.username}.txt")
-file_temp = os.path.join(dirname, r"../data/temp.pgn")
+file_stockfish = os.path.join(dirn, stk_path)
+file_logger = os.path.join(dirn, rf"../docs/{extract.username}_game_log.txt")
+file_temp = os.path.join(dirn, r"../data/temp.pgn")
 
 # Set up logging
 logging.basicConfig(filename=file_logger,
@@ -32,7 +32,7 @@ def get_user_data(username=extract.username,
     to csv files.
 
     Args:
-        username: specified username input.
+        username: specified username input.     
         depth: Set the stockfish engine depth: (TBI)
             - "1" (simple) corresponds to engine depth of 8.
             - "2" (low) corresponds to engine depth of 12.
@@ -47,9 +47,9 @@ def get_user_data(username=extract.username,
         move_data.csv: move data for all games analysed for a specific user.
     '''
     # data file paths
-    file_m_data = os.path.join(dirname, rf"../data/move_data_{username}.csv")
-    file_g_data = os.path.join(dirname, rf"../data/game_data_{username}.csv")
-    file_pgn_data = os.path.join(dirname, rf"../data/pgn_data_{username}.csv")
+    file_m_data = os.path.join(dirn, rf"../data/{username}_move_data.csv")
+    file_g_data = os.path.join(dirn, rf"../data/{username}_game_data.csv")
+    file_pgn_data = os.path.join(dirn, rf"../data/{username}_pgn_data.csv")
     # Import/ update game data from csv
     extract.data_extract(username)
     all_games_df = pd.read_csv(file_pgn_data)
@@ -63,7 +63,7 @@ def get_user_data(username=extract.username,
 
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
-    edepth = 16
+    edepth = 6
 
     for game_num, game in enumerate(all_games_df["game_data"]):
         # Writes the temp pgn file from
@@ -251,6 +251,7 @@ def get_user_data(username=extract.username,
         # In game already in csv skip analysis
         else:
             pass
+    print("Data Extract Complete")
 
 
 if __name__ == "__main__":
