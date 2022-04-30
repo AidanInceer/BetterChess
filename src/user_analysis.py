@@ -91,12 +91,25 @@ def get_user_data(username=input_parameters.username,
             white = chess_game.headers["White"]
             black = chess_game.headers["Black"]
             player = "White" if white == username else "Black"
+
             rating_white = chess_game.headers["WhiteElo"]
             rating_black = chess_game.headers["BlackElo"]
-            opening_class = chess_game.headers["ECO"]
-            opening_name_raw = chess_game.headers["ECOUrl"]
+            try:
+                opening_class = chess_game.headers["ECO"]
+            except KeyError:
+                opening_class = "000"
+            try:
+                opening_name_raw = chess_game.headers["ECOUrl"]
+            except KeyError:
+                opening_name_raw = "/NA"
+            try:
+                termination = chess_game.headers["Termination"]
+            except KeyError:
+                termination = "NA"
             opening_name = header_funcs.opening_name_cleaner(opening_name_raw)
-            my_rating = rating_white if player == "White" else rating_black
+
+            user_rating = rating_white if player == "White" else rating_black
+            opponent_rating = rating_black if player == "White" else rating_white
             if chess_game.headers["Result"] == "1-0":
                 winner = "White"
             elif chess_game.headers["Result"] == "0-1":
@@ -211,12 +224,15 @@ def get_user_data(username=input_parameters.username,
                     "Black_player": black,
                     "White_rating": rating_white,
                     "Black_rating": rating_black,
-                    "My_colour": username,
-                    "My_rating": my_rating,
+                    "User_colour": player,
+                    "User_rating": user_rating,
+                    "opponent_rating": opponent_rating,
                     "Winner": winner,
+                    "User_winner": user_winner,
+                    "Opening_name": opening_name,
                     "Opening_class": opening_class,
                     "Opening_name": opening_name,
-                    "User_winner": user_winner,
+                    "Termination": termination,
                     "Number_of_moves": total_moves,
                     "Accuracy": w_gm_acc if username == white else b_gm_acc,
                     "Opening_accuracy": ow if username == white else ob,
