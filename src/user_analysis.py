@@ -38,10 +38,10 @@ def get_user_data(username=input_parameters.username,
     dirn = os.path.dirname(__file__)
     stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
     file_stockfish = os.path.join(dirn, stk_path)
-    file_logger = os.path.join(dirn, rf"../docs/{username}_game_log.txt")
+    file_logger = os.path.join(dirn, rf"../logs/{username}_game_log.txt")
     file_temp = os.path.join(dirn, r"../data/temp.pgn")
-    file_m_data = os.path.join(dirn, rf"../data/{username}_move_data.csv")
-    file_g_data = os.path.join(dirn, rf"../data/{username}_game_data.csv")
+    file_m_data = os.path.join(dirn, r"../data/move_data.csv")
+    file_g_data = os.path.join(dirn, r"../data/game_data.csv")
     file_pgn_data = os.path.join(dirn, rf"../data/{username}_pgn_data.csv")
 
     # Set up logging
@@ -86,30 +86,34 @@ def get_user_data(username=input_parameters.username,
         # Run analysis based on dates after last logged date
         if (game_datetime >= llogged_datetime) and (game_datetime >= start_dt):
             game_timer_start = time.perf_counter()
+
             # Sets up header output data
             chess_game_time_control = chess_game.headers["TimeControl"]
             white = chess_game.headers["White"]
             black = chess_game.headers["Black"]
             player = "White" if white == username else "Black"
-
             rating_white = chess_game.headers["WhiteElo"]
             rating_black = chess_game.headers["BlackElo"]
+
+            # opening class
             try:
                 opening_class = chess_game.headers["ECO"]
             except KeyError:
                 opening_class = "000"
+            # opening name
             try:
                 opening_name_raw = chess_game.headers["ECOUrl"]
             except KeyError:
                 opening_name_raw = "/NA"
-            try:
-                termination = chess_game.headers["Termination"]
-            except KeyError:
-                termination = "NA"
             opening_name = header_funcs.opening_name_cleaner(opening_name_raw)
 
+            # termination header
+            term_raw = chess_game.headers["Termination"]
+            termination = header_funcs.termination_filter(term_raw, username)
+
+            # winner headers and rating
             user_rating = rating_white if player == "White" else rating_black
-            opponent_rating = rating_black if player == "White" else rating_white
+            opp_rating = rating_black if player == "White" else rating_white
             if chess_game.headers["Result"] == "1-0":
                 winner = "White"
             elif chess_game.headers["Result"] == "0-1":
@@ -177,7 +181,8 @@ def get_user_data(username=input_parameters.username,
                 move_num += 1
 
                 # Initialise DataFrame and export move_data
-                df = pd.DataFrame({"Date": game_datetime,
+                df = pd.DataFrame({"Username": username,
+                                   "Date": game_datetime,
                                    "Game_number": game_num,
                                    "edepth": edepth,
                                    "Game_date": game_date,
@@ -215,37 +220,37 @@ def get_user_data(username=input_parameters.username,
             impve_b = game_funcs.game_section_improvement_black(ob, mb, eb)
             # Initialise DataFrame and export game data
             df2 = pd.DataFrame(
-                {"Date": game_datetime,
-                    "Game_number": game_num,
-                    "Engine_depth": edepth,
-                    "Game_date": game_date,
-                    "Game_type": chess_game_time_control,
-                    "White_player": white,
-                    "Black_player": black,
-                    "White_rating": rating_white,
-                    "Black_rating": rating_black,
-                    "User_colour": player,
-                    "User_rating": user_rating,
-                    "opponent_rating": opponent_rating,
-                    "Winner": winner,
-                    "User_winner": user_winner,
-                    "Opening_name": opening_name,
-                    "Opening_class": opening_class,
-                    "Opening_name": opening_name,
-                    "Termination": termination,
-                    "Number_of_moves": total_moves,
-                    "Accuracy": w_gm_acc if username == white else b_gm_acc,
-                    "Opening_accuracy": ow if username == white else ob,
-                    "Mid_accuracy": mw if username == white else mb,
-                    "End_accuracy": ew if username == white else eb,
-                    "No_best": w_best if username == white else b_best,
-                    "No_great": w_great if username == white else b_great,
-                    "No_good": w_good if username == white else b_good,
-                    "No_ok": w_ok if username == white else b_ok,
-                    "No_inaccuracy": w_inac if username == white else b_inac,
-                    "No_mistake": w_mist if username == white else b_mist,
-                    "No_blunder": w_blndr if username == white else b_blndr,
-                    "Improvement": impve_w if username == white else impve_b,
+                {"Username": username,
+                 "Date": game_datetime,
+                 "Game_number": game_num,
+                 "Engine_depth": edepth,
+                 "Game_date": game_date,
+                 "Game_type": chess_game_time_control,
+                 "White_player": white,
+                 "Black_player": black,
+                 "White_rating": rating_white,
+                 "Black_rating": rating_black,
+                 "User_colour": player,
+                 "User_rating": user_rating,
+                 "opponent_rating": opp_rating,
+                 "Winner": winner,
+                 "User_winner": user_winner,
+                 "Opening_name": opening_name,
+                 "Opening_class": opening_class,
+                 "Termination": termination,
+                 "Number_of_moves": total_moves,
+                 "Accuracy": w_gm_acc if username == white else b_gm_acc,
+                 "Opening_accuracy": ow if username == white else ob,
+                 "Mid_accuracy": mw if username == white else mb,
+                 "End_accuracy": ew if username == white else eb,
+                 "No_best": w_best if username == white else b_best,
+                 "No_great": w_great if username == white else b_great,
+                 "No_good": w_good if username == white else b_good,
+                 "No_ok": w_ok if username == white else b_ok,
+                 "No_inaccuracy": w_inac if username == white else b_inac,
+                 "No_mistake": w_mist if username == white else b_mist,
+                 "No_blunder": w_blndr if username == white else b_blndr,
+                 "Improvement": impve_w if username == white else impve_b,
                  }, index=[0])
 
             # copy game data to csv file
@@ -269,14 +274,35 @@ def get_user_data(username=input_parameters.username,
             hours_r = int(time_r)
             mins_r = (time_r - hours_r) * 60
             if hours_r == 1:
-                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hour,  {mins_r:.1f} Minutes | Analysis time: {game_time:.1f}s")
+                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hour,  {mins_r:.1f} Mins | Analysis time: {game_time:.1f}s")
             else:
-                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hours,  {mins_r:.1f} Minutes | Analysis time: {game_time:.1f}s")
+                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hours,  {mins_r:.1f} Mins | Analysis time: {game_time:.1f}s")
         # If game already in csv skip analysis
         else:
             pass
-    print(f"User: {username} data extract and analysis complete")
+
     game_time_list = []
+    # add column headers for the csv files.
+    game_data = pd.read_csv(file_g_data, header=None)
+    game_header_list = ["Username", "Date", "Game_number", "Engine_depth",
+                        "Game_date", "Game_type", "White_player",
+                        "Black_player", "White_rating", "Black_rating",
+                        "User_colour", "User_rating", "opponent_rating",
+                        "Winner", "User_winner", "Opening_name",
+                        "Opening_class", "Termination", "Number_of_moves",
+                        "Accuracy", "Opening_accuracy", "Mid_accuracy",
+                        "End_accuracy", "No_best", "No_great", "No_good",
+                        "No_ok", "No_inaccuracy", "No_mistake",
+                        "No_blunder", "Improvement"]
+    game_data.to_csv(file_g_data, header=game_header_list, index=False)
+
+    move_data = pd.read_csv(file_m_data, header=None)
+    move_header_list = ["Username", "Date", "Game_number", "edepth",
+                        "Game_date", "Move_number", "Move",
+                        "Best_move", "Move_eval", "Best_move_eval",
+                        "Move_eval_diff", "Move accuracy", "Move_type"]
+    move_data.to_csv(file_m_data, header=move_header_list, index=False)
+    print(f"User: {username} data extract and analysis complete")
 
 
 if __name__ == "__main__":

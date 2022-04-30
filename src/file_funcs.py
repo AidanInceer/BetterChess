@@ -7,9 +7,10 @@ import input_parameters
 
 
 dirn = os.path.dirname(__file__)
-file_logger = os.path.join(dirn, rf"../docs/{input_parameters.username}_game_log.txt")
+file_logger = os.path.join(dirn,
+                           rf"../logs/{input_parameters.username}_game_log.txt")
 file_move_data = os.path.join(dirn,
-                              rf'../data/{input_parameters.username}_move_data.csv')
+                              r'../data/move_data.csv')
 
 
 def rerun_filter():
@@ -55,7 +56,8 @@ def clean_rerun_files():
         if file_exists:
             llog = lines[-1]
             llog_gn = int(llog.split("|")[2].strip())
-            col_names = ["Date",
+            col_names = ["Username",
+                         "Date",
                          "Game_number",
                          "Engine_Depth",
                          "Game_date",
