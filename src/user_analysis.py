@@ -6,10 +6,7 @@ import chess.engine
 import chess.pgn
 import logging
 import os
-import file_funcs
-import game_funcs
-import move_funcs
-import header_funcs
+import function_file, function_game, function_header, function_move
 import extract
 import input_parameters
 from datetime import datetime
@@ -49,6 +46,9 @@ def get_user_data(username=input_parameters.username,
                         format='[%(levelname)s %(module)s] %(message)s',
                         level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
     logger = logging.getLogger(__name__)
+    function_file.rerun_filter()
+    llogged_datetime = function_file.rerun_filter()
+    function_file.clean_rerun_files()
 
     # Import/ update game data from csv
     extract.data_extract(username)
@@ -56,28 +56,21 @@ def get_user_data(username=input_parameters.username,
     total_games = len(all_games_df["game_data"])
     game_num = 0
 
-    # Init logging file and collect last game date logged
-    file_funcs.rerun_filter()
-    llogged_datetime = file_funcs.rerun_filter()
-    file_funcs.clean_rerun_files()
-
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
     edepth = set_depth
     game_time_list = []
 
     for game_num, game in enumerate(all_games_df["game_data"]):
-        # Writes the temp pgn file from
+        # Reads game data from temp.pgn
         f = open(file_temp, "w")
         f.write(game)
         f.close()
-
-        # Opens the pgn file, reads the pgn file and sets up the game
         chess_game_pgn = open(file_temp)
         chess_game = chess.pgn.read_game(chess_game_pgn)
         board = chess_game.board()
 
-        # header and logfile checking
+        # Header data.
         game_date = chess_game.headers["UTCDate"]
         game_time = chess_game.headers["UTCTime"]
         game_date_time = f"{game_date} {game_time}"
@@ -85,33 +78,26 @@ def get_user_data(username=input_parameters.username,
 
         # Run analysis based on dates after last logged date
         if (game_datetime >= llogged_datetime) and (game_datetime >= start_dt):
-            game_timer_start = time.perf_counter()
+            analysis_time_s = time.perf_counter()
 
-            # Sets up header output data
+            # Header data.
             chess_game_time_control = chess_game.headers["TimeControl"]
             white = chess_game.headers["White"]
             black = chess_game.headers["Black"]
             player = "White" if white == username else "Black"
             rating_white = chess_game.headers["WhiteElo"]
             rating_black = chess_game.headers["BlackElo"]
-
-            # opening class
             try:
                 opening_class = chess_game.headers["ECO"]
             except KeyError:
                 opening_class = "000"
-            # opening name
             try:
                 opening_name_raw = chess_game.headers["ECOUrl"]
             except KeyError:
                 opening_name_raw = "/NA"
-            opening_name = header_funcs.opening_name_cleaner(opening_name_raw)
-
-            # termination header
+            opening_name = function_header.opening_clean(opening_name_raw)
             term_raw = chess_game.headers["Termination"]
-            termination = header_funcs.termination_filter(term_raw, username)
-
-            # winner headers and rating
+            termination = function_header.termination_clean(term_raw, username)
             user_rating = rating_white if player == "White" else rating_black
             opp_rating = rating_black if player == "White" else rating_white
             if chess_game.headers["Result"] == "1-0":
@@ -149,7 +135,7 @@ def get_user_data(username=input_parameters.username,
                 eval_bm_init = engine.analyse(board,
                                               chess.engine.Limit(depth=edepth),
                                               game=object())
-                eval_bm = move_funcs.move_eval(eval_bm_init)
+                eval_bm = function_move.move_eval(eval_bm_init)
 
                 # Reset board
                 board.pop()
@@ -160,12 +146,12 @@ def get_user_data(username=input_parameters.username,
                 eval_ml_init = engine.analyse(board,
                                               chess.engine.Limit(depth=edepth),
                                               game=object())
-                eval_ml = move_funcs.move_eval(eval_ml_init)
+                eval_ml = function_move.move_eval(eval_ml_init)
 
                 # Eval diff, move accuracy and type calculations
-                mv_eval_diff = move_funcs.eval_diff(move_num, eval_bm, eval_ml)
-                move_accuracy = move_funcs.move_acc(mv_eval_diff)
-                move_type = move_funcs.move_type(move_accuracy)
+                mv_eval_diff = function_move.eval_diff(move_num, eval_bm, eval_ml)
+                move_accuracy = function_move.move_acc(mv_eval_diff)
+                move_type = function_move.move_type(move_accuracy)
 
                 # Append data to respective lists
                 gm_mv_num.append(move_num)
@@ -180,7 +166,7 @@ def get_user_data(username=input_parameters.username,
                 # Move number iterator
                 move_num += 1
 
-                # Initialise DataFrame and export move_data
+                # Move data export
                 df = pd.DataFrame({"Username": username,
                                    "Date": game_datetime,
                                    "Game_number": game_num,
@@ -195,30 +181,25 @@ def get_user_data(username=input_parameters.username,
                                    "Move accuracy": move_accuracy,
                                    "Move_type": move_type,
                                    }, index=[0])
-
-                # copy move data to csv file
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
+
             total_moves = math.ceil(move_num/2)
-            # Game accuracy calculations
-            w_gm_acc = game_funcs.w_accuracy(gm_mv_ac)
-            b_gm_acc = game_funcs.b_accuracy(gm_mv_ac)
 
-            # Sum of move types white and black
-            w_best, b_best = move_funcs.sum_best_mv(move_type_list)
-            w_great, b_great = move_funcs.sum_great_mv(move_type_list)
-            w_good, b_good = move_funcs.sum_good_mv(move_type_list)
-            w_ok, b_ok = move_funcs.sum_ok_mv(move_type_list)
-            w_inac, b_inac = move_funcs.sum_inac_mv(move_type_list)
-            w_mist, b_mist = move_funcs.sum_mist_mv(move_type_list)
-            w_blndr, b_blndr = move_funcs.sum_blndr_mv(move_type_list)
+            # Game calculations
+            w_gm_acc = function_game.w_accuracy(gm_mv_ac)
+            b_gm_acc = function_game.b_accuracy(gm_mv_ac)
+            w_best, b_best = function_move.sum_best_mv(move_type_list)
+            w_great, b_great = function_move.sum_great_mv(move_type_list)
+            w_good, b_good = function_move.sum_good_mv(move_type_list)
+            w_ok, b_ok = function_move.sum_ok_mv(move_type_list)
+            w_inac, b_inac = function_move.sum_inac_mv(move_type_list)
+            w_mist, b_mist = function_move.sum_mist_mv(move_type_list)
+            w_blndr, b_blndr = function_move.sum_blndr_mv(move_type_list)
+            ow, mw, ew, ob, mb, eb = function_game.phase_accuracy(gm_mv_ac)
+            impve_w = function_game.game_section_improvement_white(ow, mw, ew)
+            impve_b = function_game.game_section_improvement_black(ob, mb, eb)
 
-            # Phase of game accuracy calculations
-            ow, mw, ew, ob, mb, eb = game_funcs.phase_accuracy(gm_mv_ac)
-
-            # Least accurate game section
-            impve_w = game_funcs.game_section_improvement_white(ow, mw, ew)
-            impve_b = game_funcs.game_section_improvement_black(ob, mb, eb)
-            # Initialise DataFrame and export game data
+            # Game data export
             df2 = pd.DataFrame(
                 {"Username": username,
                  "Date": game_datetime,
@@ -252,8 +233,6 @@ def get_user_data(username=input_parameters.username,
                  "No_blunder": w_blndr if username == white else b_blndr,
                  "Improvement": impve_w if username == white else impve_b,
                  }, index=[0])
-
-            # copy game data to csv file
             df2.to_csv(file_g_data, mode='a', header=False, index=False)
 
             # reset lists
@@ -266,17 +245,21 @@ def get_user_data(username=input_parameters.username,
             gm_mv_ac = []
             move_type_list = []
 
-            game_timer_end = time.perf_counter()
-            game_time = game_timer_end-game_timer_start
-            game_time_list.append(game_time)
+            analysis_time_e = time.perf_counter()
+            analysis_time = analysis_time_e-analysis_time_s
+            game_time_list.append(analysis_time)
             avg_game_time = sum(game_time_list)/len(game_time_list)
             time_r = ((total_games-game_num)*(avg_game_time))/3600
             hours_r = int(time_r)
             mins_r = (time_r - hours_r) * 60
             if hours_r == 1:
-                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hour,  {mins_r:.1f} Mins | Analysis time: {game_time:.1f}s")
+                print((f"| {game_num} / {total_games} | Estimated Time"
+                       f" Remaining: {hours_r} Hour,  {mins_r:.1f} Mins"
+                       f" | Analysis time: {analysis_time:.1f}s"))
             else:
-                print(f"| {game_num} / {total_games} | Estimated Time Remaining: {hours_r} Hours,  {mins_r:.1f} Mins | Analysis time: {game_time:.1f}s")
+                print((f"| {game_num} / {total_games} | Estimated Time"
+                       f" Remaining: {hours_r} Hours,  {mins_r:.1f} Mins"
+                       f" | Analysis time: {analysis_time:.1f}s"))
         # If game already in csv skip analysis
         else:
             pass

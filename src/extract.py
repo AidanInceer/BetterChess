@@ -14,9 +14,10 @@ def data_extract(username=input_parameters.username):
         outputs a csv file of the users pgn game data.
     '''
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, rf"../data/{username}_pgn_data.csv")
+    filename = os.path.join(dirname,
+                            rf"../data/pgn_data/{username}_pgn_data.csv")
     urls = get_player_game_archives(username).json
-    all_games = [] 
+    all_games = []
     for url in urls["archives"]:
         data = requests.get(url).json()
         for game_pgn in data["games"]:
