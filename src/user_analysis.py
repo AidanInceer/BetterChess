@@ -12,6 +12,7 @@ import function_game
 import function_move
 import extract
 import parameters
+import csv
 from datetime import datetime
 
 
@@ -51,7 +52,7 @@ def get_user_data(username=parameters.username,
     extract.data_extract(username)
     all_games_df = pd.read_csv(file_pgn_data)
     total_games = len(all_games_df["game_data"])
-    game_num = 0
+    game_num = 1
 
     # Initialises Stockfish, sets engine depth
     engine = chess.engine.SimpleEngine.popen_uci(file_stockfish)
@@ -262,7 +263,8 @@ def get_user_data(username=parameters.username,
             pass
 
     game_time_list = []
-    # add column headers for the csv files.
+
+    # Add column headers for the csv files.
     game_data = pd.read_csv(file_g_data, header=None)
     game_header_list = ["Username", "Date", "Game_number", "Engine_depth",
                         "Game_date", "Game_type", "White_player",
@@ -274,14 +276,22 @@ def get_user_data(username=parameters.username,
                         "End_accuracy", "No_best", "No_great", "No_good",
                         "No_ok", "No_inaccuracy", "No_mistake",
                         "No_blunder", "Improvement"]
-    game_data.to_csv(file_g_data, header=game_header_list, index=False)
+    if "Username" in game_data:
+        game_data.to_csv(file_g_data, header=False, index=False)
+    else:
+        game_data.to_csv(file_g_data, header=game_header_list, index=False)
 
     move_data = pd.read_csv(file_m_data, header=None)
     move_header_list = ["Username", "Date", "Game_number", "edepth",
                         "Game_date", "Move_number", "Move",
                         "Best_move", "Move_eval", "Best_move_eval",
                         "Move_eval_diff", "Move accuracy", "Move_type"]
-    move_data.to_csv(file_m_data, header=move_header_list, index=False)
+    if "Username" in move_data:
+        move_data.to_csv(file_m_data, header=False, index=False)
+    else:
+        move_data.to_csv(file_m_data, header=move_header_list, index=False)
+
+    # Complete statement
     print(f"User: {username} data extract and analysis complete")
 
 
