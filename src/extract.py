@@ -2,10 +2,10 @@ from chessdotcom import get_player_game_archives
 import requests
 import pandas as pd
 import os
-import input_parameters
+import parameters
 
 
-def data_extract(username=input_parameters.username):
+def data_extract(username=parameters.username):
     '''Extracts user data for a given username.
 
     Args:

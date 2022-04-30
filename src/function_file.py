@@ -3,12 +3,12 @@ import pandas as pd
 import os
 from os.path import exists
 from datetime import datetime
-import input_parameters
+import parameters
 
 
 dirn = os.path.dirname(__file__)
 file_logger = os.path.join(dirn,
-                           rf"../logs/{input_parameters.username}_game_log.txt")
+                           rf"../logs/{parameters.username}_game_log.txt")
 file_move_data = os.path.join(dirn,
                               r'../data/move_data.csv')
 
@@ -76,5 +76,3 @@ def clean_rerun_files():
                             index=False, header=False)
         else:
             pass
-
-

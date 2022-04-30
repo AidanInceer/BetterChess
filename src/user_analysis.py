@@ -6,31 +6,28 @@ import chess.engine
 import chess.pgn
 import logging
 import os
-import function_file, function_game, function_header, function_move
+import function_file
+import function_header
+import function_game
+import function_move
 import extract
-import input_parameters
+import parameters
 from datetime import datetime
 
 
-def get_user_data(username=input_parameters.username,
-                  set_depth=input_parameters.engine_depth,
-                  start_dt=input_parameters.start_datetime):
+def get_user_data(username=parameters.username,
+                  set_depth=parameters.engine_depth,
+                  start_dt=parameters.start_datetime):
     '''This function analyses a users games and outputs move and game analysis
     to csv files.
     Args:
         username: specified username input.
-        depth: Set the stockfish engine depth: (TBI)
-            - "1" (simple) corresponds to engine depth of 8.
-            - "2" (low) corresponds to engine depth of 12.
-            - "3" (default) corresponds to engine depth of 16.
-            - "4" (high) corresponds to engine depth of 20.
-            - "5" (extreme) corresponds to engine depth of 24.
-        start_date:
+        depth: Set the stockfish engine depth (1-22)
+        start_dt: determine starting date to conduct analysis.
     Returns:
         game_data.csv: game data for a specific user.
         move_data.csv: move data for all games analysed for a specific user.
     '''
-
     # data file paths
     dirn = os.path.dirname(__file__)
     stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
@@ -39,7 +36,7 @@ def get_user_data(username=input_parameters.username,
     file_temp = os.path.join(dirn, r"../data/temp.pgn")
     file_m_data = os.path.join(dirn, r"../data/move_data.csv")
     file_g_data = os.path.join(dirn, r"../data/game_data.csv")
-    file_pgn_data = os.path.join(dirn, rf"../data/{username}_pgn_data.csv")
+    file_pgn_data = os.path.join(dirn, rf"../data/pgn_data/{username}_pgn_data.csv")
 
     # Set up logging
     logging.basicConfig(filename=file_logger,
