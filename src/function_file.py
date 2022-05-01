@@ -76,6 +76,4 @@ def clean_rerun_files():
             clean_df.to_csv(file_move_data, mode="w",
                             index=False, header=False)
         else:
-
-
-
+            pass

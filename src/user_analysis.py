@@ -10,9 +10,9 @@ import function_file
 import function_header
 import function_game
 import function_move
+import function_vis
 import extract
 import parameters
-import csv
 from datetime import datetime
 
 
@@ -30,14 +30,15 @@ def get_user_data(username=parameters.username,
         move_data.csv: move data for all games analysed for a specific user.
     '''
     # data file paths
-    dirn = os.path.dirname(__file__)
+    dir = os.path.dirname(__file__)
     stk_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
-    file_stockfish = os.path.join(dirn, stk_path)
-    file_logger = os.path.join(dirn, rf"../logs/{username}_game_log.txt")
-    file_temp = os.path.join(dirn, r"../data/temp.pgn")
-    file_m_data = os.path.join(dirn, r"../data/move_data.csv")
-    file_g_data = os.path.join(dirn, r"../data/game_data.csv")
-    file_pgn_data = os.path.join(dirn, rf"../data/pgn_data/{username}_pgn_data.csv")
+    file_stockfish = os.path.join(dir, stk_path)
+    file_logger = os.path.join(dir, rf"../logs/{username}_game_log.txt")
+    file_temp = os.path.join(dir, r"../data/temp.pgn")
+    file_m_data = os.path.join(dir, r"../data/move_data.csv")
+    file_g_data = os.path.join(dir, r"../data/game_data.csv")
+    file_pgn_data = os.path.join(dir,
+                                 rf"../data/pgn_data/{username}_pgn_data.csv")
 
     # Set up logging
     logging.basicConfig(filename=file_logger,
@@ -104,10 +105,13 @@ def get_user_data(username=parameters.username,
                 winner = "Black"
             else:
                 winner = "Draw"
-
-            if (winner == "White" and player == "White") or (winner == "Black" and player == "Black"):
+            pww = (winner == "White" and player == "White")
+            pbw = (winner == "Black" and player == "Black")
+            pwl = (winner == "Black" and player == "White")
+            pbl = (winner == "White" and player == "Black")
+            if pww or pbw:
                 user_winner = "Win"
-            elif (winner == "White" and player == "Black") or (winner == "Black" and player == "White"):
+            elif pwl or pbl:
                 user_winner = "Loss"
             else:
                 user_winner = "Draw"
@@ -148,7 +152,9 @@ def get_user_data(username=parameters.username,
                 eval_ml = function_move.move_eval(eval_ml_init)
 
                 # Eval diff, move accuracy and type calculations
-                mv_eval_diff = function_move.eval_diff(move_num, eval_bm, eval_ml)
+                mv_eval_diff = function_move.eval_diff(move_num,
+                                                       eval_bm,
+                                                       eval_ml)
                 move_accuracy = function_move.move_acc(mv_eval_diff)
                 move_type = function_move.move_type(move_accuracy)
 
@@ -233,7 +239,7 @@ def get_user_data(username=parameters.username,
                  }, index=[0])
             df2.to_csv(file_g_data, mode='a', header=False, index=False)
 
-            # reset lists
+            # Reset lists.
             gm_best_mv = []
             gm_mv_num = []
             gm_mv = []
@@ -243,28 +249,18 @@ def get_user_data(username=parameters.username,
             gm_mv_ac = []
             move_type_list = []
 
+            # Progress bar.
             analysis_time_e = time.perf_counter()
-            analysis_time = analysis_time_e-analysis_time_s
-            game_time_list.append(analysis_time)
-            avg_game_time = sum(game_time_list)/len(game_time_list)
-            time_r = ((total_games-game_num)*(avg_game_time))/3600
-            hours_r = int(time_r)
-            mins_r = (time_r - hours_r) * 60
-            if hours_r == 1:
-                print((f"| {game_num} / {total_games} | Estimated Time"
-                       f" Remaining: {hours_r} Hour,  {mins_r:.1f} Mins"
-                       f" | Analysis time: {analysis_time:.1f}s"))
-            else:
-                print((f"| {game_num} / {total_games} | Estimated Time"
-                       f" Remaining: {hours_r} Hours,  {mins_r:.1f} Mins"
-                       f" | Analysis time: {analysis_time:.1f}s"))
-        # If game already in csv skip analysis
+            function_vis.progress_bar(game_num, total_games, analysis_time_s,
+                                      analysis_time_e, game_time_list)
+        # Skip analysis.
         else:
             pass
 
     game_time_list = []
 
     # Add column headers for the csv files.
+    #   Game data
     game_data = pd.read_csv(file_g_data, header=None)
     game_header_list = ["Username", "Date", "Game_number", "Engine_depth",
                         "Game_date", "Game_type", "White_player",
@@ -280,7 +276,7 @@ def get_user_data(username=parameters.username,
         game_data.to_csv(file_g_data, header=False, index=False)
     else:
         game_data.to_csv(file_g_data, header=game_header_list, index=False)
-
+    #   Move data
     move_data = pd.read_csv(file_m_data, header=None)
     move_header_list = ["Username", "Date", "Game_number", "edepth",
                         "Game_date", "Move_number", "Move",
@@ -292,7 +288,7 @@ def get_user_data(username=parameters.username,
         move_data.to_csv(file_m_data, header=move_header_list, index=False)
 
     # Complete statement
-    print(f"User: {username} data extract and analysis complete")
+    print(f"\nUser: {username} data extract and analysis complete")
 
 
 if __name__ == "__main__":
