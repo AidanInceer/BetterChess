@@ -1,11 +1,4 @@
 [INFO function_file] Game info | 2000-01-01 00:00:00 | 0
-[INFO user_analysis] Game info | 2021-02-12 17:22:34 |361
-[INFO user_analysis] Game info | 2021-03-17 18:28:37 |362
-[INFO user_analysis] Game info | 2021-03-19 16:54:21 |363
-[INFO user_analysis] Game info | 2021-03-26 16:49:04 |364
-[INFO user_analysis] Game info | 2021-03-26 16:55:37 |365
-[INFO user_analysis] Game info | 2021-04-30 15:47:18 |366
-[INFO user_analysis] Game info | 2021-05-14 16:02:40 |367
 [INFO user_analysis] Game info | 2021-08-06 22:55:24 |368
 [INFO user_analysis] Game info | 2021-08-06 23:09:23 |369
 [INFO user_analysis] Game info | 2021-08-06 23:14:11 |370

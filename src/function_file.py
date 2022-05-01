@@ -6,6 +6,7 @@ from datetime import datetime
 import parameters
 
 
+
 dirn = os.path.dirname(__file__)
 file_logger = os.path.join(dirn,
                            rf"../logs/{parameters.username}_game_log.txt")
@@ -75,4 +76,6 @@ def clean_rerun_files():
             clean_df.to_csv(file_move_data, mode="w",
                             index=False, header=False)
         else:
-            pass
+
+
+

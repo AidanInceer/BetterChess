@@ -104,12 +104,13 @@ def get_user_data(username=parameters.username,
                 winner = "Black"
             else:
                 winner = "Draw"
-            if (winner == "White" and player == "White"):
-                user_winner = True
-            elif (winner == "Black" and player == "Black"):
-                user_winner = True
+
+            if (winner == "White" and player == "White") or (winner == "Black" and player == "Black"):
+                user_winner = "Win"
+            elif (winner == "White" and player == "Black") or (winner == "Black" and player == "White"):
+                user_winner = "Loss"
             else:
-                user_winner = False
+                user_winner = "Draw"
 
             # Initialises game output lists
             gm_best_mv = []
@@ -212,7 +213,6 @@ def get_user_data(username=parameters.username,
                  "User_colour": player,
                  "User_rating": user_rating,
                  "opponent_rating": opp_rating,
-                 "Winner": winner,
                  "User_winner": user_winner,
                  "Opening_name": opening_name,
                  "Opening_class": opening_class,
@@ -270,7 +270,7 @@ def get_user_data(username=parameters.username,
                         "Game_date", "Game_type", "White_player",
                         "Black_player", "White_rating", "Black_rating",
                         "User_colour", "User_rating", "opponent_rating",
-                        "Winner", "User_winner", "Opening_name",
+                        "User_winner", "Opening_name",
                         "Opening_class", "Termination", "Number_of_moves",
                         "Accuracy", "Opening_accuracy", "Mid_accuracy",
                         "End_accuracy", "No_best", "No_great", "No_good",

@@ -9,9 +9,11 @@ def opening_clean(url):
 
 def termination_clean(termination_raw, username):
     winner_check = termination_raw.split(" ")
-    end_string = str(" ".join(winner_check[2:]))
-    if winner_check[0] != username:
-        termination = username + " lost " + end_string
+    draw_check = " ".join(winner_check[0:2])   
+    if winner_check[0] == username:
+        termination = "Win " + " ".join(winner_check[2:])
+    elif draw_check == "Game drawn":
+        termination = "Draw " + " ".join(winner_check[2:])
     else:
-        termination = termination_raw
+        termination = "Loss " + " ".join(winner_check[2:])
     return termination

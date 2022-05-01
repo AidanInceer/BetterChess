@@ -3,8 +3,6 @@ import chess
 import chess.engine
 import chess.pgn
 import os
-import move_funcs
-
 
 # Set up file path references
 dirname = os.path.dirname(__file__)
