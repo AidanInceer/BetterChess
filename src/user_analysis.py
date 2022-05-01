@@ -276,7 +276,7 @@ def get_user_data(username=parameters.username,
                         "End_accuracy", "No_best", "No_great", "No_good",
                         "No_ok", "No_inaccuracy", "No_mistake",
                         "No_blunder", "Improvement"]
-    if "Username" in game_data:
+    if "Username" in game_data.iloc[0, 0]:
         game_data.to_csv(file_g_data, header=False, index=False)
     else:
         game_data.to_csv(file_g_data, header=game_header_list, index=False)
@@ -286,7 +286,7 @@ def get_user_data(username=parameters.username,
                         "Game_date", "Move_number", "Move",
                         "Best_move", "Move_eval", "Best_move_eval",
                         "Move_eval_diff", "Move accuracy", "Move_type"]
-    if "Username" in move_data:
+    if "Username" in move_data.iloc[0, 0]:
         move_data.to_csv(file_m_data, header=False, index=False)
     else:
         move_data.to_csv(file_m_data, header=move_header_list, index=False)
