@@ -1,10 +1,10 @@
 import logging
 import pandas as pd
 import os
+import parameters
+import data_lists
 from os.path import exists
 from datetime import datetime
-import parameters
-
 
 
 dirn = os.path.dirname(__file__)
@@ -77,3 +77,19 @@ def clean_rerun_files():
                             index=False, header=False)
         else:
             pass
+
+
+def column_headers(file_g_data, file_m_data):
+    game_data = pd.read_csv(file_g_data, header=None)
+    game_header_list = data_lists.game_header_list
+    if "Username" in game_data.iloc[0, 0]:
+        game_data.to_csv(file_g_data, header=False, index=False)
+    else:
+        game_data.to_csv(file_g_data, header=game_header_list, index=False)
+    #   Move data
+    move_data = pd.read_csv(file_m_data, header=None)
+    move_header_list = data_lists.move_header_list
+    if "Username" in move_data.iloc[0, 0]:
+        move_data.to_csv(file_m_data, header=False, index=False)
+    else:
+        move_data.to_csv(file_m_data, header=move_header_list, index=False)

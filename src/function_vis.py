@@ -24,5 +24,5 @@ def progress_bar(game_num, total_games, start_time, end_time, time_list):
         secs = str(sec_r)
     eta = f"{hrs}:{mins}:{secs}"
     percent = 100 * (game_num / float(total_games))
-    bar = "❚" * int(percent) + "-" * (100-int(percent))
-    print(f"\r|{bar}| {percent:.2f}% | ETA: {eta}", end="\r")
+    bar = "❚" * int(percent/2.5) + "-" * (40-int(percent/2.5))
+    print(f"\r|{bar}| {percent:.2f}% | ETA: {eta} | Game: {game_num+1} / {total_games} ", end="\r")

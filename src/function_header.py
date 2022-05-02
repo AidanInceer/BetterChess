@@ -17,3 +17,5 @@ def termination_clean(termination_raw, username):
     else:
         termination = "Loss " + " ".join(winner_check[2:])
     return termination
+
+

@@ -137,6 +137,7 @@ def get_user_data(username=parameters.username,
                 eval_diff = function_move.eval_diff(move_num, eval_bm, eval_ml)
                 move_accuracy = function_move.move_acc(eval_diff)
                 move_type = function_move.move_type(move_accuracy)
+                # add time spent per move by colour + user time
 
                 # Append data to respective lists
                 gm_mv_num.append(move_num)
@@ -156,7 +157,6 @@ def get_user_data(username=parameters.username,
                                    "Date": game_datetime,
                                    "Game_number": game_num,
                                    "edepth": edepth,
-                                   "Game_date": game_date,
                                    "Move_number": move_num,
                                    "Move": str_ml,
                                    "Best_move": str_bm,
@@ -167,10 +167,8 @@ def get_user_data(username=parameters.username,
                                    "Move_type": move_type,
                                    }, index=[0])
                 df.to_csv(file_m_data, mode='a', header=False, index=False)
-
-            total_moves = math.ceil(move_num/2)
-
             # Game calculations
+            total_moves = math.ceil(move_num/2)
             w_gm_acc = function_game.w_accuracy(gm_mv_ac)
             b_gm_acc = function_game.b_accuracy(gm_mv_ac)
             w_best, b_best = function_move.sum_best_mv(move_type_list)
@@ -190,7 +188,6 @@ def get_user_data(username=parameters.username,
                  "Date": game_datetime,
                  "Game_number": game_num,
                  "Engine_depth": edepth,
-                 "Game_date": game_date,
                  "Game_type": chess_game_time_control,
                  "White_player": white,
                  "Black_player": black,
@@ -238,38 +235,11 @@ def get_user_data(username=parameters.username,
             pass
 
     game_time_list = []
-
     # Add column headers for the csv files.
-    #   Game data
-    game_data = pd.read_csv(file_g_data, header=None)
-    game_header_list = ["Username", "Date", "Game_number", "Engine_depth",
-                        "Game_date", "Game_type", "White_player",
-                        "Black_player", "White_rating", "Black_rating",
-                        "User_colour", "User_rating", "opponent_rating",
-                        "User_winner", "Opening_name",
-                        "Opening_class", "Termination", "Number_of_moves",
-                        "Accuracy", "Opening_accuracy", "Mid_accuracy",
-                        "End_accuracy", "No_best", "No_great", "No_good",
-                        "No_ok", "No_inaccuracy", "No_mistake",
-                        "No_blunder", "Improvement"]
-    if "Username" in game_data.iloc[0, 0]:
-        game_data.to_csv(file_g_data, header=False, index=False)
-    else:
-        game_data.to_csv(file_g_data, header=game_header_list, index=False)
-    #   Move data
-    move_data = pd.read_csv(file_m_data, header=None)
-    move_header_list = ["Username", "Date", "Game_number", "edepth",
-                        "Game_date", "Move_number", "Move",
-                        "Best_move", "Move_eval", "Best_move_eval",
-                        "Move_eval_diff", "Move accuracy", "Move_type"]
-    if "Username" in move_data.iloc[0, 0]:
-        move_data.to_csv(file_m_data, header=False, index=False)
-    else:
-        move_data.to_csv(file_m_data, header=move_header_list, index=False)
-
-    # Complete statement
-    print(f"\nUser: {username} data extract and analysis complete")
+    function_file.column_headers(file_g_data, file_m_data)
+    print("\n Finished analysing user data. ")
 
 
 if __name__ == "__main__":
+    # analysis = Analyse(username='aidan', engine_depth=10)
     get_user_data()
