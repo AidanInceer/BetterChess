@@ -115,8 +115,6 @@ def get_user_data(username=parameters.username,
                 user_winner = "Loss"
             else:
                 user_winner = "Draw"
-                
-
             # Initialises game output lists
             gm_best_mv = []
             gm_mv_num = []
@@ -131,43 +129,22 @@ def get_user_data(username=parameters.username,
             # calculates move by move output data
             logger.info(f"Game info | {game_datetime} |{game_num}")
             for move in chess_game.mainline_moves():
-                # if move % 2 == 0:
-                # timestring = chess.pgn.GameNode.clock()
-                # Determine best move and calculation
-                best_move = engine.play(board,
-                                        chess.engine.Limit(depth=edepth),
-                                        game=object())
-                board.push_san(str(best_move.move))
-                eval_bm_init = engine.analyse(board,
-                                              chess.engine.Limit(depth=edepth),
-                                              game=object())
-                eval_bm = function_move.move_eval(eval_bm_init)
-
-                # Reset board
-                board.pop()
-
-                # Determine mainline move & calculation
-                str_move = str(move)
-                board.push_san(str_move)
-                eval_ml_init = engine.analyse(board,
-                                              chess.engine.Limit(depth=edepth),
-                                              game=object())
-                eval_ml = function_move.move_eval(eval_ml_init)
-
-                # Eval diff, move accuracy and type calculations
-                mv_eval_diff = function_move.eval_diff(move_num,
-                                                       eval_bm,
-                                                       eval_ml)
-                move_accuracy = function_move.move_acc(mv_eval_diff)
+                # Move calculations
+                str_bm, eval_bm = function_move.best_move(board, engine,
+                                                          edepth)
+                str_ml, eval_ml = function_move.mainline_move(board, move,
+                                                              engine, edepth)
+                eval_diff = function_move.eval_diff(move_num, eval_bm, eval_ml)
+                move_accuracy = function_move.move_acc(eval_diff)
                 move_type = function_move.move_type(move_accuracy)
 
                 # Append data to respective lists
                 gm_mv_num.append(move_num)
-                gm_mv.append(str_move)
-                gm_best_mv.append(best_move.move)
+                gm_mv.append(str_ml)
+                gm_best_mv.append(str_bm)
                 best_move_eval.append(eval_bm)
                 mainline_eval.append(eval_ml)
-                move_eval_diff.append(mv_eval_diff)
+                move_eval_diff.append(eval_diff)
                 gm_mv_ac.append(move_accuracy)
                 move_type_list.append(move_type)
 
@@ -181,11 +158,11 @@ def get_user_data(username=parameters.username,
                                    "edepth": edepth,
                                    "Game_date": game_date,
                                    "Move_number": move_num,
-                                   "Move": str_move,
-                                   "Best_move": best_move.move,
+                                   "Move": str_ml,
+                                   "Best_move": str_bm,
                                    "Move_eval": eval_ml,
                                    "Best_move_eval": eval_bm,
-                                   "Move_eval_diff": mv_eval_diff,
+                                   "Move_eval_diff": eval_diff,
                                    "Move accuracy": move_accuracy,
                                    "Move_type": move_type,
                                    }, index=[0])

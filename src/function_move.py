@@ -1,4 +1,31 @@
 import math
+import chess
+import chess.engine
+import chess.pgn
+
+
+def best_move(board, engine, edepth):
+    best_move = engine.play(board,
+                            chess.engine.Limit(depth=edepth),
+                            game=object())
+    str_bm = str(best_move.move)
+    board.push_san(str_bm)
+    eval_bm_init = engine.analyse(board,
+                                  chess.engine.Limit(depth=edepth),
+                                  game=object())
+    eval_bm = move_eval(eval_bm_init)
+    board.pop()
+    return str_bm, eval_bm
+
+
+def mainline_move(board, move, engine, edepth):
+    str_ml = str(move)
+    board.push_san(str_ml)
+    eval_ml_init = engine.analyse(board,
+                                  chess.engine.Limit(depth=edepth),
+                                  game=object())
+    eval_ml = move_eval(eval_ml_init)
+    return str_ml, eval_ml
 
 
 def move_eval(eval_move_init):
