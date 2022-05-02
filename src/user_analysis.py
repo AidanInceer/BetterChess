@@ -115,6 +115,7 @@ def get_user_data(username=parameters.username,
                 user_winner = "Loss"
             else:
                 user_winner = "Draw"
+                
 
             # Initialises game output lists
             gm_best_mv = []
@@ -130,6 +131,8 @@ def get_user_data(username=parameters.username,
             # calculates move by move output data
             logger.info(f"Game info | {game_datetime} |{game_num}")
             for move in chess_game.mainline_moves():
+                # if move % 2 == 0:
+                # timestring = chess.pgn.GameNode.clock()
                 # Determine best move and calculation
                 best_move = engine.play(board,
                                         chess.engine.Limit(depth=edepth),
