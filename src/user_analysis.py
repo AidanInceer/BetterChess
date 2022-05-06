@@ -1,3 +1,4 @@
+
 import pandas as pd
 import time
 import math
@@ -12,8 +13,8 @@ import function_game
 import function_move
 import function_vis
 import extract
-import parameters
 from datetime import datetime
+import parameters
 
 
 def get_user_data(username=parameters.username,
@@ -153,20 +154,20 @@ def get_user_data(username=parameters.username,
                 move_num += 1
 
                 # Move data export
-                df = pd.DataFrame({"Username": username,
-                                   "Date": game_datetime,
-                                   "Game_number": game_num,
-                                   "edepth": edepth,
-                                   "Move_number": move_num,
-                                   "Move": str_ml,
-                                   "Best_move": str_bm,
-                                   "Move_eval": eval_ml,
-                                   "Best_move_eval": eval_bm,
-                                   "Move_eval_diff": eval_diff,
-                                   "Move accuracy": move_accuracy,
-                                   "Move_type": move_type,
-                                   }, index=[0])
-                df.to_csv(file_m_data, mode='a', header=False, index=False)
+                move_df = pd.DataFrame({"Username": username,
+                                        "Date": game_datetime,
+                                        "Game_number": game_num,
+                                        "edepth": edepth,
+                                        "Move_number": move_num,
+                                        "Move": str_ml,
+                                        "Best_move": str_bm,
+                                        "Move_eval": eval_ml,
+                                        "Best_move_eval": eval_bm,
+                                        "Move_eval_diff": eval_diff,
+                                        "Move accuracy": move_accuracy,
+                                        "Move_type": move_type,
+                                        }, index=[0])
+                move_df.to_csv(file_m_data, mode='a', header=False, index=False)
             # Game calculations
             total_moves = math.ceil(move_num/2)
             w_gm_acc = function_game.w_accuracy(gm_mv_ac)
@@ -183,7 +184,7 @@ def get_user_data(username=parameters.username,
             impve_b = function_game.game_section_improvement_black(ob, mb, eb)
 
             # Game data export
-            df2 = pd.DataFrame(
+            game_df = pd.DataFrame(
                 {"Username": username,
                  "Date": game_datetime,
                  "Game_number": game_num,
@@ -214,7 +215,7 @@ def get_user_data(username=parameters.username,
                  "No_blunder": w_blndr if username == white else b_blndr,
                  "Improvement": impve_w if username == white else impve_b,
                  }, index=[0])
-            df2.to_csv(file_g_data, mode='a', header=False, index=False)
+            game_df.to_csv(file_g_data, mode='a', header=False, index=False)
 
             # Reset lists.
             gm_best_mv = []
@@ -241,5 +242,4 @@ def get_user_data(username=parameters.username,
 
 
 if __name__ == "__main__":
-    # analysis = Analyse(username='aidan', engine_depth=10)
     get_user_data()

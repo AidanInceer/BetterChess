@@ -1,10 +1,10 @@
 import logging
 import pandas as pd
 import os
-import parameters
 import data_lists
 from os.path import exists
 from datetime import datetime
+import parameters
 
 
 dirn = os.path.dirname(__file__)
