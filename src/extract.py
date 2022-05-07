@@ -1,10 +1,9 @@
 from chessdotcom import get_player_game_archives
 import requests
 import pandas as pd
-import os
 
 
-def data_extract(username):
+def data_extract(username, filepath):
     '''Extracts user data for a given username.
 
     Args:
@@ -12,9 +11,6 @@ def data_extract(username):
     Returns:
         outputs a csv file of the users pgn game data.
     '''
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname,
-                            rf"../data/pgn_data/{username}_pgn_data.csv")
     urls = get_player_game_archives(username).json
     all_games = []
     for url in urls["archives"]:
@@ -25,4 +21,4 @@ def data_extract(username):
 
     game_dict = {"game_data": all_games}
     df = pd.DataFrame(game_dict, columns=["game_data"])
-    df.to_csv(filename, index=False)
+    df.to_csv(filepath, index=False)

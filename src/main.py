@@ -1,13 +1,14 @@
-from chess_class_test import UserAnalysis
+from chess_class_test import ChessUser
 from chess_class_test import InputHandler
 
 
 if __name__ == "__main__":
     input_handler = InputHandler.get_inputs()
-    run = UserAnalysis(
+    user = ChessUser(
         input_handler["username"],
         input_handler["edepth"],
         input_handler["start_date"]
     )
-    print("test1")
-    run.analyse()
+    user.create_logger()
+    user.create_engine()
+    user.run_analysis()
