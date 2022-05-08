@@ -2,6 +2,7 @@ import chess
 import chess.engine
 import chess.pgn
 import extract
+import math
 import logging
 import os
 import pandas as pd
@@ -41,7 +42,7 @@ class ChessUser:
             print(game_num)
             with open(self.file_paths.temp, "w") as temp_pgn:
                 temp_pgn.write(chess_game)
-            game = ChessGame(self.username, self.edepth, self.start_date, self.engine)
+            game = ChessGame(self.username, self.edepth, self.start_date, self.engine, game_num)
             game.analyse_game()
 
     def export_analysis(self):
@@ -49,10 +50,26 @@ class ChessUser:
 
 
 class ChessGame(ChessUser):
-    def __init__(self, username, edepth, start_date, engine):
+    def __init__(self, username, edepth, start_date, engine, game_num):
         super().__init__(username, edepth, start_date)
-        self.file_paths = FileHandler(username=self.username)
         self.engine = engine
+        self.game_num = game_num
+        self.init_game()
+
+    def analyse_game(self):
+        self.init_game()
+        self.init_board()
+        self.init_move_lists()
+        for move_num, move in enumerate(self.chess_game.mainline_moves()):
+            chess_move = ChessMove(
+                self.username,
+                self.edepth,
+                self.start_date,
+                self.engine,
+                self.game_num,
+                self.board,
+                move_num)
+            chess_move.analyse_move(move)
 
     def init_game(self):
         self.chess_game_pgn = open(self.file_paths.temp)
@@ -63,34 +80,37 @@ class ChessGame(ChessUser):
         self.board = self.chess_game.board()
         return self.board
 
-    def analyse_game(self):
-        self.init_game()
-        self.init_board()
-        for move_num, move in enumerate(self.chess_game.mainline_moves()):
-            chess_move = ChessMove(
-                self.username,
-                self.edepth,
-                self.start_date,
-                self.engine,
-                self.board,
-                move_num)
-            chess_move.analyse_move(move)
+    def init_move_lists(self):
+        self.gm_best_mv = []
+        self.gm_mv_num = []
+        self.gm_mv = []
+        self.mainline_eval = []
+        self.best_move_eval = []
+        self.move_eval_diff = []
+        self.gm_mv_ac = []
+        self.l_movetype = []
 
 
 class ChessMove(ChessGame):
-    def __init__(self, username, edepth, start_date, engine, board, move_num):
-        ChessGame.__init__(self, username, edepth, start_date, engine)
+    def __init__(self, username, edepth, start_date, engine, game_num, board, move_num):
+        ChessGame.__init__(self, username, edepth, start_date, engine, game_num)
         self.board = board
         self.engine = engine
         self.move_num = move_num
 
     def analyse_move(self, move):
+        """Analyses a users move"""
         self.str_bm, self.eval_bm = self.best_move()
         self.str_ml, self.eval_ml = self.mainline_move(move)
-        self.evaldiff = self.eval_diff(self.move_num, self.eval_bm, self.eval_ml)
-        
+        self.evaldiff = self.eval_delta(
+            self.move_num, self.eval_bm, self.eval_ml
+            )
+        self.move_acc = self.move_accuracy(self.evaldiff)
+        self.move_type = self.assign_move_type(self.move_acc)
+        self.export_move_data()
 
     def mainline_move(self, move):
+        """ """
         self.str_ml = str(move)
         self.board.push_san(self.str_ml)
         eval_ml_init = self.engine.analyse(
@@ -102,6 +122,7 @@ class ChessMove(ChessGame):
         return self.str_ml, self.eval_ml
 
     def best_move(self):
+        """ """
         best_move = self.engine.play(
             self.board,
             chess.engine.Limit(depth=self.edepth),
@@ -128,7 +149,7 @@ class ChessMove(ChessGame):
         get_eval = int(get_eval)
         return get_eval
 
-    def eval_diff(self, move_num, eval_bm, eval_ml):
+    def eval_delta(self, move_num, eval_bm, eval_ml):
         '''Returns the eval difference between the best and mainline move.'''
         if move_num % 2 == 0:
             eval_diff = round(abs(eval_bm - eval_ml), 3)
@@ -136,6 +157,51 @@ class ChessMove(ChessGame):
         else:
             eval_diff = round(abs(eval_ml - eval_bm), 3)
             return eval_diff
+
+    def move_accuracy(self, eval_diff):
+        '''Returns the move accuracy for a given move.'''
+        m, v = 0, 1.5
+        move_acc = round(math.exp(-0.00003*((eval_diff-m)/v)**2)*100, 1)
+        return move_acc
+
+    def assign_move_type(self, move_acc):
+        '''Returns the move type for a given move.'''
+        # best = 2, excellent = 1, good = 0,
+        # inacc = -1, mistake = -2, blunder = -3, missed win = -4
+        if move_acc == 100:
+            move_type = 2
+        elif 99.5 <= move_acc < 100:
+            move_type = 1
+        elif 87.5 <= move_acc < 99.5:
+            move_type = 0
+        elif 58.6 <= move_acc < 87.5:
+            move_type = -1
+        elif 30 <= move_acc < 58.6:
+            move_type = -2
+        elif 2 <= move_acc < 30:
+            move_type = -3
+        else:
+            move_type = -4
+        return move_type
+
+    def export_move_data(self):
+        move_df = pd.DataFrame({
+            "Username": self.username,
+            "edepth": self.edepth,
+            "Game_number": self.game_num,
+            "Move_number": self.move_num,
+            "Move": self.str_ml,
+            "Move_eval": self.eval_ml,
+            "Best_move": self.str_bm,
+            "Best_move_eval": self.eval_bm,
+            "Move_eval_diff": self.evaldiff,
+            "Move accuracy": self.move_acc,
+            "Move_type": self.move_type,
+            }, index=[0])
+        move_df.to_csv(
+            self.file_paths.move_data, mode='a',
+            header=False, index=False
+            )
 
 
 class InputHandler:

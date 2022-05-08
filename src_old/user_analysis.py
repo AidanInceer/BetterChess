@@ -138,7 +138,6 @@ def get_user_data(username=parameters.username,
                 eval_diff = function_move.eval_diff(move_num, eval_bm, eval_ml)
                 move_accuracy = function_move.move_acc(eval_diff)
                 move_type = function_move.move_type(move_accuracy)
-                # add time spent per move by colour + user time
 
                 # Append data to respective lists
                 gm_mv_num.append(move_num)
