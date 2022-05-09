@@ -8,6 +8,7 @@ def opening_clean(url):
 
 
 def termination_clean(termination_raw, username):
+    """Cleans the termination statement to be based around the user."""
     winner_check = termination_raw.split(" ")
     draw_check = " ".join(winner_check[0:2])
     if winner_check[0] == username:

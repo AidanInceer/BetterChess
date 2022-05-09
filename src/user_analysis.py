@@ -1,12 +1,12 @@
 import chess
 import chess.engine
 import chess.pgn
-import extract
 import math
 import logging
 import os
 import pandas as pd
 from datetime import datetime
+from extract import data_extract
 
 
 class ChessUser:
@@ -16,23 +16,21 @@ class ChessUser:
         self.start_date = start_date
         self.file_paths = FileHandler(username=self.username)
 
-    def create_logger(self):
+    def create_logger(self, filepath, name):
         logging.basicConfig(
-            filename=self.file_paths.loggerfile,
+            filename=filepath,
             format='[%(levelname)s %(module)s] %(message)s',
-            level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S'
-            )
-        self.logger = logging.getLogger(__name__)
+            level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+        self.logger = logging.getLogger(name)
         return self.logger
 
     def create_engine(self):
         self.engine = chess.engine.SimpleEngine.popen_uci(
-            self.file_paths.stockfish
-            )
+            self.file_paths.stockfish)
         return self.engine
 
     def run_analysis(self):
-        extract.data_extract(self.username, self.file_paths.pgn_data)
+        data_extract(self.username, self.file_paths.pgn_data, self.file_paths.extractlogfile)
         self.analyse_user()
         self.export_analysis()
 
@@ -99,48 +97,44 @@ class ChessMove(ChessGame):
         self.move_num = move_num
 
     def analyse_move(self, move):
-        """Analyses a users move"""
+        """Analyses a users move and exports results to move_data.csv"""
         self.str_bm, self.eval_bm = self.best_move()
         self.str_ml, self.eval_ml = self.mainline_move(move)
         self.evaldiff = self.eval_delta(
-            self.move_num, self.eval_bm, self.eval_ml
-            )
+            self.move_num, self.eval_bm, self.eval_ml)
         self.move_acc = self.move_accuracy(self.evaldiff)
         self.move_type = self.assign_move_type(self.move_acc)
         self.export_move_data()
 
     def mainline_move(self, move):
-        """ """
+        """Returns the users move and its evaluation."""
         self.str_ml = str(move)
         self.board.push_san(self.str_ml)
         eval_ml_init = self.engine.analyse(
             self.board,
             chess.engine.Limit(depth=self.edepth),
-            game=object()
-            )
+            game=object())
         self.eval_ml = self.move_eval(eval_ml_init)
         return self.str_ml, self.eval_ml
 
     def best_move(self):
-        """ """
+        """Returns the best move from the engine and its evaluation."""
         best_move = self.engine.play(
             self.board,
             chess.engine.Limit(depth=self.edepth),
-            game=object()
-            )
+            game=object())
         self.str_bm = str(best_move.move)
         self.board.push_san(self.str_bm)
         eval_bm_init = self.engine.analyse(
             self.board,
             chess.engine.Limit(depth=self.edepth),
-            game=object()
-            )
+            game=object())
         self.eval_bm = self.move_eval(eval_bm_init)
         self.board.pop()
         return self.str_bm, self.eval_bm
 
     def move_eval(self, move):
-        '''Returns the evalaution if the best move were played.'''
+        '''Returns the evalaution of the move played.'''
         get_eval = str(move['score'].white())
         if "#" in get_eval:
             get_eval = get_eval[1:]
@@ -200,8 +194,7 @@ class ChessMove(ChessGame):
             }, index=[0])
         move_df.to_csv(
             self.file_paths.move_data, mode='a',
-            header=False, index=False
-            )
+            header=False, index=False)
 
 
 class InputHandler:
@@ -213,23 +206,26 @@ class InputHandler:
         i_start_m = input("Enter the start month for analysis (e.g. 01-12): ")
         i_start_datetime = (i_start_y + "-" + i_start_m + "-01" + " 00:00:00")
         start_date = datetime.strptime(i_start_datetime, "%Y-%m-%d %H:%M:%S")
-        return {"username": username, "edepth": edepth, "start_date": start_date}
+        return {"username": username,
+                "edepth": edepth,
+                "start_date": start_date}
 
 
 class FileHandler:
     def __init__(self, username):
         self.username = username
         self.dir = os.path.dirname(__file__)
-        stockfish_path = r"../lib/stockfish_14.1/stockfish_14.1_win_x64_avx2.exe"
+        stockfish_path = r"../lib/stkfsh_14.1/stockfish_14.1_win_x64_avx2.exe"
         self.stockfish = os.path.join(self.dir, stockfish_path)
-        self.loggerfile = os.path.join(
+        self.gamelogfile = os.path.join(
             self.dir,
-            rf"../logs/{self.username}_game_log.txt"
-            )
+            rf"../logs/user_games/{self.username}_game.log")
+        self.extractlogfile = os.path.join(
+            self.dir,
+            rf"../logs/user_extract/{self.username}_url_date.log")
         self.temp = os.path.join(self.dir, r"../data/temp.pgn")
         self.move_data = os.path.join(self.dir, r"../data/move_data.csv")
         self.game_data = os.path.join(self.dir, r"../data/game_data.csv")
         self.pgn_data = os.path.join(
             self.dir,
-            rf"../data/pgn_data/{self.username}_pgn_data.csv"
-            )
+            rf"../data/pgn_data/{self.username}_pgn_data.csv")
