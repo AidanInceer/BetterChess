@@ -2,11 +2,11 @@ import chess
 import chess.engine
 import chess.pgn
 import math
-import logging
 import os
 import pandas as pd
 from datetime import datetime
 from extract import data_extract
+from progress import simple_progress_bar
 
 
 class ChessUser:
@@ -36,8 +36,10 @@ class ChessUser:
 
     def analyse_user(self):
         all_games_data = pd.read_csv(self.file_paths.pgn_data, delimiter="|", names=["url_date", "game_data"])
+        tot_games = len(all_games_data["game_data"])
+        print("Analysing users data: ")
         for game_num, chess_game in enumerate(all_games_data["game_data"]):
-            print(game_num)
+            simple_progress_bar(game_num, tot_games, 1)
             with open(self.file_paths.temp, "w") as temp_pgn:
                 temp_pgn.write(str(chess_game.replace(" ; ", "\n")))
             game = ChessGame(self.username, self.edepth, self.start_date, self.engine, game_num)

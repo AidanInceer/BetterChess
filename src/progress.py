@@ -1,10 +1,14 @@
 
 
-def simple_progress_bar(num, total):
+def simple_progress_bar(num, total, type):
+    if type == 0:
+        x = "of User's data extracted"
+    elif type == 1:
+        x = "of User's games analysed"
     """Creates a progress bar and estimates time to completion."""
     percent = 100 * ((num + 1) / float(total))
     bar = "❚" * int(percent/2.5) + "-" * (40-int(percent/2.5))
-    print(f"\r| {bar}| {percent:.2f}% of User's data extracted", end="\r")
+    print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")
 
 
 def progress_bar(game_num, total_games, start_time, end_time, time_list):

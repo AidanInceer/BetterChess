@@ -25,9 +25,10 @@ def data_extract(username: str, filepath: str, logfilepath: str) -> None:
     url_date_list = []
     games_list = []
     tot_urls = len(urls["archives"])
+    print("Extracting users data: ")
     for url_num, url in enumerate(urls["archives"]):
         # print(url_num) -> to add progress bar for data extract
-        simple_progress_bar(url_num, tot_urls)
+        simple_progress_bar(url_num, tot_urls, 0)
         in_curr = in_curr_month(url)
         in_log = url_in_log(url, logfilepath)
         url_date = get_url_date(url)
