@@ -4,6 +4,8 @@ import requests
 import pandas as pd
 from chessdotcom import get_player_game_archives
 from datetime import datetime
+from logging import Logger
+from progress import simple_progress_bar
 
 
 def data_extract(username: str, filepath: str, logfilepath: str) -> None:
@@ -15,39 +17,90 @@ def data_extract(username: str, filepath: str, logfilepath: str) -> None:
     Returns:
         outputs a csv file of the users pgn game data.
     '''
+    init_dt = "2000-01-01 00:00:00"
+    init_extlogger = datetime.strptime(init_dt, '%Y-%m-%d %H:%M:%S')
+    extlogger = create_extlogger(logfilepath, "extlogger")
+    extlogger.info(f"{init_extlogger}")
     urls = get_player_game_archives(username).json
-    all_games = []
-    for url in urls["archives"]:
-        extlogger = create_extlogger(logfilepath, "extlogger")
-        
-        # curr_dtc = is_curr_month(url)
-        # # in_log = is_date_in_logfile()
-        # extract_filter(curr_dtc, in_log)
+    url_date_list = []
+    games_list = []
+    tot_urls = len(urls["archives"])
+    for url_num, url in enumerate(urls["archives"]):
+        # print(url_num) -> to add progress bar for data extract
+        simple_progress_bar(url_num, tot_urls)
+        in_curr = in_curr_month(url)
+        in_log = url_in_log(url, logfilepath)
+        url_date = get_url_date(url)
+        extlogger.info(f"{url_date}")
+        url_games_list = extract_filter(
+            in_log, in_curr, url, filepath, logfilepath)
+        try:
+            for game in url_games_list:
+                url_date_list.append(url_date)
+                games_list.append(game)
+        except TypeError:
+            continue
+    print("\n")
+    game_dict = {"url_date": url_date_list,
+                 "game_data": games_list}
+    df = pd.DataFrame(game_dict)
+    df.to_csv(filepath, mode="a", index=False, sep="|", header=False)
 
-        data = requests.get(url).json()
-        for game_pgn in data["games"]:
-            chess_game_string = str(game_pgn["pgn"])
-            all_games.append(chess_game_string)
 
-    game_dict = {"game_data": all_games}
-    df = pd.DataFrame(game_dict, columns=["game_data"])
-    df.to_csv(filepath, index=False)
-
-
-def collect_games(urls):
-    pass
-
-
-def extract_filter():
-    pass
+def extract_filter(in_log: bool, in_curr: bool,
+                   url: str, filepath: str, logfilepath: str) -> list:
+    empty_list = []
+    if not in_log:
+        return collect_game_data(url)
+    elif in_log and not in_curr:
+        return empty_list
+    elif in_log and in_curr:
+        filter_pgncsv(filepath, logfilepath)
+        return empty_list
 
 
-def is_date_in_logfile(url):
+def filter_pgncsv(filepath, logfilepath):
+    """Removes games of the current month in the csv
+     and then reruns the extract for that month."""
+    # Opens logging file
+    with open(logfilepath, "r") as log_file:
+        lines = log_file.readlines()
+    llog = lines[-1]
+    llog_dt = llog.split("]")[1].strip()
+    col_names = ["url_date", "game_data"]
+    unclean_df = pd.read_csv(filepath, names=col_names, delimiter="|", header=None)
+    df_filter = unclean_df["url_date"] != llog_dt
+    clean_df = unclean_df[df_filter]
+    clean_df.to_csv(filepath, mode="w", sep="|",
+                    index=False, header=None)
+
+
+def collect_game_data(url: str) -> list:
+    data = requests.get(url).json()
+    url_games_list = []
+    for game_pgn in data["games"]:
+        chess_game_string = str(game_pgn["pgn"]).replace("\n", " ; ")
+        url_games_list.append(chess_game_string)
+    return url_games_list
+
+
+def url_in_log(url: str, logfilepath: str) -> bool:
     url_date = get_url_date(url)
-    pass
+    with open(logfilepath, "r") as log_file:
+        lines = log_file.readlines()
+    url_date_list = []
+    for line in lines:
+        log_url_date = datetime.strptime(
+            line.split("]")[1].strip(),
+            '%Y-%m-%d %H:%M:%S')
+        url_date_list.append(log_url_date)
+    if url_date in url_date_list:
+        return True
+    else:
+        return False
 
 
-def is_curr_month(url):
+def in_curr_month(url: str):
     """Checks to see if the extracted month equals the current month"""
     url_date = get_url_date(url)
     curr_mth = get_curr_mth()
@@ -65,7 +118,7 @@ def get_curr_mth():
     return curr_mth
 
 
-def get_url_date(url):
+def get_url_date(url: str) -> datetime:
     """Returns the date of the url as datatime."""
     x = url.split("/")[7:]
     yr, mth = x[0], x[1]
@@ -74,80 +127,10 @@ def get_url_date(url):
     return url_date
 
 
-def filter_pgn():
-    """Removes games of the current month in the csv
-     and then reruns the extract for that month."""
-
-
-def create_extlogger(extfilepath, name):
+def create_extlogger(extfilepath: str, name: str) -> Logger:
     logging.basicConfig(
         filename=extfilepath,
         format='[%(levelname)s %(module)s] %(message)s',
         level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
     extlogger = logging.getLogger(name)
     return extlogger
-
-
-# def rerun_filter():
-#     '''Collects the date of most recent game played for a given user'''
-#     game_number = 0
-#     logging.basicConfig(filename=file_logger,
-#                         format='[%(levelname)s %(module)s] %(message)s',
-#                         level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-#     logger = logging.getLogger(__name__)
-#     # Opens log file
-#     with open(file_logger, "r") as log_file:
-#         lines = log_file.readlines()
-#     # If log file empty set inital date.
-#     if not lines:
-#         with open(file_logger, "w") as _:
-#             init_dt = datetime.strptime("2000-01-01 00:00:00",
-#                                         '%Y-%m-%d %H:%M:%S')
-#             logger.info(f"Game info | {init_dt} | {game_number}")
-#     # gets .
-#     else:
-#         llog = lines[-1]
-#         llog_date_str = llog.split("|")[1].strip()
-#         llog_date = datetime.strptime(llog_date_str, '%Y-%m-%d %H:%M:%S')
-#         return llog_date
-
-
-# def clean_rerun_files():
-#     '''Removes last unfinished games moves from the move_data csv.'''
-#     # Check to see whether move data file exists
-#     file_exists = exists(file_move_data)
-#     if file_exists:
-#         pass
-#     else:
-#         with open(file_move_data, "w") as _:
-#             pass
-#     # Opens logging file
-#     with open(file_logger, "r") as log_file:
-#         lines = log_file.readlines()
-#     # Cleans csv file if not empty
-#     if not lines:
-#         pass
-#     else:
-#         if file_exists:
-#             llog = lines[-1]
-#             llog_gn = int(llog.split("|")[2].strip())
-#             col_names = ["Username",
-#                          "Date",
-#                          "Game_number",
-#                          "Engine_Depth",
-#                          "Game_date",
-#                          "Move_number",
-#                          "Move",
-#                          "Best_move",
-#                          "Move_eval",
-#                          "Best_move_eval",
-#                          "Move_eval_diff",
-#                          "Move accuracy",
-#                          "Move_type"]
-#             unclean_df = pd.read_csv(file_move_data, names=col_names)
-#             df_filter = unclean_df["Game_number"] != llog_gn
-#             clean_df = unclean_df[df_filter]
-#             clean_df.to_csv(file_move_data, mode="w",
-#                             index=False, header=False)
-#         else:
-#             pass

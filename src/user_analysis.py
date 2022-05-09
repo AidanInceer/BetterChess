@@ -16,13 +16,13 @@ class ChessUser:
         self.start_date = start_date
         self.file_paths = FileHandler(username=self.username)
 
-    def create_logger(self, filepath, name):
-        logging.basicConfig(
-            filename=filepath,
-            format='[%(levelname)s %(module)s] %(message)s',
-            level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-        self.logger = logging.getLogger(name)
-        return self.logger
+    # def create_logger(self, filepath, name):
+    #     logging.basicConfig(
+    #         filename=filepath,
+    #         format='[%(levelname)s %(module)s] %(message)s',
+    #         level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+    #     self.logger = logging.getLogger(name)
+    #     return self.logger
 
     def create_engine(self):
         self.engine = chess.engine.SimpleEngine.popen_uci(
@@ -35,11 +35,11 @@ class ChessUser:
         self.export_analysis()
 
     def analyse_user(self):
-        all_games_data = pd.read_csv(self.file_paths.pgn_data)
+        all_games_data = pd.read_csv(self.file_paths.pgn_data, delimiter="|", names=["url_date", "game_data"])
         for game_num, chess_game in enumerate(all_games_data["game_data"]):
             print(game_num)
             with open(self.file_paths.temp, "w") as temp_pgn:
-                temp_pgn.write(chess_game)
+                temp_pgn.write(str(chess_game.replace(" ; ", "\n")))
             game = ChessGame(self.username, self.edepth, self.start_date, self.engine, game_num)
             game.analyse_game()
 
@@ -72,6 +72,7 @@ class ChessGame(ChessUser):
     def init_game(self):
         self.chess_game_pgn = open(self.file_paths.temp)
         self.chess_game = chess.pgn.read_game(self.chess_game_pgn)
+        
         return self.chess_game
 
     def init_board(self):
@@ -201,7 +202,7 @@ class InputHandler:
     @staticmethod
     def get_inputs():
         username = input("Enter your username: ")
-        edepth = input("Enter there engine depth: ")
+        edepth = input("Enter the engine depth: ")
         i_start_y = input("Enter the start year for analysis (e.g. 2020): ")
         i_start_m = input("Enter the start month for analysis (e.g. 01-12): ")
         i_start_datetime = (i_start_y + "-" + i_start_m + "-01" + " 00:00:00")
