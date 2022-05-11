@@ -1,11 +1,11 @@
 """Extracts the data of a given chess.com user."""
-import logging
-import requests
 import pandas as pd
+import requests
+import logging
 from chessdotcom import get_player_game_archives
+from progress import simple_progress_bar
 from datetime import datetime
 from logging import Logger
-from progress import simple_progress_bar
 
 
 def data_extract(username: str, filepath: str, logfilepath: str) -> None:
