@@ -11,5 +11,6 @@ if __name__ == "__main__":
         input_handler["edepth"],
         input_handler["start_date"])
     # user.create_logger(file_paths.gamelogfile, "user_games")
+    user.create_logger()
     user.create_engine()
     user.run_analysis()

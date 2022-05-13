@@ -1,14 +1,13 @@
 """Extracts the data of a given chess.com user."""
 import pandas as pd
 import requests
-import logging
 from chessdotcom import get_player_game_archives
 from progress import simple_progress_bar
 from datetime import datetime
 from logging import Logger
 
 
-def data_extract(username: str, filepath: str, logfilepath: str) -> None:
+def data_extract(username: str, filepath: str, logfilepath: str, logger: Logger) -> None:
     '''Extracts user data for a given username.
     Args:
         username: specified username input.
@@ -19,8 +18,7 @@ def data_extract(username: str, filepath: str, logfilepath: str) -> None:
     '''
     init_dt = "2000-01-01 00:00:00"
     init_extlogger = datetime.strptime(init_dt, '%Y-%m-%d %H:%M:%S')
-    extlogger = create_extlogger(logfilepath, "extlogger")
-    extlogger.info(f"{init_extlogger}")
+    logger.info(f"| {init_extlogger}")
     urls = get_player_game_archives(username).json
     url_date_list = []
     games_list = []
@@ -32,7 +30,7 @@ def data_extract(username: str, filepath: str, logfilepath: str) -> None:
         in_curr = in_curr_month(url)
         in_log = url_in_log(url, logfilepath)
         url_date = get_url_date(url)
-        extlogger.info(f"{url_date}")
+        logger.info(f"| {url_date}")
         url_games_list = extract_filter(
             in_log, in_curr, url, filepath, logfilepath)
         try:
@@ -67,7 +65,7 @@ def filter_pgncsv(filepath, logfilepath):
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
     llog = lines[-1]
-    llog_dt = llog.split("]")[1].strip()
+    llog_dt = llog.split("|")[1].strip()
     col_names = ["url_date", "game_data"]
     unclean_df = pd.read_csv(filepath, names=col_names, delimiter="|", header=None)
     df_filter = unclean_df["url_date"] != llog_dt
@@ -92,7 +90,7 @@ def url_in_log(url: str, logfilepath: str) -> bool:
     url_date_list = []
     for line in lines:
         log_url_date = datetime.strptime(
-            line.split("]")[1].strip(),
+            line.split("|")[1].strip(),
             '%Y-%m-%d %H:%M:%S')
         url_date_list.append(log_url_date)
     if url_date in url_date_list:
@@ -126,12 +124,3 @@ def get_url_date(url: str) -> datetime:
     url_date = datetime.strptime(
         f"{yr}-{mth}-01 00:00:00", '%Y-%m-%d %H:%M:%S')
     return url_date
-
-
-def create_extlogger(extfilepath: str, name: str) -> Logger:
-    logging.basicConfig(
-        filename=extfilepath,
-        format='[%(levelname)s %(module)s] %(message)s',
-        level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-    extlogger = logging.getLogger(name)
-    return extlogger

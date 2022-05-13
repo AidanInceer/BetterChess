@@ -3,10 +3,12 @@ import chess.engine
 import chess.pgn
 import math
 import os
+import logging
+import analysis_filter
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from extract import data_extract
+import extract
 from progress import simple_progress_bar
 
 
@@ -17,13 +19,13 @@ class ChessUser:
         self.start_date = start_date
         self.file_paths = FileHandler(username=self.username)
 
-    # def create_logger(self, filepath, name):
-    #     logging.basicConfig(
-    #         filename=filepath,
-    #         format='[%(levelname)s %(module)s] %(message)s',
-    #         level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
-    #     self.logger = logging.getLogger(name)
-    #     return self.logger
+    def create_logger(self):
+        logging.basicConfig(
+            filename=self.file_paths.userlogfile,
+            format='[%(levelname)s %(module)s] %(message)s',
+            level=logging.INFO, datefmt='%Y/%m/%d %I:%M:%S')
+        self.logger = logging.getLogger(__name__)
+        return self.logger
 
     def create_engine(self):
         self.engine = chess.engine.SimpleEngine.popen_uci(
@@ -31,10 +33,11 @@ class ChessUser:
         return self.engine
 
     def run_analysis(self):
-        data_extract(
+        extract.data_extract(
             self.username,
             self.file_paths.pgn_data,
-            self.file_paths.extractlogfile)
+            self.file_paths.userlogfile,
+            self.logger)
         self.analyse_user()
 
     def analyse_user(self):
@@ -43,20 +46,66 @@ class ChessUser:
             names=["url_date", "game_data"])
         tot_games = len(all_games_data["game_data"])
         print("Analysing users data: ")
+        analysis_filter.clean_movecsv(self.file_paths.move_data,
+                                      self.file_paths.userlogfile)
         for game_num, chess_game in enumerate(all_games_data["game_data"]):
             simple_progress_bar(game_num, tot_games, 1)
             with open(self.file_paths.temp, "w") as temp_pgn:
                 temp_pgn.write(str(chess_game.replace(" ; ", "\n")))
             game = ChessGame(self.username, self.edepth,
-                             self.start_date, self.engine, game_num)
+                             self.start_date, self.engine,
+                             game_num, self.logger)
             game.run_game_analysis()
 
 
 class ChessGame(ChessUser):
-    def __init__(self, username, edepth, start_date, engine, game_num):
+    def __init__(self, username, edepth, start_date, engine, game_num, logger):
         super().__init__(username, edepth, start_date)
         self.engine = engine
         self.game_num = game_num
+        self.logger = logger
+
+    def init_game_analysis(self):
+        self.init_game()
+        self.init_board()
+        self.init_game_lists()
+        game_headers = ChessGameHeaders(
+            self.username, self.edepth,
+            self.start_date, self.engine,
+            self.game_num, self.logger, self.chess_game)
+        self.headers = game_headers.collect_headers()
+        self.game_dt = game_headers.collect_headers()["Game_datetime"]
+        self.game_analysis_filter()
+
+    def run_game_analysis(self):
+        self.init_game_analysis()
+        if self.game_dt >= self.log_dt:
+            self.logger.info(f"| {self.game_dt} |{self.game_num}")
+            for move_num, move in enumerate(self.chess_game.mainline_moves()):
+                chess_move = ChessMove(
+                    self.username, self.edepth, self.start_date,
+                    self.engine, self.logger, self.game_num, self.board,
+                    move_num, self.game_dt, self.gm_mv_num,
+                    self.gm_mv, self.gm_best_mv, self.best_move_eval,
+                    self.mainline_eval, self.move_eval_diff,
+                    self.gm_mv_ac, self.move_type_list)
+                chess_move.analyse_move(move)
+            try:
+                self.total_moves = math.ceil(move_num/2)
+            except UnboundLocalError:
+                self.total_moves = 0
+            self.analyse_game()
+
+    def analyse_game(self):
+        self.sum_type_dict = self.sum_move_types()
+        self.user_game_data()
+        self.export_game_data()
+
+    def game_analysis_filter(self):
+        analysis_filter.init_game_logs(
+            self.file_paths.userlogfile,
+            self.logger)
+        self.log_dt = analysis_filter.llog_game(self.file_paths.userlogfile)
 
     def init_game(self):
         self.chess_game_pgn = open(self.file_paths.temp)
@@ -77,42 +126,11 @@ class ChessGame(ChessUser):
         self.gm_mv_ac = []
         self.move_type_list = []
 
-    def run_game_analysis(self):
-        self.init_game()
-        self.init_board()
-        self.init_game_lists()
-        game_headers = ChessGameHeaders(
-            self.username, self.edepth,
-            self.start_date, self.engine,
-            self.game_num, self.chess_game)
-        self.headers = game_headers.collect_headers()
-        self.game_datetime = game_headers.collect_headers()["Game_datetime"]
-        for move_num, move in enumerate(self.chess_game.mainline_moves()):
-            chess_move = ChessMove(
-                self.username, self.edepth, self.start_date,
-                self.engine, self.game_num, self.board,
-                move_num, self.game_datetime, self.gm_mv_num,
-                self.gm_mv, self.gm_best_mv, self.best_move_eval,
-                self.mainline_eval, self.move_eval_diff,
-                self.gm_mv_ac, self.move_type_list)
-            chess_move.analyse_move(move)
-        try:
-            self.total_moves = math.ceil(move_num/2)
-        except UnboundLocalError:
-            self.total_moves = 0
-
-        self.analyse_game()
-
-    def analyse_game(self):
-        self.sum_type_dict = self.sum_move_types()
-        self.user_game_data()
-        self.export_game_data()
-
     def export_game_data(self):
         "Exports the move date to a csv."
         game_df = pd.DataFrame({
             "Username": self.username,
-            "Date": self.game_datetime,
+            "Date": self.game_dt,
             "Engine_depth": self.edepth,
             "Game_number": self.game_num,
             "Game_type": self.headers["Time_control"],
@@ -139,7 +157,7 @@ class ChessGame(ChessUser):
             "No_inaccuracy": self.no_inac,
             "No_mistake": self.no_mist,
             "No_blunder": self.no_blun,
-            "No_missed_win":  self.no_misw,
+            "No_missed_win": self.no_misw,
             "Improvement": self.improve},
             index=[0])
         game_df.to_csv(
@@ -227,7 +245,7 @@ class ChessGame(ChessUser):
         if sep_len == 0:
             self.ow = 0
         else:
-            self.ow = round(sum(list_w) / (sep_len*3), 2) 
+            self.ow = round(sum(list_w) / (sep_len*3), 2)
         return self.ow
 
     def mid_w_acc(self):
@@ -305,12 +323,12 @@ class ChessGame(ChessUser):
 class ChessMove(ChessGame):
     """Chess move instance."""
     def __init__(self, username, edepth, start_date,
-                 engine, game_num, board, move_num,
+                 engine, logger, game_num, board, move_num,
                  game_datetime, gm_mv_num, gm_mv, gm_best_mv,
                  best_move_eval, mainline_eval, move_eval_diff,
                  gm_mv_ac, move_type_list):
         ChessGame.__init__(self, username, edepth,
-                           start_date, engine, game_num)
+                           start_date, engine, game_num, logger)
         self.board = board
         self.engine = engine
         self.move_num = move_num
@@ -440,9 +458,9 @@ class ChessMove(ChessGame):
 
 class ChessGameHeaders(ChessGame):
     def __init__(self, username, edepth, start_date,
-                 engine, game_num, chess_game):
+                 engine, game_num, logger, chess_game):
         ChessGame.__init__(self, username, edepth,
-                           start_date, engine, game_num)
+                           start_date, engine, game_num, logger)
         self.chess_game = chess_game
         self.engine = engine
 
@@ -598,12 +616,9 @@ class FileHandler:
         self.dir = os.path.dirname(__file__)
         stockfish_path = r"../lib/stkfsh_14.1/stockfish_14.1_win_x64_avx2.exe"
         self.stockfish = os.path.join(self.dir, stockfish_path)
-        self.gamelogfile = os.path.join(
+        self.userlogfile = os.path.join(
             self.dir,
-            rf"../logs/user_games/{self.username}_game.log")
-        self.extractlogfile = os.path.join(
-            self.dir,
-            rf"../logs/user_extract/{self.username}_url_date.log")
+            rf"../logs/{self.username}.log")
         self.temp = os.path.join(self.dir, r"../data/temp.pgn")
         self.move_data = os.path.join(self.dir, r"../data/move_data.csv")
         self.game_data = os.path.join(self.dir, r"../data/game_data.csv")
