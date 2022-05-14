@@ -7,9 +7,14 @@ import logging
 import analysis_filter
 import numpy as np
 import pandas as pd
-from datetime import datetime
+import time
+import progress
 import extract
+from datetime import datetime
 from progress import simple_progress_bar
+
+
+
 
 
 class ChessUser:
@@ -44,26 +49,27 @@ class ChessUser:
         all_games_data = pd.read_csv(
             self.file_paths.pgn_data, delimiter="|",
             names=["url_date", "game_data"])
-        tot_games = len(all_games_data["game_data"])
+        self.tot_games = len(all_games_data["game_data"])
         print("Analysing users data: ")
         analysis_filter.clean_movecsv(self.file_paths.move_data,
                                       self.file_paths.userlogfile)
         for game_num, chess_game in enumerate(all_games_data["game_data"]):
-            simple_progress_bar(game_num, tot_games, 1)
             with open(self.file_paths.temp, "w") as temp_pgn:
                 temp_pgn.write(str(chess_game.replace(" ; ", "\n")))
             game = ChessGame(self.username, self.edepth,
                              self.start_date, self.engine,
-                             game_num, self.logger)
+                             game_num, self.logger, self.tot_games)
             game.run_game_analysis()
 
 
 class ChessGame(ChessUser):
-    def __init__(self, username, edepth, start_date, engine, game_num, logger):
+    def __init__(self, username, edepth, start_date,
+                 engine, game_num, logger, tot_games):
         super().__init__(username, edepth, start_date)
         self.engine = engine
         self.game_num = game_num
         self.logger = logger
+        self.tot_games = tot_games
 
     def init_game_analysis(self):
         self.init_game()
@@ -72,7 +78,7 @@ class ChessGame(ChessUser):
         game_headers = ChessGameHeaders(
             self.username, self.edepth,
             self.start_date, self.engine,
-            self.game_num, self.logger, self.chess_game)
+            self.game_num, self.logger, self.tot_games, self.chess_game)
         self.headers = game_headers.collect_headers()
         self.game_dt = game_headers.collect_headers()["Game_datetime"]
         self.game_analysis_filter()
@@ -80,12 +86,13 @@ class ChessGame(ChessUser):
     def run_game_analysis(self):
         self.init_game_analysis()
         if self.game_dt >= self.log_dt:
+            start = time.perf_counter()
             self.logger.info(f"| {self.game_dt} |{self.game_num}")
             for move_num, move in enumerate(self.chess_game.mainline_moves()):
                 chess_move = ChessMove(
                     self.username, self.edepth, self.start_date,
-                    self.engine, self.logger, self.game_num, self.board,
-                    move_num, self.game_dt, self.gm_mv_num,
+                    self.engine, self.logger, self.tot_games, self.game_num,
+                    self.board, move_num, self.game_dt, self.gm_mv_num,
                     self.gm_mv, self.gm_best_mv, self.best_move_eval,
                     self.mainline_eval, self.move_eval_diff,
                     self.gm_mv_ac, self.move_type_list)
@@ -95,6 +102,9 @@ class ChessGame(ChessUser):
             except UnboundLocalError:
                 self.total_moves = 0
             self.analyse_game()
+            end = time.perf_counter()
+            progress.progress_bar(self.game_num, self.tot_games,
+                                  start, end)
 
     def analyse_game(self):
         self.sum_type_dict = self.sum_move_types()
@@ -323,12 +333,12 @@ class ChessGame(ChessUser):
 class ChessMove(ChessGame):
     """Chess move instance."""
     def __init__(self, username, edepth, start_date,
-                 engine, logger, game_num, board, move_num,
+                 engine, logger, tot_games, game_num, board, move_num,
                  game_datetime, gm_mv_num, gm_mv, gm_best_mv,
                  best_move_eval, mainline_eval, move_eval_diff,
                  gm_mv_ac, move_type_list):
         ChessGame.__init__(self, username, edepth,
-                           start_date, engine, game_num, logger)
+                           start_date, engine, game_num, logger, tot_games)
         self.board = board
         self.engine = engine
         self.move_num = move_num
@@ -458,9 +468,9 @@ class ChessMove(ChessGame):
 
 class ChessGameHeaders(ChessGame):
     def __init__(self, username, edepth, start_date,
-                 engine, game_num, logger, chess_game):
+                 engine, game_num, logger, tot_games, chess_game):
         ChessGame.__init__(self, username, edepth,
-                           start_date, engine, game_num, logger)
+                           start_date, engine, game_num, logger, tot_games)
         self.chess_game = chess_game
         self.engine = engine
 
