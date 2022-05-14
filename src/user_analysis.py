@@ -10,21 +10,18 @@ import pandas as pd
 import time
 import progress
 import extract
+import regex as re
 from datetime import datetime
-from progress import simple_progress_bar
-
-
-
-
+from logging import Logger
 
 class ChessUser:
-    def __init__(self, username, edepth, start_date):
+    def __init__(self, username: str, edepth: int, start_date: datetime):
         self.username = username
         self.edepth = edepth
         self.start_date = start_date
         self.file_paths = FileHandler(username=self.username)
 
-    def create_logger(self):
+    def create_logger(self) -> Logger:
         logging.basicConfig(
             filename=self.file_paths.userlogfile,
             format='[%(levelname)s %(module)s] %(message)s',
@@ -32,12 +29,12 @@ class ChessUser:
         self.logger = logging.getLogger(__name__)
         return self.logger
 
-    def create_engine(self):
+    def create_engine(self) -> chess.engine.SimpleEngine:
         self.engine = chess.engine.SimpleEngine.popen_uci(
             self.file_paths.stockfish)
         return self.engine
 
-    def run_analysis(self):
+    def run_analysis(self) -> None:
         extract.data_extract(
             self.username,
             self.file_paths.pgn_data,
@@ -45,7 +42,7 @@ class ChessUser:
             self.logger)
         self.analyse_user()
 
-    def analyse_user(self):
+    def analyse_user(self) -> None:
         all_games_data = pd.read_csv(
             self.file_paths.pgn_data, delimiter="|",
             names=["url_date", "game_data"])
@@ -63,27 +60,31 @@ class ChessUser:
 
 
 class ChessGame(ChessUser):
-    def __init__(self, username, edepth, start_date,
-                 engine, game_num, logger, tot_games):
+    def __init__(
+            self, username: str, edepth: int,
+            start_date: datetime, engine: chess.engine.SimpleEngine,
+            game_num: int, logger: Logger,
+            tot_games: int):
         super().__init__(username, edepth, start_date)
         self.engine = engine
         self.game_num = game_num
         self.logger = logger
         self.tot_games = tot_games
 
-    def init_game_analysis(self):
+    def init_game_analysis(self) -> None:
         self.init_game()
         self.init_board()
         self.init_game_lists()
         game_headers = ChessGameHeaders(
             self.username, self.edepth,
             self.start_date, self.engine,
-            self.game_num, self.logger, self.tot_games, self.chess_game)
+            self.game_num, self.logger,
+            self.tot_games, self.chess_game)
         self.headers = game_headers.collect_headers()
         self.game_dt = game_headers.collect_headers()["Game_datetime"]
         self.game_analysis_filter()
 
-    def run_game_analysis(self):
+    def run_game_analysis(self) -> None:
         self.init_game_analysis()
         if self.game_dt >= self.log_dt:
             start = time.perf_counter()
@@ -106,12 +107,12 @@ class ChessGame(ChessUser):
             progress.progress_bar(self.game_num, self.tot_games,
                                   start, end)
 
-    def analyse_game(self):
+    def analyse_game(self) -> None:
         self.sum_type_dict = self.sum_move_types()
         self.user_game_data()
         self.export_game_data()
 
-    def game_analysis_filter(self):
+    def game_analysis_filter(self) -> None:
         analysis_filter.init_game_logs(
             self.file_paths.userlogfile,
             self.logger)
@@ -126,7 +127,7 @@ class ChessGame(ChessUser):
         self.board = self.chess_game.board()
         return self.board
 
-    def init_game_lists(self):
+    def init_game_lists(self) -> None:
         self.gm_mv_num = []
         self.gm_mv = []
         self.gm_best_mv = []
@@ -136,7 +137,7 @@ class ChessGame(ChessUser):
         self.gm_mv_ac = []
         self.move_type_list = []
 
-    def export_game_data(self):
+    def export_game_data(self) -> None:
         "Exports the move date to a csv."
         game_df = pd.DataFrame({
             "Username": self.username,
@@ -174,7 +175,7 @@ class ChessGame(ChessUser):
             self.file_paths.game_data, mode='a',
             header=False, index=False)
 
-    def user_game_data(self):
+    def user_game_data(self) -> None:
         if self.username == self.headers["White_player"]:
             self.gm_acc = self.game_w_acc()
             self.o_acc = self.op_w_acc()
@@ -202,7 +203,7 @@ class ChessGame(ChessUser):
             self.no_misw = self.move_dict["No_b_misw"]
             self.improve = self.b_sec_imp()
 
-    def sum_move_types(self):
+    def sum_move_types(self) -> dict:
         '''Returns the number of best moves for black and white.'''
         self.w_best = self.move_type_list[::2].count(2)
         self.b_best = self.move_type_list[1::2].count(2)
@@ -228,7 +229,7 @@ class ChessGame(ChessUser):
             "No_w_misw": self.w_misw, "No_b_misw": self.b_misw}
         return self.move_dict
 
-    def game_w_acc(self):
+    def game_w_acc(self) -> float:
         '''returns white players game accuracy.'''
         w_list = self.gm_mv_ac[::2]
         list_len = len(self.gm_mv_ac[::2])
@@ -238,7 +239,7 @@ class ChessGame(ChessUser):
             self.wg_acc = round(sum(w_list) / list_len, 2)
         return self.wg_acc
 
-    def game_b_acc(self):
+    def game_b_acc(self) -> float:
         '''returns black players game accuracy.'''
         b__list = self.gm_mv_ac[1::2]
         list_len = len(self.gm_mv_ac[1::2])
@@ -248,7 +249,7 @@ class ChessGame(ChessUser):
             self.bg_acc = round(sum(b__list) / list_len, 2)
         return self.bg_acc
 
-    def op_w_acc(self):
+    def op_w_acc(self) -> float:
         '''Calculates the opening accuracy white.'''
         list_w = self.gm_mv_ac[::2]
         sep_len = len(np.array_split(list_w, 3)[0])
@@ -258,7 +259,7 @@ class ChessGame(ChessUser):
             self.ow = round(sum(list_w) / (sep_len*3), 2)
         return self.ow
 
-    def mid_w_acc(self):
+    def mid_w_acc(self) -> float:
         '''Calculates the midgame accuracy white.'''
         list_w = self.gm_mv_ac[::2]
         sep_len = len(np.array_split(list_w, 3)[1])
@@ -268,7 +269,7 @@ class ChessGame(ChessUser):
             self.mw = round(sum(list_w) / (sep_len*3), 2)
         return self.mw
 
-    def end_w_acc(self):
+    def end_w_acc(self) -> float:
         '''Calculates the endgame accuracy white.'''
         list_w = self.gm_mv_ac[::2]
         sep_len = len(np.array_split(list_w, 3)[2])
@@ -278,8 +279,8 @@ class ChessGame(ChessUser):
             self.ew = round(sum(list_w) / (sep_len*3), 2)
         return self.ew
 
-    def op_b_acc(self):
-        '''Calculates the opening accuracy white.'''
+    def op_b_acc(self) -> float:
+        '''Calculates the opening accuracy black.'''
         list_b = self.gm_mv_ac[1::2]
         sep_len = len(np.array_split(list_b, 3)[0])
         if sep_len == 0:
@@ -288,7 +289,7 @@ class ChessGame(ChessUser):
             self.ob = round(sum(list_b) / (sep_len*3), 2)
         return self.ob
 
-    def mid_b_acc(self):
+    def mid_b_acc(self) -> float:
         '''Calculates the opening accuracy white.'''
         list_b = self.gm_mv_ac[1::2]
         sep_len = len(np.array_split(list_b, 3)[1])
@@ -298,7 +299,7 @@ class ChessGame(ChessUser):
             self.mb = round(sum(list_b) / (sep_len*3), 2)
         return self.mb
 
-    def end_b_acc(self):
+    def end_b_acc(self) -> float:
         '''Calculates the opening accuracy white.'''
         list_b = self.gm_mv_ac[1::2]
         sep_len = len(np.array_split(list_b, 3)[2])
@@ -308,7 +309,7 @@ class ChessGame(ChessUser):
             self.eb = round(sum(list_b) / (sep_len*3), 2)
         return self.eb
 
-    def w_sec_imp(self):
+    def w_sec_imp(self) -> str:
         '''Returns the area of improvement for the white player'''
         # White
         if self.ow < self.mw and self.ow < self.ew:
@@ -319,7 +320,7 @@ class ChessGame(ChessUser):
             self.imp_w = "Endgame"
         return self.imp_w
 
-    def b_sec_imp(self):
+    def b_sec_imp(self) -> str:
         '''Returns the area of improvement for the black player'''
         if self.ob < self.mb and self.ob < self.eb:
             self.imp_b = "Opening"
@@ -332,11 +333,13 @@ class ChessGame(ChessUser):
 
 class ChessMove(ChessGame):
     """Chess move instance."""
-    def __init__(self, username, edepth, start_date,
-                 engine, logger, tot_games, game_num, board, move_num,
-                 game_datetime, gm_mv_num, gm_mv, gm_best_mv,
-                 best_move_eval, mainline_eval, move_eval_diff,
-                 gm_mv_ac, move_type_list):
+    def __init__(
+        self, username: str, edepth: int, start_date: datetime,
+        engine: chess.engine.SimpleEngine, logger: Logger, tot_games: int,
+        game_num: int, board, move_num: int,
+        game_datetime: datetime, gm_mv_num: list, gm_mv: list,
+        gm_best_mv: list, best_move_eval: list, mainline_eval: list,
+        move_eval_diff: list, gm_mv_ac: list, move_type_list: list):
         ChessGame.__init__(self, username, edepth,
                            start_date, engine, game_num, logger, tot_games)
         self.board = board
@@ -352,7 +355,7 @@ class ChessMove(ChessGame):
         self.gm_mv_ac = gm_mv_ac
         self.move_type_list = move_type_list
 
-    def analyse_move(self, move):
+    def analyse_move(self, move) -> None:
         """Analyses a users move and exports results to move_data.csv"""
         self.str_bm, self.eval_bm = self.best_move()
         self.str_ml, self.eval_ml = self.mainline_move(move)
@@ -363,7 +366,7 @@ class ChessMove(ChessGame):
         self.export_move_data()
         self.append_to_game_lists()
 
-    def mainline_move(self, move):
+    def mainline_move(self, move) -> tuple:
         """Returns the users move and its evaluation."""
         self.str_ml = str(move)
         self.board.push_san(self.str_ml)
@@ -374,7 +377,7 @@ class ChessMove(ChessGame):
         self.eval_ml = self.move_eval(eval_ml_init)
         return self.str_ml, self.eval_ml
 
-    def best_move(self):
+    def best_move(self) -> tuple:
         """Returns the best move from the engine and its evaluation."""
         best_move = self.engine.play(
             self.board,
@@ -390,7 +393,7 @@ class ChessMove(ChessGame):
         self.board.pop()
         return self.str_bm, self.eval_bm
 
-    def move_eval(self, move):
+    def move_eval(self, move) -> None:
         '''Returns the evalaution of the move played.'''
         get_eval = str(move['score'].white())
         if "#" in get_eval:
@@ -400,7 +403,7 @@ class ChessMove(ChessGame):
         get_eval = int(get_eval)
         return get_eval
 
-    def eval_delta(self, move_num, eval_bm, eval_ml):
+    def eval_delta(self, move_num, eval_bm, eval_ml) -> float:
         '''Returns the eval difference between the best and mainline move.'''
         if move_num % 2 == 0:
             eval_diff = round(abs(eval_bm - eval_ml), 3)
@@ -409,13 +412,13 @@ class ChessMove(ChessGame):
             eval_diff = round(abs(eval_ml - eval_bm), 3)
             return eval_diff
 
-    def move_accuracy(self, eval_diff):
+    def move_accuracy(self, eval_diff) -> float:
         '''Returns the move accuracy for a given move.'''
         m, v = 0, 1.5
         move_acc = round(math.exp(-0.00003*((eval_diff-m)/v)**2)*100, 1)
         return move_acc
 
-    def assign_move_type(self, move_acc):
+    def assign_move_type(self, move_acc) -> int:
         '''Returns the move type for a given move.'''
         # best = 2, excellent = 1, good = 0,
         # inacc = -1, mistake = -2, blunder = -3, missed win = -4
@@ -435,7 +438,7 @@ class ChessMove(ChessGame):
             move_type = -4
         return move_type
 
-    def export_move_data(self):
+    def export_move_data(self) -> None:
         "Exports the move date to a csv."
         move_df = pd.DataFrame({
             "Username": self.username,
@@ -455,7 +458,7 @@ class ChessMove(ChessGame):
             self.file_paths.move_data, mode='a',
             header=False, index=False)
 
-    def append_to_game_lists(self):
+    def append_to_game_lists(self) -> None:
         self.gm_mv_num.append(self.move_num)
         self.gm_mv.append(self.str_ml)
         self.gm_best_mv.append(self.str_bm)
@@ -474,7 +477,7 @@ class ChessGameHeaders(ChessGame):
         self.chess_game = chess_game
         self.engine = engine
 
-    def collect_headers(self):
+    def collect_headers(self) -> dict:
         header_dict = {
             "Game_date": self.game_dt(self.chess_game),
             "Game_time": self.game_t(self.chess_game),
@@ -495,39 +498,39 @@ class ChessGameHeaders(ChessGame):
             "Win_draw_loss": self.win_draw_loss(self.chess_game)}
         return header_dict
 
-    def time_control(self, chess_game):
+    def time_control(self, chess_game) -> str:
         self.game_time_cont = chess_game.headers["TimeControl"]
         return self.game_time_cont
 
-    def player_white(self, chess_game):
+    def player_white(self, chess_game) -> str:
         self.white = chess_game.headers["White"]
         return self.white
 
-    def player_black(self, chess_game):
+    def player_black(self, chess_game) -> str:
         self.black = chess_game.headers["Black"]
         return self.black
 
-    def user_colour(self):
+    def user_colour(self) -> str:
         white = self.player_white(self.chess_game)
         self.player = "White" if white == self.username else "Black"
         return self.player
 
-    def rating_white(self, chess_game):
-        self.ratingwhite = chess_game.headers["WhiteElo"]
+    def rating_white(self, chess_game) -> int:
+        self.ratingwhite = int(chess_game.headers["WhiteElo"])
         return self.ratingwhite
 
-    def rating_black(self, chess_game):
-        self.ratingblack = chess_game.headers["BlackElo"]
+    def rating_black(self, chess_game) -> int:
+        self.ratingblack = int(chess_game.headers["BlackElo"])
         return self.ratingblack
 
-    def opening_cls(self, chess_game):
+    def opening_cls(self, chess_game) -> str:
         try:
             self.opening_class = chess_game.headers["ECO"]
         except KeyError:
             self.opening_class = "000"
         return self.opening_class
 
-    def opening_nm(self, chess_game):
+    def opening_nm(self, chess_game) -> str:
         try:
             opening_name_raw = chess_game.headers["ECOUrl"]
         except KeyError:
@@ -536,7 +539,7 @@ class ChessGameHeaders(ChessGame):
         self.opening_name = str(opening_string.replace("-", " ").strip())
         return self.opening_name
 
-    def game_termination(self, chess_game):
+    def game_termination(self, chess_game) -> str:
         termination_raw = chess_game.headers["Termination"]
         winner_check = termination_raw.split(" ")
         draw_check = " ".join(winner_check[0:2])
@@ -548,21 +551,21 @@ class ChessGameHeaders(ChessGame):
             self.termination = "Loss " + " ".join(winner_check[2:])
         return self.termination
 
-    def rating_user(self):
+    def rating_user(self) -> int:
         player = self.user_colour()
         rating_w = self.rating_white(self.chess_game)
         rating_b = self.rating_black(self.chess_game)
         self.user_rating = rating_w if player == "White" else rating_b
         return self.user_rating
 
-    def rating_opponent(self):
+    def rating_opponent(self) -> int:
         player = self.user_colour()
         rating_w = self.rating_white(self.chess_game)
         rating_b = self.rating_black(self.chess_game)
         self.opp_rating = rating_b if player == "White" else rating_w
         return self.opp_rating
 
-    def win_draw_loss(self, chess_game):
+    def win_draw_loss(self, chess_game) -> str:
         if chess_game.headers["Result"] == "1-0":
             self.end_type = "White"
         elif chess_game.headers["Result"] == "0-1":
@@ -571,7 +574,7 @@ class ChessGameHeaders(ChessGame):
             self.end_type = "Draw"
         return self.end_type
 
-    def user_winr(self):
+    def user_winr(self) -> str:
         winner = self.win_draw_loss(self.chess_game)
         player = self.user_colour()
         pww = (winner == "White" and player == "White")
@@ -586,15 +589,15 @@ class ChessGameHeaders(ChessGame):
             self.user_winner = "Draw"
         return self.user_winner
 
-    def game_dt(self, chess_game):
+    def game_dt(self, chess_game) -> str:
         self.game_date = chess_game.headers["UTCDate"]
         return self.game_date
 
-    def game_t(self, chess_game):
+    def game_t(self, chess_game) -> str:
         self.game_time = chess_game.headers["UTCTime"]
         return self.game_time
 
-    def game_dt_time(self):
+    def game_dt_time(self) -> datetime:
         game_date = self.game_dt(self.chess_game)
         game_time = self.game_t(self.chess_game)
         game_date_time = f"{game_date} {game_time}"
@@ -604,24 +607,9 @@ class ChessGameHeaders(ChessGame):
         return self.game_datetime
 
 
-class InputHandler:
-    """Class for determining input arguments for the user class."""
-    @staticmethod
-    def get_inputs():
-        username = input("Enter your username: ")
-        edepth = input("Enter the engine depth: ")
-        i_start_y = input("Enter the start year for analysis (e.g. 2020): ")
-        i_start_m = input("Enter the start month for analysis (e.g. 01-12): ")
-        i_start_datetime = (i_start_y + "-" + i_start_m + "-01" + " 00:00:00")
-        start_date = datetime.strptime(i_start_datetime, "%Y-%m-%d %H:%M:%S")
-        return {"username": username,
-                "edepth": edepth,
-                "start_date": start_date}
-
-
 class FileHandler:
     """Storage location for the data/lib/log filepaths."""
-    def __init__(self, username):
+    def __init__(self, username: str):
         self.username = username
         self.dir = os.path.dirname(__file__)
         stockfish_path = r"../lib/stkfsh_14.1/stockfish_14.1_win_x64_avx2.exe"
@@ -635,3 +623,72 @@ class FileHandler:
         self.pgn_data = os.path.join(
             self.dir,
             rf"../data/pgn_data/{self.username}_pgn_data.csv")
+
+
+class InputHandler:
+    """Class for determining input arguments for the user class."""
+    @staticmethod
+    def get_inputs() -> dict:
+        print("============================================================================")
+        username = InputHandler.user_input()
+        edepth = InputHandler.depth_input()
+        start_year = InputHandler.year_input()
+        start_month = InputHandler.month_input()
+        start_date = InputHandler.start_datetime(start_year, start_month)
+        print("============================================================================")
+        return {"username": username,
+                "edepth": edepth,
+                "start_date": start_date}
+
+    @staticmethod
+    def user_input():
+        username = input("Enter your username: ")
+        if len(username) == 0:
+            print("Please enter a valid username")
+            InputHandler.user_input()
+        if not isinstance(username, str):
+            print("Please enter a valid username")
+            InputHandler.user_input()
+        return username
+
+    @staticmethod
+    def depth_input():
+        edepth = int(input("Enter the engine depth (1-20): "))
+        if len(edepth) == 0:
+            print("Please enter a valid depth")
+            InputHandler.depth_input()
+        if edepth > 20 or edepth < 1:
+            print("Please enter a valid depth")
+            InputHandler.depth_input()
+        return edepth
+
+    @staticmethod
+    def year_input():
+        start_year = input("Enter the start year for analysis (e.g. 2020): ")
+        if len(start_year) != 4 or (re.match(r'^([\s\d]+)$', start_year) == None):
+            print("Please enter a valid start year")
+            InputHandler.depth_input()
+        return start_year
+
+    @staticmethod
+    def month_input():
+        start_month = input("Enter the start month for analysis (e.g. 01-12): ")
+        if len(start_month) != 2 or (re.match(r'^([\s\d]+)$', start_month) == None):
+            print("Please enter a valid start month")
+            InputHandler.depth_input()
+        if start_month > 12 or start_month < 1:
+            print("Please enter a valid start month")
+            InputHandler.depth_input()
+        return start_month
+
+    @staticmethod
+    def start_datetime(start_year: str, start_month: str):
+        start_datetime = (start_year + "-" + start_month + "-01" + " 00:00:00")
+        start_date = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M:%S")
+        current_date = datetime.now()
+        if start_date > current_date:
+            start_year = InputHandler.year_input()
+            start_month = InputHandler.month_input()
+            InputHandler.start_datetime(start_year, start_month)
+        else:
+            return start_date
