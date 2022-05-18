@@ -1,10 +1,10 @@
+import analysis_filter
 import chess
 import chess.engine
 import chess.pgn
 import math
 import os
 import logging
-import analysis_filter
 import numpy as np
 import pandas as pd
 import time
@@ -86,7 +86,7 @@ class ChessGame(ChessUser):
 
     def run_game_analysis(self) -> None:
         self.init_game_analysis()
-        if self.game_dt >= self.log_dt:
+        if self.game_dt >= self.log_dt and self.game_dt >=self.start_date:
             start = time.perf_counter()
             self.logger.info(f"| {self.game_dt} |{self.game_num}")
             for move_num, move in enumerate(self.chess_game.mainline_moves()):
@@ -363,6 +363,9 @@ class ChessMove(ChessGame):
             self.move_num, self.eval_bm, self.eval_ml)
         self.move_acc = self.move_accuracy(self.evaldiff)
         self.move_type = self.assign_move_type(self.move_acc)
+        self.piece = self.chess_piece(move)
+        self.move_col = self.move_colour()
+        self.castle_type = self.castling_type()
         self.export_move_data()
         self.append_to_game_lists()
 
@@ -438,6 +441,57 @@ class ChessMove(ChessGame):
             move_type = -4
         return move_type
 
+    def chess_piece(self, move):
+        square_int = self.get_piece_square_int(move)
+        curr_board = self.get_curr_board()
+        piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square_int)
+        if piece_type_num == 1:
+            self.piece_type = "pawn"
+        elif piece_type_num == 2:
+            self.piece_type = "knight"
+        elif piece_type_num == 3:
+            self.piece_type = "bishop"
+        elif piece_type_num == 4:
+            self.piece_type = "rook"
+        elif piece_type_num == 5:
+            self.piece_type = "queen"
+        elif piece_type_num == 6:
+            self.piece_type = "king"
+        else:
+            self.piece_type = " "
+        return self.piece_type
+
+    def get_curr_board(self):
+        curr_fen = self.board.board_fen()
+        return chess.BaseBoard(board_fen=curr_fen)
+
+    def get_piece_square_int(self, move):
+        piece_col = str(move)[2:3]
+        piece_row = str(move)[3:4]
+        piece_square = str(piece_col + piece_row)
+        square_int = chess.parse_square(piece_square)
+        return square_int
+
+    def move_colour(self):
+        if self.move_num % 2 == 0:
+            mv_colour = "white"
+        else:
+            mv_colour = "black"
+        return mv_colour
+
+    def castling_type(self):
+        if self.piece == "king" and self.move_col == "white" and self.str_ml == "e1g1":
+            cas_type = "white_short"
+        if self.piece == "king" and self.move_col == "white" and self.str_ml == "e1c1":
+            cas_type = "white_long"
+        if self.piece == "king" and self.move_col == "black" and self.str_ml == "e8g8":
+            cas_type = "black_short"
+        if self.piece == "king" and self.move_col == "black" and self.str_ml == "e8c8":
+            cas_type = "black_long"
+        else:
+            cas_type = "None"
+        return cas_type
+
     def export_move_data(self) -> None:
         "Exports the move date to a csv."
         move_df = pd.DataFrame({
@@ -453,6 +507,9 @@ class ChessMove(ChessGame):
             "Move_eval_diff": self.evaldiff,
             "Move accuracy": self.move_acc,
             "Move_type": self.move_type,
+            "Piece": self.piece,
+            "Move_colour": self.move_col,
+            "Castling_type": self.castle_type
             }, index=[0])
         move_df.to_csv(
             self.file_paths.move_data, mode='a',
@@ -653,11 +710,11 @@ class InputHandler:
 
     @staticmethod
     def depth_input():
-        edepth = int(input("Enter the engine depth (1-20): "))
+        edepth = input("Enter the engine depth (1-20): ")
         if len(edepth) == 0:
             print("Please enter a valid depth")
             InputHandler.depth_input()
-        if edepth > 20 or edepth < 1:
+        if int(edepth) > 20 or int(edepth) < 1:
             print("Please enter a valid depth")
             InputHandler.depth_input()
         return edepth
@@ -676,7 +733,7 @@ class InputHandler:
         if len(start_month) != 2 or (re.match(r'^([\s\d]+)$', start_month) == None):
             print("Please enter a valid start month")
             InputHandler.depth_input()
-        if start_month > 12 or start_month < 1:
+        if int(start_month) > 12 or int(start_month) < 1:
             print("Please enter a valid start month")
             InputHandler.depth_input()
         return start_month
