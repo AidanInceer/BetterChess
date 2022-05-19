@@ -63,7 +63,12 @@ def clean_movecsv(movefilepath: str, logfilepath: str):
             "Best_move_eval",
             "Move_eval_diff",
             "Move accuracy",
-            "Move_type"]
+            "Move_type",
+            "Piece",
+            "Move_colour",
+            "Castling_type",
+            "White_castle_num",
+            "Black_castle_num"]
         unclean_df = pd.read_csv(movefilepath, names=col_names)
         df_filter = unclean_df["Game_number"] != llog_gn
         clean_df = unclean_df[df_filter]
@@ -93,34 +98,34 @@ def is_logfile_empty(logfilepath: str):
     return has_lines
 
 
-def column_headers(file_g_data, file_m_data):
-    game_header_list = [
-        "Username", "Date", "Game_number", "Engine_depth",
-        "Game_type", "White_player",
-        "Black_player", "White_rating", "Black_rating",
-        "User_colour", "User_rating", "opponent_rating",
-        "User_winner", "Opening_name",
-        "Opening_class", "Termination", "Number_of_moves",
-        "Accuracy", "Opening_accuracy", "Mid_accuracy",
-        "End_accuracy", "No_best", "No_great", "No_good",
-        "No_ok", "No_inaccuracy", "No_mistake",
-        "No_blunder", "Improvement"]
+# def column_headers(file_g_data, file_m_data):
+#     game_header_list = [
+#         "Username", "Date", "Game_number", "Engine_depth",
+#         "Game_type", "White_player",
+#         "Black_player", "White_rating", "Black_rating",
+#         "User_colour", "User_rating", "opponent_rating",
+#         "User_winner", "Opening_name",
+#         "Opening_class", "Termination", "Number_of_moves",
+#         "Accuracy", "Opening_accuracy", "Mid_accuracy",
+#         "End_accuracy", "No_best", "No_great", "No_good",
+#         "No_ok", "No_inaccuracy", "No_mistake",
+#         "No_blunder", "Improvement"]
 
-    move_header_list = [
-        "Username", "Date", "Game_number", "edepth",
-        "Move_number", "Move",
-        "Best_move", "Move_eval", "Best_move_eval",
-        "Move_eval_diff", "Move accuracy", "Move_type"]
-    game_data = pd.read_csv(file_g_data, header=None)
-    game_header_list = game_header_list
-    if "Username" in game_data.iloc[0, 0]:
-        game_data.to_csv(file_g_data, header=False, index=False)
-    else:
-        game_data.to_csv(file_g_data, header=game_header_list, index=False)
-    #   Move data
-    move_data = pd.read_csv(file_m_data, header=None)
-    move_header_list = move_header_list
-    if "Username" in move_data.iloc[0, 0]:
-        move_data.to_csv(file_m_data, header=False, index=False)
-    else:
-        move_data.to_csv(file_m_data, header=move_header_list, index=False)
+#     move_header_list = [
+#         "Username", "Date", "Game_number", "edepth",
+#         "Move_number", "Move",
+#         "Best_move", "Move_eval", "Best_move_eval",
+#         "Move_eval_diff", "Move accuracy", "Move_type"]
+#     game_data = pd.read_csv(file_g_data, header=None)
+#     game_header_list = game_header_list
+#     if "Username" in game_data.iloc[0, 0]:
+#         game_data.to_csv(file_g_data, header=False, index=False)
+#     else:
+#         game_data.to_csv(file_g_data, header=game_header_list, index=False)
+#     #   Move data
+#     move_data = pd.read_csv(file_m_data, header=None)
+#     move_header_list = move_header_list
+#     if "Username" in move_data.iloc[0, 0]:
+#         move_data.to_csv(file_m_data, header=False, index=False)
+#     else:
+#         move_data.to_csv(file_m_data, header=move_header_list, index=False)

@@ -96,10 +96,11 @@ class ChessGame(ChessUser):
                     self.board, move_num, self.game_dt, self.gm_mv_num,
                     self.gm_mv, self.gm_best_mv, self.best_move_eval,
                     self.mainline_eval, self.move_eval_diff,
-                    self.gm_mv_ac, self.move_type_list)
+                    self.gm_mv_ac, self.move_type_list, self.w_castle_num,
+                    self.b_castle_num)
                 chess_move.analyse_move(move)
             try:
-                self.total_moves = math.ceil(move_num/2)
+                self.total_moves = move_num
             except UnboundLocalError:
                 self.total_moves = 0
             self.analyse_game()
@@ -136,6 +137,8 @@ class ChessGame(ChessUser):
         self.move_eval_diff = []
         self.gm_mv_ac = []
         self.move_type_list = []
+        self.w_castle_num = []
+        self.b_castle_num = []
 
     def export_game_data(self) -> None:
         "Exports the move date to a csv."
@@ -169,7 +172,13 @@ class ChessGame(ChessUser):
             "No_mistake": self.no_mist,
             "No_blunder": self.no_blun,
             "No_missed_win": self.no_misw,
-            "Improvement": self.improve},
+            "Improvement": self.improve,
+            "user_castle_num": self.user_castle_mv,
+            "opp_castle_num": self.opp_castle_mv,
+            "user_castled": self.user_castled,
+            "opp_castled": self.opp_castled,
+            "user_castle_phase": self.user_castle_phase,
+            "Opp_castle_phase": self.opp_castle_phase},
             index=[0])
         game_df.to_csv(
             self.file_paths.game_data, mode='a',
@@ -189,6 +198,12 @@ class ChessGame(ChessUser):
             self.no_blun = self.move_dict["No_w_blun"]
             self.no_misw = self.move_dict["No_w_misw"]
             self.improve = self.w_sec_imp()
+            self.user_castle_mv = self.white_castle_move_num()
+            self.opp_castle_mv = self.black_castle_move_num()
+            self.user_castled = self.has_white_castled()
+            self.opp_castled = self.has_black_castled()
+            self.user_castle_phase = self.white_castle_phase()
+            self.opp_castle_phase = self.black_castle_phase()
         else:
             self.gm_acc = self.game_b_acc()
             self.o_acc = self.op_b_acc()
@@ -202,6 +217,56 @@ class ChessGame(ChessUser):
             self.no_blun = self.move_dict["No_b_blun"]
             self.no_misw = self.move_dict["No_b_misw"]
             self.improve = self.b_sec_imp()
+            self.user_castle_mv = self.black_castle_move_num()
+            self.opp_castle_mv = self.white_castle_move_num()
+            self.user_castled = self.has_black_castled()
+            self.opp_castled = self.has_white_castled()
+            self.user_castle_phase = self.black_castle_phase()
+            self.opp_castle_phase = self.white_castle_phase()
+
+    def white_castle_move_num(self):
+        return sum(self.w_castle_num)
+
+    def black_castle_move_num(self):
+        return sum(self.b_castle_num)
+
+    def has_white_castled(self):
+        if sum(self.w_castle_num) > 0:
+            return 1
+        else:
+            return 0
+
+    def has_black_castled(self):
+        if sum(self.b_castle_num) > 0:
+            return 1
+        else:
+            return 0
+
+    def white_castle_phase(self):
+        if self.total_moves == 0:
+            return "None"
+        else:
+            if sum(self.w_castle_num) == 0:
+                return "None"
+            elif sum(self.w_castle_num)/(self.total_moves) < (1/3):
+                return "Opening"
+            elif sum(self.w_castle_num)/(self.total_moves) <= (2/3):
+                return "Midgame"
+            elif sum(self.w_castle_num)/(self.total_moves) <= 1:
+                return "Endgame"
+
+    def black_castle_phase(self):
+        if self.total_moves == 0:
+            return "None"
+        else:
+            if sum(self.b_castle_num) == 0:
+                return "None"
+            elif sum(self.b_castle_num)/(self.total_moves) < (1/3):
+                return "Opening"
+            elif sum(self.b_castle_num)/(self.total_moves) <= (2/3):
+                return "Midgame"
+            elif sum(self.b_castle_num)/(self.total_moves) <= 1:
+                return "Endgame"
 
     def sum_move_types(self) -> dict:
         '''Returns the number of best moves for black and white.'''
@@ -334,12 +399,25 @@ class ChessGame(ChessUser):
 class ChessMove(ChessGame):
     """Chess move instance."""
     def __init__(
-        self, username: str, edepth: int, start_date: datetime,
-        engine: chess.engine.SimpleEngine, logger: Logger, tot_games: int,
-        game_num: int, board, move_num: int,
-        game_datetime: datetime, gm_mv_num: list, gm_mv: list,
-        gm_best_mv: list, best_move_eval: list, mainline_eval: list,
-        move_eval_diff: list, gm_mv_ac: list, move_type_list: list):
+        self, username: str,
+        edepth: int,
+        start_date: datetime,
+        engine: chess.engine.SimpleEngine,
+        logger: Logger,
+        tot_games: int,
+        game_num: int,
+        board, move_num: int,
+        game_datetime: datetime,
+        gm_mv_num: list,
+        gm_mv: list,
+        gm_best_mv: list,
+        best_move_eval: list,
+        mainline_eval: list,
+        move_eval_diff: list,
+        gm_mv_ac: list,
+        move_type_list: list,
+        w_castle_num: list,
+        b_castle_num: list):
         ChessGame.__init__(self, username, edepth,
                            start_date, engine, game_num, logger, tot_games)
         self.board = board
@@ -354,6 +432,8 @@ class ChessMove(ChessGame):
         self.move_eval_diff = move_eval_diff
         self.gm_mv_ac = gm_mv_ac
         self.move_type_list = move_type_list
+        self.w_castle_num = w_castle_num
+        self.b_castle_num = b_castle_num
 
     def analyse_move(self, move) -> None:
         """Analyses a users move and exports results to move_data.csv"""
@@ -366,6 +446,8 @@ class ChessMove(ChessGame):
         self.piece = self.chess_piece(move)
         self.move_col = self.move_colour()
         self.castle_type = self.castling_type()
+        self.w_castle_mv_num = self.white_castle_move_num()
+        self.b_castle_mv_num = self.black_castle_move_num()
         self.export_move_data()
         self.append_to_game_lists()
 
@@ -482,15 +564,29 @@ class ChessMove(ChessGame):
     def castling_type(self):
         if self.piece == "king" and self.move_col == "white" and self.str_ml == "e1g1":
             cas_type = "white_short"
-        if self.piece == "king" and self.move_col == "white" and self.str_ml == "e1c1":
+        elif self.piece == "king" and self.move_col == "white" and self.str_ml == "e1c1":
             cas_type = "white_long"
-        if self.piece == "king" and self.move_col == "black" and self.str_ml == "e8g8":
+        elif self.piece == "king" and self.move_col == "black" and self.str_ml == "e8g8":
             cas_type = "black_short"
-        if self.piece == "king" and self.move_col == "black" and self.str_ml == "e8c8":
+        elif self.piece == "king" and self.move_col == "black" and self.str_ml == "e8c8":
             cas_type = "black_long"
         else:
-            cas_type = "None"
+            cas_type = None
         return cas_type
+
+    def white_castle_move_num(self):
+        if self.castle_type == "white_short" or self.castle_type == "white_long":
+            white_castle_move = self.move_num
+        else:
+            white_castle_move = 0
+        return white_castle_move
+
+    def black_castle_move_num(self):
+        if self.castle_type == "black_short" or self.castle_type == "black_long":
+            black_castle_move = self.move_num
+        else:
+            black_castle_move = 0
+        return black_castle_move
 
     def export_move_data(self) -> None:
         "Exports the move date to a csv."
@@ -509,7 +605,9 @@ class ChessMove(ChessGame):
             "Move_type": self.move_type,
             "Piece": self.piece,
             "Move_colour": self.move_col,
-            "Castling_type": self.castle_type
+            "Castling_type": self.castle_type,
+            "White_castle_num": self.w_castle_mv_num,
+            "Black_castle_num": self.b_castle_mv_num,
             }, index=[0])
         move_df.to_csv(
             self.file_paths.move_data, mode='a',
@@ -524,6 +622,8 @@ class ChessMove(ChessGame):
         self.move_eval_diff.append(self.evaldiff)
         self.gm_mv_ac.append(self.move_acc)
         self.move_type_list.append(self.move_type)
+        self.w_castle_num.append(self.w_castle_mv_num)
+        self.b_castle_num.append(self.b_castle_mv_num)
 
 
 class ChessGameHeaders(ChessGame):
