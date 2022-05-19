@@ -11,8 +11,10 @@ import time
 import progress
 import extract
 import regex as re
+from datetime import date
 from datetime import datetime
 from logging import Logger
+
 
 class ChessUser:
     def __init__(self, username: str, edepth: int, start_date: datetime):
@@ -71,54 +73,6 @@ class ChessGame(ChessUser):
         self.logger = logger
         self.tot_games = tot_games
 
-    def init_game_analysis(self) -> None:
-        self.init_game()
-        self.init_board()
-        self.init_game_lists()
-        game_headers = ChessGameHeaders(
-            self.username, self.edepth,
-            self.start_date, self.engine,
-            self.game_num, self.logger,
-            self.tot_games, self.chess_game)
-        self.headers = game_headers.collect_headers()
-        self.game_dt = game_headers.collect_headers()["Game_datetime"]
-        self.game_analysis_filter()
-
-    def run_game_analysis(self) -> None:
-        self.init_game_analysis()
-        if self.game_dt >= self.log_dt and self.game_dt >=self.start_date:
-            start = time.perf_counter()
-            self.logger.info(f"| {self.game_dt} |{self.game_num}")
-            for move_num, move in enumerate(self.chess_game.mainline_moves()):
-                chess_move = ChessMove(
-                    self.username, self.edepth, self.start_date,
-                    self.engine, self.logger, self.tot_games, self.game_num,
-                    self.board, move_num, self.game_dt, self.gm_mv_num,
-                    self.gm_mv, self.gm_best_mv, self.best_move_eval,
-                    self.mainline_eval, self.move_eval_diff,
-                    self.gm_mv_ac, self.move_type_list, self.w_castle_num,
-                    self.b_castle_num)
-                chess_move.analyse_move(move)
-            try:
-                self.total_moves = move_num
-            except UnboundLocalError:
-                self.total_moves = 0
-            self.analyse_game()
-            end = time.perf_counter()
-            progress.progress_bar(self.game_num, self.tot_games,
-                                  start, end)
-
-    def analyse_game(self) -> None:
-        self.sum_type_dict = self.sum_move_types()
-        self.user_game_data()
-        self.export_game_data()
-
-    def game_analysis_filter(self) -> None:
-        analysis_filter.init_game_logs(
-            self.file_paths.userlogfile,
-            self.logger)
-        self.log_dt = analysis_filter.llog_game(self.file_paths.userlogfile)
-
     def init_game(self):
         self.chess_game_pgn = open(self.file_paths.temp)
         self.chess_game = chess.pgn.read_game(self.chess_game_pgn)
@@ -140,49 +94,54 @@ class ChessGame(ChessUser):
         self.w_castle_num = []
         self.b_castle_num = []
 
-    def export_game_data(self) -> None:
-        "Exports the move date to a csv."
-        game_df = pd.DataFrame({
-            "Username": self.username,
-            "Date": self.game_dt,
-            "Engine_depth": self.edepth,
-            "Game_number": self.game_num,
-            "Game_type": self.headers["Time_control"],
-            "White_player": self.headers["White_player"],
-            "Black_player": self.headers["Black_player"],
-            "White_rating": self.headers["White_rating"],
-            "Black_rating": self.headers["Black_rating"],
-            "User_colour": self.headers["User_Colour"],
-            "User_rating": self.headers["User_rating"],
-            "opponent_rating": self.headers["Opponent_rating"],
-            "User_winner": self.headers["User_winner"],
-            "Opening_name": self.headers["Opening_name"],
-            "Opening_class": self.headers["Opening_class"],
-            "Termination": self.headers["Termination"],
-            "End_type": self.headers["Win_draw_loss"],
-            "Number_of_moves": self.total_moves,
-            "Accuracy": self.gm_acc,
-            "Opening_accuracy": self.o_acc,
-            "Mid_accuracy": self.m_acc,
-            "End_accuracy": self.e_acc,
-            "No_best": self.no_best,
-            "No_great": self.no_excl,
-            "No_good": self.no_good,
-            "No_inaccuracy": self.no_inac,
-            "No_mistake": self.no_mist,
-            "No_blunder": self.no_blun,
-            "No_missed_win": self.no_misw,
-            "Improvement": self.improve,
-            "user_castle_num": self.user_castle_mv,
-            "opp_castle_num": self.opp_castle_mv,
-            "user_castled": self.user_castled,
-            "opp_castled": self.opp_castled,
-            "user_castle_phase": self.user_castle_phase,
-            "Opp_castle_phase": self.opp_castle_phase},
-            index=[0])
-        game_df.to_csv(
-            self.file_paths.game_data, mode='a',
-            header=False, index=False)
+    def init_game_analysis(self) -> None:
+        self.init_game()
+        self.init_board()
+        self.init_game_lists()
+        # self.time_list()
+        game_headers = ChessGameHeaders(
+            self.username, self.edepth,
+            self.start_date, self.engine,
+            self.game_num, self.logger,
+            self.tot_games, self.chess_game)
+        self.headers = game_headers.collect_headers()
+        self.game_dt = game_headers.collect_headers()["Game_datetime"]
+        self.game_analysis_filter()
+
+    def game_analysis_filter(self) -> None:
+        analysis_filter.init_game_logs(
+            self.file_paths.userlogfile,
+            self.logger)
+        self.log_dt = analysis_filter.llog_game(self.file_paths.userlogfile)
+
+    def run_game_analysis(self) -> None:
+        self.init_game_analysis()
+        if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
+            start = time.perf_counter()
+            self.logger.info(f"| {self.game_dt} |{self.game_num}")
+            for move_num, move in enumerate(self.chess_game.mainline_moves()):
+                chess_move = ChessMove(
+                    self.username, self.edepth, self.start_date,
+                    self.engine, self.logger, self.tot_games, self.chess_game,
+                    self.game_num, self.board, move_num, self.game_dt,
+                    self.gm_mv_num, self.gm_mv, self.gm_best_mv,
+                    self.best_move_eval, self.mainline_eval,
+                    self.move_eval_diff, self.gm_mv_ac, self.move_type_list,
+                    self.w_castle_num, self.b_castle_num)
+                chess_move.analyse_move(move)
+            try:
+                self.total_moves = move_num
+            except UnboundLocalError:
+                self.total_moves = 0
+            self.analyse_game()
+            end = time.perf_counter()
+            progress.progress_bar(self.game_num, self.tot_games,
+                                  start, end)
+
+    def analyse_game(self) -> None:
+        self.sum_type_dict = self.sum_move_types()
+        self.user_game_data()
+        self.export_game_data()
 
     def user_game_data(self) -> None:
         if self.username == self.headers["White_player"]:
@@ -223,6 +182,76 @@ class ChessGame(ChessUser):
             self.opp_castled = self.has_white_castled()
             self.user_castle_phase = self.black_castle_phase()
             self.opp_castle_phase = self.white_castle_phase()
+
+    def export_game_data(self) -> None:
+        "Exports the move date to a csv."
+        game_df = pd.DataFrame({
+            "Username": self.username,
+            "Date": self.game_dt,
+            "Game_time_of_day": self.game_time_of_day(),
+            "Game_weekday": self.game_day_of_week(),
+            "Engine_depth": self.edepth,
+            "Game_number": self.game_num,
+            "Game_type": self.headers["Time_control"],
+            "White_player": self.headers["White_player"],
+            "Black_player": self.headers["Black_player"],
+            "White_rating": self.headers["White_rating"],
+            "Black_rating": self.headers["Black_rating"],
+            "User_colour": self.headers["User_Colour"],
+            "User_rating": self.headers["User_rating"],
+            "opponent_rating": self.headers["Opponent_rating"],
+            "User_winner": self.headers["User_winner"],
+            "Opening_name": self.headers["Opening_name"],
+            "Opening_class": self.headers["Opening_class"],
+            "Termination": self.headers["Termination"],
+            "End_type": self.headers["Win_draw_loss"],
+            "Number_of_moves": self.total_moves,
+            "Accuracy": self.gm_acc,
+            "Opening_accuracy": self.o_acc,
+            "Mid_accuracy": self.m_acc,
+            "End_accuracy": self.e_acc,
+            "No_best": self.no_best,
+            "No_great": self.no_excl,
+            "No_good": self.no_good,
+            "No_inaccuracy": self.no_inac,
+            "No_mistake": self.no_mist,
+            "No_blunder": self.no_blun,
+            "No_missed_win": self.no_misw,
+            "Improvement": self.improve,
+            "user_castle_num": self.user_castle_mv,
+            "opp_castle_num": self.opp_castle_mv,
+            "user_castled": self.user_castled,
+            "opp_castled": self.opp_castled,
+            "user_castle_phase": self.user_castle_phase,
+            "Opp_castle_phase": self.opp_castle_phase},
+            index=[0])
+        game_df.to_csv(
+            self.file_paths.game_data, mode='a',
+            header=False, index=False)
+
+    def game_time_of_day(self):
+        day_hour = int(date.strftime(self.game_dt, "%H"))
+        if day_hour <= 6:
+            time_of_day = "Night"
+        elif day_hour <= 12:
+            time_of_day = "Morning"
+        elif day_hour <= 18:
+            time_of_day = "Afternoon"
+        elif day_hour <= 24:
+            time_of_day = "Evening"
+        return time_of_day
+
+    def game_day_of_week(self):
+        week_num_base = int(date.isoweekday(self.game_dt))
+        weekday_num = week_num_base - 1
+        weekdays = ["Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday"]
+        return weekdays[weekday_num]
 
     def white_castle_move_num(self):
         return sum(self.w_castle_num)
@@ -405,6 +434,7 @@ class ChessMove(ChessGame):
         engine: chess.engine.SimpleEngine,
         logger: Logger,
         tot_games: int,
+        chess_game,
         game_num: int,
         board, move_num: int,
         game_datetime: datetime,
@@ -419,7 +449,9 @@ class ChessMove(ChessGame):
         w_castle_num: list,
         b_castle_num: list):
         ChessGame.__init__(self, username, edepth,
-                           start_date, engine, game_num, logger, tot_games)
+                           start_date, engine, game_num,
+                           logger, tot_games)
+        self.chess_game = chess_game
         self.board = board
         self.engine = engine
         self.move_num = move_num
@@ -448,6 +480,7 @@ class ChessMove(ChessGame):
         self.castle_type = self.castling_type()
         self.w_castle_mv_num = self.white_castle_move_num()
         self.b_castle_mv_num = self.black_castle_move_num()
+        self.move_time = self.get_time_spent_on_move()
         self.export_move_data()
         self.append_to_game_lists()
 
@@ -562,7 +595,7 @@ class ChessMove(ChessGame):
         return mv_colour
 
     def castling_type(self):
-        if self.piece == "king" and self.move_col == "white" and self.str_ml == "e1g1":
+        if (self.piece == "king" and self.move_col == "white" and self.str_ml == "e1g1"):
             cas_type = "white_short"
         elif self.piece == "king" and self.move_col == "white" and self.str_ml == "e1c1":
             cas_type = "white_long"
@@ -588,6 +621,25 @@ class ChessMove(ChessGame):
             black_castle_move = 0
         return black_castle_move
 
+    def get_time_spent_on_move(self):
+        chess_game_pgn = open(self.file_paths.temp)
+        game = chess.pgn.read_game(chess_game_pgn)
+        timerem_w = game.headers["TimeControl"]
+        timerem_b = game.headers["TimeControl"]
+        time_list = []
+        for num, move in enumerate(game.mainline()):
+            if num % 2 == 0:
+                move_time_w = move.clock()
+                time_spent = round(float(timerem_w) - move_time_w, 3)
+                time_list.append(time_spent)
+                timerem_w = move_time_w
+            else:
+                move_time_b = move.clock()
+                time_spent = round(float(timerem_b) - move_time_b, 3)
+                time_list.append(time_spent)
+                timerem_b = move_time_b
+        return time_list[int(self.move_num)]
+
     def export_move_data(self) -> None:
         "Exports the move date to a csv."
         move_df = pd.DataFrame({
@@ -608,6 +660,7 @@ class ChessMove(ChessGame):
             "Castling_type": self.castle_type,
             "White_castle_num": self.w_castle_mv_num,
             "Black_castle_num": self.b_castle_mv_num,
+            "Move_time": self.move_time
             }, index=[0])
         move_df.to_csv(
             self.file_paths.move_data, mode='a',

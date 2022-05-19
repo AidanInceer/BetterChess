@@ -68,7 +68,8 @@ def clean_movecsv(movefilepath: str, logfilepath: str):
             "Move_colour",
             "Castling_type",
             "White_castle_num",
-            "Black_castle_num"]
+            "Black_castle_num",
+            "Move_time"]
         unclean_df = pd.read_csv(movefilepath, names=col_names)
         df_filter = unclean_df["Game_number"] != llog_gn
         clean_df = unclean_df[df_filter]
