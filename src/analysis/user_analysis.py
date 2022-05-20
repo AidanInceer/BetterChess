@@ -535,7 +535,7 @@ class ChessMove(ChessGame):
         gm_mv_ac: list,
         move_type_list: list,
         w_castle_num: list,
-        b_castle_num: list):
+            b_castle_num: list):
 
         ChessGame.__init__(self, username, edepth,
                            start_date, engine, game_num,
@@ -692,13 +692,21 @@ class ChessMove(ChessGame):
 
     def castling_type(self) -> str:
         """Returns the type of castling - None if current move isnt castle."""
-        if (self.piece == "king" and self.move_col == "white" and self.str_ml == "e1g1"):
+        if (self.piece == "king"
+                and self.move_col == "white"
+                and self.str_ml == "e1g1"):
             cas_type = "white_short"
-        elif self.piece == "king" and self.move_col == "white" and self.str_ml == "e1c1":
+        elif (self.piece == "king"
+                and self.move_col == "white"
+                and self.str_ml == "e1c1"):
             cas_type = "white_long"
-        elif self.piece == "king" and self.move_col == "black" and self.str_ml == "e8g8":
+        elif (self.piece == "king"
+                and self.move_col == "black"
+                and self.str_ml == "e8g8"):
             cas_type = "black_short"
-        elif self.piece == "king" and self.move_col == "black" and self.str_ml == "e8c8":
+        elif (self.piece == "king"
+                and self.move_col == "black"
+                and self.str_ml == "e8c8"):
             cas_type = "black_long"
         else:
             cas_type = None
@@ -706,7 +714,8 @@ class ChessMove(ChessGame):
 
     def white_castle_move_num(self) -> int:
         """Move which white castled in the game."""
-        if self.castle_type == "white_short" or self.castle_type == "white_long":
+        if (self.castle_type == "white_short"
+                or self.castle_type == "white_long"):
             white_castle_move = self.move_num
         else:
             white_castle_move = 0
@@ -714,7 +723,8 @@ class ChessMove(ChessGame):
 
     def black_castle_move_num(self) -> int:
         """Move which black castled in the game."""
-        if self.castle_type == "black_short" or self.castle_type == "black_long":
+        if (self.castle_type == "black_short"
+                or self.castle_type == "black_long"):
             black_castle_move = self.move_num
         else:
             black_castle_move = 0
@@ -939,7 +949,7 @@ class FileHandler:
     def __init__(self, username: str):
         self.username = username
         self.dir = os.path.dirname(__file__)
-        stockfish_path = r"../lib/stkfsh_14.1/stockfish_14.1_win_x64_avx2.exe"
+        stockfish_path = r"../lib/stkfsh_14.1/stk_14.1.exe"
         self.stockfish = os.path.join(self.dir, stockfish_path)
         self.userlogfile = os.path.join(
             self.dir,
@@ -956,13 +966,13 @@ class InputHandler:
     """Class for determining input arguments for the user class."""
     @staticmethod
     def get_inputs() -> dict:
-        print("============================================================================")
+        print("==============================================================")
         username = InputHandler.user_input()
         edepth = InputHandler.depth_input()
         start_year = InputHandler.year_input()
         start_month = InputHandler.month_input()
         start_date = InputHandler.start_datetime(start_year, start_month)
-        print("============================================================================")
+        print("==============================================================")
         return {"username": username,
                 "edepth": edepth,
                 "start_date": start_date}
@@ -992,15 +1002,17 @@ class InputHandler:
     @staticmethod
     def year_input() -> str:
         start_year = input("Enter the start year for analysis (e.g. 2020): ")
-        if len(start_year) != 4 or (re.match(r'^([\s\d]+)$', start_year) == None):
+        if len(start_year) != 4 or (re.match(r'^([\s\d]+)$',
+                                             start_year) is None):
             print("Please enter a valid start year")
             InputHandler.depth_input()
         return start_year
 
     @staticmethod
     def month_input() -> str:
-        start_month = input("Enter the start month for analysis (e.g. 01-12): ")
-        if len(start_month) != 2 or (re.match(r'^([\s\d]+)$', start_month) == None):
+        start_month = input("Enter the start month for analysis (e.g. 01): ")
+        if len(start_month) != 2 or (re.match(r'^([\s\d]+)$',
+                                              start_month) is None):
             print("Please enter a valid start month")
             InputHandler.depth_input()
         if int(start_month) > 12 or int(start_month) < 1:
