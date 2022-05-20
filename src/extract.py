@@ -46,8 +46,12 @@ def data_extract(username: str, filepath: str, logfilepath: str, logger: Logger)
     df.to_csv(filepath, mode="a", index=False, sep="|", header=False)
 
 
-def extract_filter(in_log: bool, in_curr: bool,
-                   url: str, filepath: str, logfilepath: str) -> list:
+def extract_filter(in_log: bool,
+                   in_curr: bool,
+                   url: str,
+                   filepath: str,
+                   logfilepath: str) -> list:
+    """Filter to remove any incomplete games"""
     empty_list = []
     if not in_log:
         return collect_game_data(url)
@@ -58,7 +62,7 @@ def extract_filter(in_log: bool, in_curr: bool,
         return empty_list
 
 
-def filter_pgncsv(filepath, logfilepath):
+def filter_pgncsv(filepath: str, logfilepath: str) -> None:
     """Removes games of the current month in the csv
      and then reruns the extract for that month."""
     # Opens logging file
@@ -67,14 +71,23 @@ def filter_pgncsv(filepath, logfilepath):
     llog = lines[-1]
     llog_dt = llog.split("|")[1].strip()
     col_names = ["url_date", "game_data"]
-    unclean_df = pd.read_csv(filepath, names=col_names, delimiter="|", header=None)
+    unclean_df = pd.read_csv(
+        filepath,
+        names=col_names,
+        delimiter="|",
+        header=None)
     df_filter = unclean_df["url_date"] != llog_dt
     clean_df = unclean_df[df_filter]
-    clean_df.to_csv(filepath, mode="w", sep="|",
-                    index=False, header=None)
+    clean_df.to_csv(
+        filepath,
+        mode="w",
+        sep="|",
+        index=False,
+        header=None)
 
 
 def collect_game_data(url: str) -> list:
+    """returns a list of all the users chess games."""
     data = requests.get(url).json()
     url_games_list = []
     for game_pgn in data["games"]:
@@ -84,6 +97,7 @@ def collect_game_data(url: str) -> list:
 
 
 def url_in_log(url: str, logfilepath: str) -> bool:
+    """Checks to see if the url is allready in the logfile"""
     url_date = get_url_date(url)
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
@@ -99,7 +113,7 @@ def url_in_log(url: str, logfilepath: str) -> bool:
         return False
 
 
-def in_curr_month(url: str):
+def in_curr_month(url: str) -> bool:
     """Checks to see if the extracted month equals the current month"""
     url_date = get_url_date(url)
     curr_mth = get_curr_mth()
@@ -109,7 +123,8 @@ def in_curr_month(url: str):
         return False
 
 
-def get_curr_mth():
+def get_curr_mth() -> datetime:
+    """Returns the current month."""
     cyv = datetime.now().year
     cmv = datetime.now().month
     curr_mth = datetime.strptime(

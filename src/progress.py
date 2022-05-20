@@ -1,9 +1,10 @@
-
+"""Progress bars for printing analysis progress."""
 
 from datetime import datetime
 
 
-def simple_progress_bar(num, total, type):
+def simple_progress_bar(num, total, type) -> None:
+    """Simple progress bar."""
     if type == 0:
         x = "of User's data extracted"
     elif type == 1:
@@ -14,8 +15,10 @@ def simple_progress_bar(num, total, type):
     print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")
 
 
-def progress_bar(game_num: int, total_games: int, start_time: datetime,
-                 end_time: datetime, ):
+def progress_bar(game_num: int,
+                 total_games: int,
+                 start_time: datetime,
+                 end_time: datetime) -> None:
     """Creates a progress bar and estimates time to completion."""
     avg_game_time = timers(start_time, end_time)
     time_r = ((total_games-(game_num+1))*(avg_game_time))/3600
@@ -40,10 +43,10 @@ def progress_bar(game_num: int, total_games: int, start_time: datetime,
     bar = "❚" * int(percent/2.5) + "-" * (40-int(percent/2.5))
     print(f"\r|{bar}| {percent:.2f}% | ETA: {eta} | Game: {game_num + 1} / {total_games} ", end="\r")
 
-def timers(start_time: datetime, end_time: datetime, time_list: list = []):
+
+def timers(start_time: datetime, end_time: datetime, time_list: list = []) -> float:
+    """time taken to analyse a chess gmae - used to calculate the time remaining for analysis."""
     analysis_time = end_time - start_time
     time_list.append(analysis_time)
     avg_game_time = sum(time_list)/len(time_list)
     return avg_game_time
-
-

@@ -1,3 +1,4 @@
+"""Module for analysing a users games/move data."""
 import analysis_filter
 import chess
 import chess.engine
@@ -17,6 +18,7 @@ from logging import Logger
 
 
 class ChessUser:
+    """"Information and methods relating to a user of Chess.com."""
     def __init__(self, username: str, edepth: int, start_date: datetime):
         self.username = username
         self.edepth = edepth
@@ -24,6 +26,7 @@ class ChessUser:
         self.file_paths = FileHandler(username=self.username)
 
     def create_logger(self) -> Logger:
+        """Creates a logger for data extract and user game analysis."""
         logging.basicConfig(
             filename=self.file_paths.userlogfile,
             format='[%(levelname)s %(module)s] %(message)s',
@@ -32,11 +35,13 @@ class ChessUser:
         return self.logger
 
     def create_engine(self) -> chess.engine.SimpleEngine:
+        """Initializes a the chess engine."""
         self.engine = chess.engine.SimpleEngine.popen_uci(
             self.file_paths.stockfish)
         return self.engine
 
     def run_analysis(self) -> None:
+        """Extracts users data and runs the analysis on their games."""
         extract.data_extract(
             self.username,
             self.file_paths.pgn_data,
@@ -45,27 +50,46 @@ class ChessUser:
         self.analyse_user()
 
     def analyse_user(self) -> None:
-        all_games_data = pd.read_csv(
+        """Analyses all of the given users games."""
+        all_games = self.init_all_games()
+        print("Analysing users data: ")
+        analysis_filter.clean_movecsv(
+            self.file_paths.move_data,
+            self.file_paths.userlogfile)
+
+        # Iterate through all users games.
+        for game_num, chess_game in enumerate(all_games["game_data"]):
+            self.write_temp_pgn(temp_game=chess_game)
+            game = ChessGame(
+                self.username, self.edepth,
+                self.start_date, self.engine,
+                game_num, self.logger, self.tot_games)
+            game.run_game_analysis()
+
+    def init_all_games(self) -> pd.DataFrame:
+        """Returns a dataframe of all users games from the users pgn csv."""
+        all_games = pd.read_csv(
             self.file_paths.pgn_data, delimiter="|",
             names=["url_date", "game_data"])
-        self.tot_games = len(all_games_data["game_data"])
-        print("Analysing users data: ")
-        analysis_filter.clean_movecsv(self.file_paths.move_data,
-                                      self.file_paths.userlogfile)
-        for game_num, chess_game in enumerate(all_games_data["game_data"]):
-            with open(self.file_paths.temp, "w") as temp_pgn:
-                temp_pgn.write(str(chess_game.replace(" ; ", "\n")))
-            game = ChessGame(self.username, self.edepth,
-                             self.start_date, self.engine,
-                             game_num, self.logger, self.tot_games)
-            game.run_game_analysis()
+        self.tot_games = len(all_games["game_data"])
+        return all_games
+
+    def write_temp_pgn(self, temp_game) -> None:
+        """Writes the current game to the temp.pgn file."""
+        with open(self.file_paths.temp, "w") as temp_pgn:
+            temp_pgn.write(str(temp_game.replace(" ; ", "\n")))
 
 
 class ChessGame(ChessUser):
+    """Chess game for analysis."""
     def __init__(
-            self, username: str, edepth: int,
-            start_date: datetime, engine: chess.engine.SimpleEngine,
-            game_num: int, logger: Logger,
+            self,
+            username: str,
+            edepth: int,
+            start_date: datetime,
+            engine: chess.engine.SimpleEngine,
+            game_num: int,
+            logger: Logger,
             tot_games: int):
         super().__init__(username, edepth, start_date)
         self.engine = engine
@@ -73,16 +97,89 @@ class ChessGame(ChessUser):
         self.logger = logger
         self.tot_games = tot_games
 
-    def init_game(self):
+    def run_game_analysis(self) -> None:
+        """main function for ChessGame class, runs the init."""
+        self.init_game_analysis()
+        if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
+            start = time.perf_counter()
+            self.logger.info(f"| {self.game_dt} |{self.game_num}")
+            for move_num, move in enumerate(self.chess_game.mainline_moves()):
+                chess_move = ChessMove(
+                    self.username,
+                    self.edepth,
+                    self.start_date,
+                    self.engine,
+                    self.logger,
+                    self.tot_games,
+                    self.chess_game,
+                    self.game_num,
+                    self.board,
+                    move_num,
+                    self.game_dt,
+                    self.gm_mv_num,
+                    self.gm_mv,
+                    self.gm_best_mv,
+                    self.best_move_eval,
+                    self.mainline_eval,
+                    self.move_eval_diff,
+                    self.gm_mv_ac,
+                    self.move_type_list,
+                    self.w_castle_num,
+                    self.b_castle_num)
+                chess_move.analyse_move(move)
+            try:
+                self.total_moves = move_num
+            except UnboundLocalError:
+                self.total_moves = 0
+            self.analyse_game()
+            end = time.perf_counter()
+            progress.progress_bar(
+                self.game_num,
+                self.tot_games,
+                start,
+                end)
+
+    def init_game_analysis(self) -> None:
+        """Initalises the analysis, headers and filters past analysis runs."""
+        self.init_game()
+        self.init_board()
+        self.init_game_lists()
+        # self.time_list()
+        game_headers = ChessGameHeaders(
+            self.username,
+            self.edepth,
+            self.start_date,
+            self.engine,
+            self.game_num,
+            self.logger,
+            self.tot_games,
+            self.chess_game)
+        self.headers = game_headers.collect_headers()
+        self.game_dt = game_headers.collect_headers()["Game_datetime"]
+        self.game_analysis_filter()
+
+    def analyse_game(self) -> None:
+        """
+        Prepares move data so it can be analysed at a game level
+        and exports game data.
+        """
+        self.sum_type_dict = self.sum_move_types()
+        self.user_game_data()
+        self.export_game_data()
+
+    def init_game(self) -> chess.pgn.Game:
+        """Initialises the chess game."""
         self.chess_game_pgn = open(self.file_paths.temp)
         self.chess_game = chess.pgn.read_game(self.chess_game_pgn)
         return self.chess_game
 
-    def init_board(self):
+    def init_board(self) -> chess.pgn.Game:
+        """Initialises the chess board."""
         self.board = self.chess_game.board()
         return self.board
 
     def init_game_lists(self) -> None:
+        """Initialises the data lists."""
         self.gm_mv_num = []
         self.gm_mv = []
         self.gm_best_mv = []
@@ -94,56 +191,54 @@ class ChessGame(ChessUser):
         self.w_castle_num = []
         self.b_castle_num = []
 
-    def init_game_analysis(self) -> None:
-        self.init_game()
-        self.init_board()
-        self.init_game_lists()
-        # self.time_list()
-        game_headers = ChessGameHeaders(
-            self.username, self.edepth,
-            self.start_date, self.engine,
-            self.game_num, self.logger,
-            self.tot_games, self.chess_game)
-        self.headers = game_headers.collect_headers()
-        self.game_dt = game_headers.collect_headers()["Game_datetime"]
-        self.game_analysis_filter()
-
     def game_analysis_filter(self) -> None:
+        """
+        Calls the analysis filter module to remove incomplete
+        game analysis runs.
+        """
         analysis_filter.init_game_logs(
             self.file_paths.userlogfile,
             self.logger)
         self.log_dt = analysis_filter.llog_game(self.file_paths.userlogfile)
 
-    def run_game_analysis(self) -> None:
-        self.init_game_analysis()
-        if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
-            start = time.perf_counter()
-            self.logger.info(f"| {self.game_dt} |{self.game_num}")
-            for move_num, move in enumerate(self.chess_game.mainline_moves()):
-                chess_move = ChessMove(
-                    self.username, self.edepth, self.start_date,
-                    self.engine, self.logger, self.tot_games, self.chess_game,
-                    self.game_num, self.board, move_num, self.game_dt,
-                    self.gm_mv_num, self.gm_mv, self.gm_best_mv,
-                    self.best_move_eval, self.mainline_eval,
-                    self.move_eval_diff, self.gm_mv_ac, self.move_type_list,
-                    self.w_castle_num, self.b_castle_num)
-                chess_move.analyse_move(move)
-            try:
-                self.total_moves = move_num
-            except UnboundLocalError:
-                self.total_moves = 0
-            self.analyse_game()
-            end = time.perf_counter()
-            progress.progress_bar(self.game_num, self.tot_games,
-                                  start, end)
-
-    def analyse_game(self) -> None:
-        self.sum_type_dict = self.sum_move_types()
-        self.user_game_data()
-        self.export_game_data()
+    def sum_move_types(self) -> dict:
+        '''Returns a dictionary of the sum move types for black and white.'''
+        self.w_best = self.move_type_list[::2].count(2)
+        self.b_best = self.move_type_list[1::2].count(2)
+        self.w_excl = self.move_type_list[::2].count(1)
+        self.w_excl = self.move_type_list[1::2].count(1)
+        self.w_good = self.move_type_list[::2].count(0)
+        self.b_good = self.move_type_list[1::2].count(0)
+        self.w_inac = self.move_type_list[::2].count(-1)
+        self.b_inac = self.move_type_list[1::2].count(-1)
+        self.w_mist = self.move_type_list[::2].count(-2)
+        self.b_mist = self.move_type_list[1::2].count(-2)
+        self.w_blun = self.move_type_list[::2].count(-3)
+        self.b_blun = self.move_type_list[1::2].count(-3)
+        self.w_misw = self.move_type_list[::2].count(-4)
+        self.b_misw = self.move_type_list[1::2].count(-4)
+        self.move_dict = {
+            "No_w_best": self.w_best,
+            "No_b_best": self.b_best,
+            "No_w_excl": self.w_excl,
+            "No_b_excl": self.w_excl,
+            "No_w_good": self.w_good,
+            "No_b_good": self.b_good,
+            "No_w_inac": self.w_inac,
+            "No_b_inac": self.b_inac,
+            "No_w_mist": self.w_mist,
+            "No_b_mist": self.b_mist,
+            "No_w_blun": self.w_blun,
+            "No_b_blun": self.b_blun,
+            "No_w_misw": self.w_misw,
+            "No_b_misw": self.b_misw}
+        return self.move_dict
 
     def user_game_data(self) -> None:
+        """
+        Prepares move/game analysis for export and assigns data to
+        user/opp depending on what colour the user is playing as.
+        """
         if self.username == self.headers["White_player"]:
             self.gm_acc = self.game_w_acc()
             self.o_acc = self.op_w_acc()
@@ -184,7 +279,7 @@ class ChessGame(ChessUser):
             self.opp_castle_phase = self.white_castle_phase()
 
     def export_game_data(self) -> None:
-        "Exports the move date to a csv."
+        """Exports the move date to the game_data.csv."""
         game_df = pd.DataFrame({
             "Username": self.username,
             "Date": self.game_dt,
@@ -229,7 +324,8 @@ class ChessGame(ChessUser):
             self.file_paths.game_data, mode='a',
             header=False, index=False)
 
-    def game_time_of_day(self):
+    def game_time_of_day(self) -> str:
+        """Returns the time of day as a string"""
         day_hour = int(date.strftime(self.game_dt, "%H"))
         if day_hour <= 6:
             time_of_day = "Night"
@@ -241,7 +337,8 @@ class ChessGame(ChessUser):
             time_of_day = "Evening"
         return time_of_day
 
-    def game_day_of_week(self):
+    def game_day_of_week(self) -> str:
+        """Returns the day of the week that the game is played."""
         week_num_base = int(date.isoweekday(self.game_dt))
         weekday_num = week_num_base - 1
         weekdays = ["Monday",
@@ -253,25 +350,39 @@ class ChessGame(ChessUser):
                     "Sunday"]
         return weekdays[weekday_num]
 
-    def white_castle_move_num(self):
+    def white_castle_move_num(self) -> int:
+        """
+        Returns the move which white castled
+        (0 if player didn't castle).
+        """
         return sum(self.w_castle_num)
 
-    def black_castle_move_num(self):
+    def black_castle_move_num(self) -> int:
+        """
+        Returns the move which black castled
+        (0 if player didn't castle).
+        """
         return sum(self.b_castle_num)
 
-    def has_white_castled(self):
+    def has_white_castled(self) -> int:
+        """Checks to see if white castle in the game."""
         if sum(self.w_castle_num) > 0:
             return 1
         else:
             return 0
 
-    def has_black_castled(self):
+    def has_black_castled(self) -> int:
+        """Checks to see if white castle in the game."""
         if sum(self.b_castle_num) > 0:
             return 1
         else:
             return 0
 
-    def white_castle_phase(self):
+    def white_castle_phase(self) -> str:
+        """
+        Returns the game phase which white castled in -
+        returns "None" if player didn't castle.
+        """
         if self.total_moves == 0:
             return "None"
         else:
@@ -284,7 +395,11 @@ class ChessGame(ChessUser):
             elif sum(self.w_castle_num)/(self.total_moves) <= 1:
                 return "Endgame"
 
-    def black_castle_phase(self):
+    def black_castle_phase(self) -> str:
+        """
+        Returns the game phase which black castled in -
+        returns "None" if player didn't castle.
+        """
         if self.total_moves == 0:
             return "None"
         else:
@@ -297,34 +412,8 @@ class ChessGame(ChessUser):
             elif sum(self.b_castle_num)/(self.total_moves) <= 1:
                 return "Endgame"
 
-    def sum_move_types(self) -> dict:
-        '''Returns the number of best moves for black and white.'''
-        self.w_best = self.move_type_list[::2].count(2)
-        self.b_best = self.move_type_list[1::2].count(2)
-        self.w_excl = self.move_type_list[::2].count(1)
-        self.w_excl = self.move_type_list[1::2].count(1)
-        self.w_good = self.move_type_list[::2].count(0)
-        self.b_good = self.move_type_list[1::2].count(0)
-        self.w_inac = self.move_type_list[::2].count(-1)
-        self.b_inac = self.move_type_list[1::2].count(-1)
-        self.w_mist = self.move_type_list[::2].count(-2)
-        self.b_mist = self.move_type_list[1::2].count(-2)
-        self.w_blun = self.move_type_list[::2].count(-3)
-        self.b_blun = self.move_type_list[1::2].count(-3)
-        self.w_misw = self.move_type_list[::2].count(-4)
-        self.b_misw = self.move_type_list[1::2].count(-4)
-        self.move_dict = {
-            "No_w_best": self.w_best, "No_b_best": self.b_best,
-            "No_w_excl": self.w_excl, "No_b_excl": self.w_excl,
-            "No_w_good": self.w_good, "No_b_good": self.b_good,
-            "No_w_inac": self.w_inac, "No_b_inac": self.b_inac,
-            "No_w_mist": self.w_mist, "No_b_mist": self.b_mist,
-            "No_w_blun": self.w_blun, "No_b_blun": self.b_blun,
-            "No_w_misw": self.w_misw, "No_b_misw": self.b_misw}
-        return self.move_dict
-
     def game_w_acc(self) -> float:
-        '''returns white players game accuracy.'''
+        """Returns white players game accuracy."""
         w_list = self.gm_mv_ac[::2]
         list_len = len(self.gm_mv_ac[::2])
         if list_len == 0:
@@ -334,7 +423,7 @@ class ChessGame(ChessUser):
         return self.wg_acc
 
     def game_b_acc(self) -> float:
-        '''returns black players game accuracy.'''
+        """Returns black players game for accuracy."""
         b__list = self.gm_mv_ac[1::2]
         list_len = len(self.gm_mv_ac[1::2])
         if list_len == 0:
@@ -344,7 +433,7 @@ class ChessGame(ChessUser):
         return self.bg_acc
 
     def op_w_acc(self) -> float:
-        '''Calculates the opening accuracy white.'''
+        '''Calculates the opening accuracy for white.'''
         list_w = self.gm_mv_ac[::2]
         sep_len = len(np.array_split(list_w, 3)[0])
         if sep_len == 0:
@@ -354,7 +443,7 @@ class ChessGame(ChessUser):
         return self.ow
 
     def mid_w_acc(self) -> float:
-        '''Calculates the midgame accuracy white.'''
+        '''Calculates the midgame accuracy for white.'''
         list_w = self.gm_mv_ac[::2]
         sep_len = len(np.array_split(list_w, 3)[1])
         if sep_len == 0:
@@ -364,7 +453,7 @@ class ChessGame(ChessUser):
         return self.mw
 
     def end_w_acc(self) -> float:
-        '''Calculates the endgame accuracy white.'''
+        '''Calculates the endgame accuracy for white.'''
         list_w = self.gm_mv_ac[::2]
         sep_len = len(np.array_split(list_w, 3)[2])
         if sep_len == 0:
@@ -374,7 +463,7 @@ class ChessGame(ChessUser):
         return self.ew
 
     def op_b_acc(self) -> float:
-        '''Calculates the opening accuracy black.'''
+        '''Calculates the opening accuracy for black.'''
         list_b = self.gm_mv_ac[1::2]
         sep_len = len(np.array_split(list_b, 3)[0])
         if sep_len == 0:
@@ -384,7 +473,7 @@ class ChessGame(ChessUser):
         return self.ob
 
     def mid_b_acc(self) -> float:
-        '''Calculates the opening accuracy white.'''
+        '''Calculates the opening accuracy for white.'''
         list_b = self.gm_mv_ac[1::2]
         sep_len = len(np.array_split(list_b, 3)[1])
         if sep_len == 0:
@@ -394,7 +483,7 @@ class ChessGame(ChessUser):
         return self.mb
 
     def end_b_acc(self) -> float:
-        '''Calculates the opening accuracy white.'''
+        '''Calculates the opening accuracy for white.'''
         list_b = self.gm_mv_ac[1::2]
         sep_len = len(np.array_split(list_b, 3)[2])
         if sep_len == 0:
@@ -404,8 +493,7 @@ class ChessGame(ChessUser):
         return self.eb
 
     def w_sec_imp(self) -> str:
-        '''Returns the area of improvement for the white player'''
-        # White
+        '''Returns the area of improvement for the white player.'''
         if self.ow < self.mw and self.ow < self.ew:
             self.imp_w = "Opening"
         elif self.mw < self.ow and self.mw < self.ew:
@@ -415,7 +503,7 @@ class ChessGame(ChessUser):
         return self.imp_w
 
     def b_sec_imp(self) -> str:
-        '''Returns the area of improvement for the black player'''
+        '''Returns the area of improvement for the black player.'''
         if self.ob < self.mb and self.ob < self.eb:
             self.imp_b = "Opening"
         elif self.mb < self.ob and self.mb < self.eb:
@@ -434,7 +522,7 @@ class ChessMove(ChessGame):
         engine: chess.engine.SimpleEngine,
         logger: Logger,
         tot_games: int,
-        chess_game,
+        chess_game: chess.pgn.Game,
         game_num: int,
         board, move_num: int,
         game_datetime: datetime,
@@ -448,6 +536,7 @@ class ChessMove(ChessGame):
         move_type_list: list,
         w_castle_num: list,
         b_castle_num: list):
+
         ChessGame.__init__(self, username, edepth,
                            start_date, engine, game_num,
                            logger, tot_games)
@@ -556,7 +645,8 @@ class ChessMove(ChessGame):
             move_type = -4
         return move_type
 
-    def chess_piece(self, move):
+    def chess_piece(self, move) -> str:
+        """Returns the piece type for the move played."""
         square_int = self.get_piece_square_int(move)
         curr_board = self.get_curr_board()
         piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square_int)
@@ -576,25 +666,32 @@ class ChessMove(ChessGame):
             self.piece_type = " "
         return self.piece_type
 
-    def get_curr_board(self):
+    def get_curr_board(self) -> chess.BaseBoard:
+        """Returns the current board."""
         curr_fen = self.board.board_fen()
         return chess.BaseBoard(board_fen=curr_fen)
 
-    def get_piece_square_int(self, move):
+    def get_piece_square_int(self, move) -> int:
+        """
+        Returns an integer between 0-63 which represents
+        the pieces position on the board.
+        """
         piece_col = str(move)[2:3]
         piece_row = str(move)[3:4]
         piece_square = str(piece_col + piece_row)
         square_int = chess.parse_square(piece_square)
         return square_int
 
-    def move_colour(self):
+    def move_colour(self) -> str:
+        """Returns the current moves colour."""
         if self.move_num % 2 == 0:
             mv_colour = "white"
         else:
             mv_colour = "black"
         return mv_colour
 
-    def castling_type(self):
+    def castling_type(self) -> str:
+        """Returns the type of castling - None if current move isnt castle."""
         if (self.piece == "king" and self.move_col == "white" and self.str_ml == "e1g1"):
             cas_type = "white_short"
         elif self.piece == "king" and self.move_col == "white" and self.str_ml == "e1c1":
@@ -607,21 +704,24 @@ class ChessMove(ChessGame):
             cas_type = None
         return cas_type
 
-    def white_castle_move_num(self):
+    def white_castle_move_num(self) -> int:
+        """Move which white castled in the game."""
         if self.castle_type == "white_short" or self.castle_type == "white_long":
             white_castle_move = self.move_num
         else:
             white_castle_move = 0
         return white_castle_move
 
-    def black_castle_move_num(self):
+    def black_castle_move_num(self) -> int:
+        """Move which black castled in the game."""
         if self.castle_type == "black_short" or self.castle_type == "black_long":
             black_castle_move = self.move_num
         else:
             black_castle_move = 0
         return black_castle_move
 
-    def get_time_spent_on_move(self):
+    def get_time_spent_on_move(self) -> float:
+        """Calculated the time the player spent on the current move."""
         chess_game_pgn = open(self.file_paths.temp)
         game = chess.pgn.read_game(chess_game_pgn)
         timerem_w = game.headers["TimeControl"]
@@ -688,6 +788,7 @@ class ChessGameHeaders(ChessGame):
         self.engine = engine
 
     def collect_headers(self) -> dict:
+        """Dictionary of all the headers required for analysis."""
         header_dict = {
             "Game_date": self.game_dt(self.chess_game),
             "Game_time": self.game_t(self.chess_game),
@@ -709,31 +810,38 @@ class ChessGameHeaders(ChessGame):
         return header_dict
 
     def time_control(self, chess_game) -> str:
+        """Returns the time control header."""
         self.game_time_cont = chess_game.headers["TimeControl"]
         return self.game_time_cont
 
     def player_white(self, chess_game) -> str:
+        """Returns the white player header."""
         self.white = chess_game.headers["White"]
         return self.white
 
     def player_black(self, chess_game) -> str:
+        """Returns the black player header."""
         self.black = chess_game.headers["Black"]
         return self.black
 
     def user_colour(self) -> str:
+        """Returns the user colour."""
         white = self.player_white(self.chess_game)
         self.player = "White" if white == self.username else "Black"
         return self.player
 
     def rating_white(self, chess_game) -> int:
+        "Returns the white rating header."
         self.ratingwhite = int(chess_game.headers["WhiteElo"])
         return self.ratingwhite
 
     def rating_black(self, chess_game) -> int:
+        "Returns the black rating header."
         self.ratingblack = int(chess_game.headers["BlackElo"])
         return self.ratingblack
 
     def opening_cls(self, chess_game) -> str:
+        """Returns the opening class of the current game."""
         try:
             self.opening_class = chess_game.headers["ECO"]
         except KeyError:
@@ -741,6 +849,7 @@ class ChessGameHeaders(ChessGame):
         return self.opening_class
 
     def opening_nm(self, chess_game) -> str:
+        """Returns the opening name of the current game."""
         try:
             opening_name_raw = chess_game.headers["ECOUrl"]
         except KeyError:
@@ -750,6 +859,7 @@ class ChessGameHeaders(ChessGame):
         return self.opening_name
 
     def game_termination(self, chess_game) -> str:
+        """Returns the termination (way the game ended) header."""
         termination_raw = chess_game.headers["Termination"]
         winner_check = termination_raw.split(" ")
         draw_check = " ".join(winner_check[0:2])
@@ -762,6 +872,7 @@ class ChessGameHeaders(ChessGame):
         return self.termination
 
     def rating_user(self) -> int:
+        """Returns the users rating."""
         player = self.user_colour()
         rating_w = self.rating_white(self.chess_game)
         rating_b = self.rating_black(self.chess_game)
@@ -769,6 +880,7 @@ class ChessGameHeaders(ChessGame):
         return self.user_rating
 
     def rating_opponent(self) -> int:
+        """Returns the oppenents rating."""
         player = self.user_colour()
         rating_w = self.rating_white(self.chess_game)
         rating_b = self.rating_black(self.chess_game)
@@ -776,6 +888,7 @@ class ChessGameHeaders(ChessGame):
         return self.opp_rating
 
     def win_draw_loss(self, chess_game) -> str:
+        """Returns whether the user won, drew or lost the current game."""
         if chess_game.headers["Result"] == "1-0":
             self.end_type = "White"
         elif chess_game.headers["Result"] == "0-1":
@@ -785,6 +898,7 @@ class ChessGameHeaders(ChessGame):
         return self.end_type
 
     def user_winr(self) -> str:
+        """Returns whether the user won, drew or lost the current game."""
         winner = self.win_draw_loss(self.chess_game)
         player = self.user_colour()
         pww = (winner == "White" and player == "White")
@@ -800,14 +914,17 @@ class ChessGameHeaders(ChessGame):
         return self.user_winner
 
     def game_dt(self, chess_game) -> str:
+        """Returns the current game date."""
         self.game_date = chess_game.headers["UTCDate"]
         return self.game_date
 
     def game_t(self, chess_game) -> str:
+        """Returns the current game time."""
         self.game_time = chess_game.headers["UTCTime"]
         return self.game_time
 
     def game_dt_time(self) -> datetime:
+        """returns the datetime of the current game."""
         game_date = self.game_dt(self.chess_game)
         game_time = self.game_t(self.chess_game)
         game_date_time = f"{game_date} {game_time}"
@@ -851,7 +968,7 @@ class InputHandler:
                 "start_date": start_date}
 
     @staticmethod
-    def user_input():
+    def user_input() -> str:
         username = input("Enter your username: ")
         if len(username) == 0:
             print("Please enter a valid username")
@@ -862,7 +979,7 @@ class InputHandler:
         return username
 
     @staticmethod
-    def depth_input():
+    def depth_input() -> str:
         edepth = input("Enter the engine depth (1-20): ")
         if len(edepth) == 0:
             print("Please enter a valid depth")
@@ -873,7 +990,7 @@ class InputHandler:
         return edepth
 
     @staticmethod
-    def year_input():
+    def year_input() -> str:
         start_year = input("Enter the start year for analysis (e.g. 2020): ")
         if len(start_year) != 4 or (re.match(r'^([\s\d]+)$', start_year) == None):
             print("Please enter a valid start year")
@@ -881,7 +998,7 @@ class InputHandler:
         return start_year
 
     @staticmethod
-    def month_input():
+    def month_input() -> str:
         start_month = input("Enter the start month for analysis (e.g. 01-12): ")
         if len(start_month) != 2 or (re.match(r'^([\s\d]+)$', start_month) == None):
             print("Please enter a valid start month")
@@ -892,7 +1009,7 @@ class InputHandler:
         return start_month
 
     @staticmethod
-    def start_datetime(start_year: str, start_month: str):
+    def start_datetime(start_year: str, start_month: str) -> datetime:
         start_datetime = (start_year + "-" + start_month + "-01" + " 00:00:00")
         start_date = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M:%S")
         current_date = datetime.now()

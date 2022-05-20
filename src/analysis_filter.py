@@ -1,10 +1,12 @@
+"""Module for filtering the move_data.csv file to remove any incomplete games."""
 from logging import Logger
 from datetime import datetime
 import pandas as pd
 from os.path import exists
 
 
-def init_game_logs(logfilepath: str, logger: Logger) -> Logger:
+def init_game_logs(logfilepath: str, logger: Logger) -> None:
+    """Initalises the logfile."""
     game_log_list = []
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
@@ -21,7 +23,8 @@ def init_game_logs(logfilepath: str, logger: Logger) -> Logger:
             logger.info(f"| {init_dt} | {game_num}")
 
 
-def llog_game(logfilepath: str):
+def llog_game(logfilepath: str) -> datetime:
+    """Returns the last logged game datatime."""
     game_log_list = []
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
@@ -36,7 +39,7 @@ def llog_game(logfilepath: str):
     return llog_date
 
 
-def clean_movecsv(movefilepath: str, logfilepath: str):
+def clean_movecsv(movefilepath: str, logfilepath: str) -> None:
     '''Removes last unfinished games moves from the move_data csv.'''
     file_exists = file_exist(movefilepath)
     log_not_empty = is_logfile_empty(logfilepath)
@@ -80,6 +83,7 @@ def clean_movecsv(movefilepath: str, logfilepath: str):
 
 
 def file_exist(movefilepath: str):
+    """Checks to see if a file exists."""
     file_exists = exists(movefilepath)
     if file_exists:
         pass
@@ -89,7 +93,8 @@ def file_exist(movefilepath: str):
     return file_exists
 
 
-def is_logfile_empty(logfilepath: str):
+def is_logfile_empty(logfilepath: str) -> bool:
+    """Checks to see if the logfile is empty."""
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
     if not lines:
@@ -97,36 +102,3 @@ def is_logfile_empty(logfilepath: str):
     else:
         has_lines = True
     return has_lines
-
-
-# def column_headers(file_g_data, file_m_data):
-#     game_header_list = [
-#         "Username", "Date", "Game_number", "Engine_depth",
-#         "Game_type", "White_player",
-#         "Black_player", "White_rating", "Black_rating",
-#         "User_colour", "User_rating", "opponent_rating",
-#         "User_winner", "Opening_name",
-#         "Opening_class", "Termination", "Number_of_moves",
-#         "Accuracy", "Opening_accuracy", "Mid_accuracy",
-#         "End_accuracy", "No_best", "No_great", "No_good",
-#         "No_ok", "No_inaccuracy", "No_mistake",
-#         "No_blunder", "Improvement"]
-
-#     move_header_list = [
-#         "Username", "Date", "Game_number", "edepth",
-#         "Move_number", "Move",
-#         "Best_move", "Move_eval", "Best_move_eval",
-#         "Move_eval_diff", "Move accuracy", "Move_type"]
-#     game_data = pd.read_csv(file_g_data, header=None)
-#     game_header_list = game_header_list
-#     if "Username" in game_data.iloc[0, 0]:
-#         game_data.to_csv(file_g_data, header=False, index=False)
-#     else:
-#         game_data.to_csv(file_g_data, header=game_header_list, index=False)
-#     #   Move data
-#     move_data = pd.read_csv(file_m_data, header=None)
-#     move_header_list = move_header_list
-#     if "Username" in move_data.iloc[0, 0]:
-#         move_data.to_csv(file_m_data, header=False, index=False)
-#     else:
-#         move_data.to_csv(file_m_data, header=move_header_list, index=False)
