@@ -48,9 +48,7 @@ def get_numlines_in_logfile(logfilepath: str) -> int:
     game_log_list = []
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
-        for line in lines:
-            if "filter" in line:
-                game_log_list.append(line)
+        logfile_line_checker_multi(game_log_list, lines)
     return len(game_log_list)
 
 
@@ -68,11 +66,17 @@ def get_game_log_list(logfilepath: str) -> list:
     game_log_list = []
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
-        logfile_line_checker(game_log_list, lines)
+        logfile_line_checker_multi(game_log_list, lines)
     return game_log_list
 
 
-def logfile_line_checker(log_list: list, lines) -> list:
+def logfile_line_checker_single(log_list: list, lines) -> list:
+    for line in lines:
+        if "filter" in line:
+            log_list.append(line)
+
+
+def logfile_line_checker_multi(log_list: list, lines) -> list:
     for line in lines:
         if "filter" in line:
             log_list.append(line)
