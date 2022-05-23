@@ -1,5 +1,5 @@
 """Module for analysing a users games/move data."""
-import analysis_filter
+import filter
 import chess
 import chess.engine
 import chess.pgn
@@ -53,7 +53,7 @@ class ChessUser:
         """Analyses all of the given users games."""
         all_games = self.init_all_games()
         print("Analysing users data: ")
-        analysis_filter.clean_movecsv(
+        filter.clean_movecsv(
             self.file_paths.move_data,
             self.file_paths.userlogfile)
 
@@ -196,10 +196,10 @@ class ChessGame(ChessUser):
         Calls the analysis filter module to remove incomplete
         game analysis runs.
         """
-        analysis_filter.init_game_logs(
+        filter.init_game_logs(
             self.file_paths.userlogfile,
             self.logger)
-        self.log_dt = analysis_filter.llog_game(self.file_paths.userlogfile)
+        self.log_dt = filter.get_last_logged_game(self.file_paths.userlogfile)
 
     def sum_move_types(self) -> dict:
         '''Returns a dictionary of the sum move types for black and white.'''
@@ -949,17 +949,17 @@ class FileHandler:
     def __init__(self, username: str):
         self.username = username
         self.dir = os.path.dirname(__file__)
-        stockfish_path = r"../lib/stkfsh_14.1/stk_14.1.exe"
+        stockfish_path = r"../../lib/stkfsh_14.1/stk_14.1.exe"
         self.stockfish = os.path.join(self.dir, stockfish_path)
         self.userlogfile = os.path.join(
             self.dir,
-            rf"../logs/{self.username}.log")
-        self.temp = os.path.join(self.dir, r"../data/temp.pgn")
-        self.move_data = os.path.join(self.dir, r"../data/move_data.csv")
-        self.game_data = os.path.join(self.dir, r"../data/game_data.csv")
+            rf"../../logs/{self.username}.log")
+        self.temp = os.path.join(self.dir, r"../../data/temp.pgn")
+        self.move_data = os.path.join(self.dir, r"../../data/move_data.csv")
+        self.game_data = os.path.join(self.dir, r"../../data/game_data.csv")
         self.pgn_data = os.path.join(
             self.dir,
-            rf"../data/pgn_data/{self.username}_pgn_data.csv")
+            rf"../../data/pgn_data/{self.username}_pgn_data.csv")
 
 
 class InputHandler:
