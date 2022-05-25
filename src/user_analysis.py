@@ -173,7 +173,7 @@ class ChessGame(ChessUser):
         self.chess_game = chess.pgn.read_game(self.chess_game_pgn)
         return self.chess_game
 
-    def init_board(self) -> chess.pgn.Game:
+    def init_board(self) -> chess.Board:
         """Initialises the chess board."""
         self.board = self.chess_game.board()
         return self.board
@@ -949,17 +949,17 @@ class FileHandler:
     def __init__(self, username: str):
         self.username = username
         self.dir = os.path.dirname(__file__)
-        stockfish_path = r"../../lib/stkfsh_14.1/stk_14.1.exe"
+        stockfish_path = r"../lib/stkfsh_14.1/stk_14.1.exe"
         self.stockfish = os.path.join(self.dir, stockfish_path)
         self.userlogfile = os.path.join(
             self.dir,
-            rf"../../logs/{self.username}.log")
-        self.temp = os.path.join(self.dir, r"../../data/temp.pgn")
-        self.move_data = os.path.join(self.dir, r"../../data/move_data.csv")
-        self.game_data = os.path.join(self.dir, r"../../data/game_data.csv")
+            rf"../logs/{self.username}.log")
+        self.temp = os.path.join(self.dir, r"../data/temp.pgn")
+        self.move_data = os.path.join(self.dir, r"../data/move_data.csv")
+        self.game_data = os.path.join(self.dir, r"../data/game_data.csv")
         self.pgn_data = os.path.join(
             self.dir,
-            rf"../../data/pgn_data/{self.username}_pgn_data.csv")
+            rf"../data/pgn_data/{self.username}_pgn_data.csv")
 
 
 class InputHandler:

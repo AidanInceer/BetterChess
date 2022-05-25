@@ -3,18 +3,6 @@
 from datetime import datetime
 
 
-def simple_progress_bar(num, total, type) -> None:
-    """Simple progress bar."""
-    if type == 0:
-        x = "of User's data extracted"
-    elif type == 1:
-        x = "of User's games analysed"
-    """Creates a progress bar and estimates time to completion."""
-    percent = 100 * ((num + 1) / float(total))
-    bar = "❚" * int(percent/2.5) + "-" * (40-int(percent/2.5))
-    print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")
-
-
 def progress_bar(game_num: int,
                  total_games: int,
                  start_time: datetime,

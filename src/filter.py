@@ -70,13 +70,13 @@ def get_game_log_list(logfilepath: str) -> list:
     return game_log_list
 
 
-def logfile_line_checker_single(log_list: list, lines) -> list:
+def logfile_line_checker_single(log_list: list, lines: list[str]) -> None:
     for line in lines:
         if "filter" in line:
             log_list.append(line)
 
 
-def logfile_line_checker_multi(log_list: list, lines) -> list:
+def logfile_line_checker_multi(log_list: list, lines: list[str]) -> None:
     for line in lines:
         if "filter" in line:
             log_list.append(line)

@@ -2,7 +2,6 @@
 import pandas as pd
 import requests
 from chessdotcom import get_player_game_archives
-from progress import simple_progress_bar
 from datetime import datetime
 from logging import Logger
 
@@ -25,7 +24,6 @@ def data_extract(username: str, filepath: str, logfilepath: str, logger: Logger)
     tot_urls = len(urls["archives"])
     print("Extracting users data: ")
     for url_num, url in enumerate(urls["archives"]):
-        # print(url_num) -> to add progress bar for data extract
         simple_progress_bar(url_num, tot_urls, 0)
         in_curr = in_curr_month(url)
         in_log = url_in_log(url, logfilepath)
@@ -139,3 +137,15 @@ def get_url_date(url: str) -> datetime:
     url_date = datetime.strptime(
         f"{yr}-{mth}-01 00:00:00", '%Y-%m-%d %H:%M:%S')
     return url_date
+
+
+def simple_progress_bar(num, total, type) -> None:
+    """Simple progress bar."""
+    if type == 0:
+        x = "of User's data extracted"
+    elif type == 1:
+        x = "of User's games analysed"
+    """Creates a progress bar and estimates time to completion."""
+    percent = 100 * ((num + 1) / float(total))
+    bar = "❚" * int(percent/2.5) + "-" * (40-int(percent/2.5))
+    print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")

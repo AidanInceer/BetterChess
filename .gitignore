@@ -1,4 +1,5 @@
 lib/*
 data/*
 logs/*
-.vscode/*
+.vscode/
+.pytest_cache/
