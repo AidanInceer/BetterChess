@@ -1,4 +1,7 @@
-"""Module for filtering the move_data.csv file to remove any incomplete games."""
+"""
+Module for filtering the move_data.csv file to remove any
+incomplete games.
+"""
 import pandas as pd
 from datetime import datetime
 from logging import Logger

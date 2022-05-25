@@ -6,7 +6,8 @@ from datetime import datetime
 from logging import Logger
 
 
-def data_extract(username: str, filepath: str, logfilepath: str, logger: Logger) -> None:
+def data_extract(username: str, filepath: str, logfilepath: str,
+                 logger: Logger) -> None:
     '''Extracts user data for a given username.
     Args:
         username: specified username input.
