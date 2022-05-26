@@ -1,5 +1,4 @@
 """Module for analysing a users games/move data."""
-import filter
 import chess
 import chess.engine
 import chess.pgn
@@ -9,8 +8,9 @@ import logging
 import numpy as np
 import pandas as pd
 import time
-import progress
-import extract
+from src import progress
+from src import extract
+from src import filter
 import regex as re
 from datetime import date
 from datetime import datetime
@@ -53,10 +53,12 @@ class ChessUser:
         """Analyses all of the given users games."""
         all_games = self.init_all_games()
         print("Analysing users data: ")
+        filter.init_game_logs(
+            self.file_paths.userlogfile,
+            self.logger)
         filter.clean_movecsv(
             self.file_paths.move_data,
             self.file_paths.userlogfile)
-
         # Iterate through all users games.
         for game_num, chess_game in enumerate(all_games["game_data"]):
             self.write_temp_pgn(temp_game=chess_game)
@@ -65,6 +67,7 @@ class ChessUser:
                 self.start_date, self.engine,
                 game_num, self.logger, self.tot_games)
             game.run_game_analysis()
+            del game
 
     def init_all_games(self) -> pd.DataFrame:
         """Returns a dataframe of all users games from the users pgn csv."""
@@ -127,6 +130,7 @@ class ChessGame(ChessUser):
                     self.w_castle_num,
                     self.b_castle_num)
                 chess_move.analyse_move(move)
+                del chess_move
             try:
                 self.total_moves = move_num
             except UnboundLocalError:
@@ -196,9 +200,6 @@ class ChessGame(ChessUser):
         Calls the analysis filter module to remove incomplete
         game analysis runs.
         """
-        filter.init_game_logs(
-            self.file_paths.userlogfile,
-            self.logger)
         self.log_dt = filter.get_last_logged_game(self.file_paths.userlogfile)
 
     def sum_move_types(self) -> dict:
@@ -730,25 +731,46 @@ class ChessMove(ChessGame):
             black_castle_move = 0
         return black_castle_move
 
+    # update time spent on move to include interval
+
     def get_time_spent_on_move(self) -> float:
         """Calculated the time the player spent on the current move."""
         chess_game_pgn = open(self.file_paths.temp)
         game = chess.pgn.read_game(chess_game_pgn)
-        timerem_w = game.headers["TimeControl"]
-        timerem_b = game.headers["TimeControl"]
+        tcontrol_w = game.headers["TimeControl"]
+        tcontrol_b = game.headers["TimeControl"]
+        timerem_w, timerem_b, time_int = self.filter_timecont_header(
+            tcontrol_w,
+            tcontrol_b)
         time_list = []
         for num, move in enumerate(game.mainline()):
             if num % 2 == 0:
                 move_time_w = move.clock()
-                time_spent = round(float(timerem_w) - move_time_w, 3)
+                time_spent = round(timerem_w - move_time_w + time_int, 3)
                 time_list.append(time_spent)
                 timerem_w = move_time_w
             else:
                 move_time_b = move.clock()
-                time_spent = round(float(timerem_b) - move_time_b, 3)
+                time_spent = round(timerem_b - move_time_b + time_int, 3)
                 time_list.append(time_spent)
                 timerem_b = move_time_b
         return time_list[int(self.move_num)]
+
+    def filter_timecont_header(self, tc_white: str,
+                               tc_black: str) -> tuple[float, float, int]:
+        """
+        Filters time control headers if time control contains move interval.
+        """
+        if ("+" in tc_white) or ("+" in tc_black):
+            time_interval = int(tc_white.split("+")[1])
+            tc_white = float(tc_white.split("+")[0])
+            tc_black = float(tc_black.split("+")[0])
+            return tc_white, tc_black, time_interval
+        else:
+            tc_white = float(tc_white)
+            tc_black = float(tc_black)
+            time_interval = 0
+            return tc_white, tc_black, time_interval
 
     def export_move_data(self) -> None:
         "Exports the move date to a csv."

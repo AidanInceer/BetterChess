@@ -35,7 +35,7 @@ def progress_bar(g: int,
 def timers(start_time: datetime, end_time: datetime,
            time_list: list = []) -> float:
     """
-    time taken to analyse a chess gmae - used
+    time taken to analyse a chess game - used
     to calculate the time remaining for analysis.
     """
     analysis_time = end_time - start_time
