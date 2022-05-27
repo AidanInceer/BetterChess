@@ -571,7 +571,13 @@ class ChessMove(ChessGame):
         self.w_castle_mv_num = self.white_castle_move_num()
         self.b_castle_mv_num = self.black_castle_move_num()
         self.move_time = self.get_time_spent_on_move()
-        self.export_move_data()
+        self.move_df = self.create_move_df(
+            self.username, self.game_datetime, self.edepth, self.game_num,
+            self.move_num, self.str_ml, self.eval_ml, self.str_bm,
+            self.eval_bm, self.evaldiff, self.move_acc, self.move_type,
+            self.piece, self.move_col, self.castle_type, self.w_castle_mv_num,
+            self.b_castle_mv_num, self.move_time)
+        self.export_move_data(self.file_paths.move_data, self.move_df)
         self.append_to_game_lists()
 
     def mainline_move(self, move) -> tuple:
@@ -731,8 +737,6 @@ class ChessMove(ChessGame):
             black_castle_move = 0
         return black_castle_move
 
-    # update time spent on move to include interval
-
     def get_time_spent_on_move(self) -> float:
         """Calculated the time the player spent on the current move."""
         chess_game_pgn = open(self.file_paths.temp)
@@ -772,30 +776,42 @@ class ChessMove(ChessGame):
             time_interval = 0
             return tc_white, tc_black, time_interval
 
-    def export_move_data(self) -> None:
-        "Exports the move date to a csv."
-        move_df = pd.DataFrame({
-            "Username": self.username,
-            "Game_date": self.game_datetime,
-            "edepth": self.edepth,
-            "Game_number": self.game_num,
-            "Move_number": self.move_num,
-            "Move": self.str_ml,
-            "Move_eval": self.eval_ml,
-            "Best_move": self.str_bm,
-            "Best_move_eval": self.eval_bm,
-            "Move_eval_diff": self.evaldiff,
-            "Move accuracy": self.move_acc,
-            "Move_type": self.move_type,
-            "Piece": self.piece,
-            "Move_colour": self.move_col,
-            "Castling_type": self.castle_type,
-            "White_castle_num": self.w_castle_mv_num,
-            "Black_castle_num": self.b_castle_mv_num,
-            "Move_time": self.move_time
+    def create_move_df(self, username: str, game_datetime: datetime,
+                       edepth: int, game_num: int,
+                       move_num: int, str_ml: str,
+                       eval_ml: int, str_bm: str,
+                       eval_bm: int, evaldiff: int,
+                       move_acc: float, move_type: int,
+                       piece: str, move_col: str,
+                       castle_type: str, w_castle_mv_num: int,
+                       b_castle_mv_num: int, move_time: float) -> pd.DataFrame:
+        self.move_df = pd.DataFrame({
+            "Username": username,
+            "Game_date": game_datetime,
+            "edepth": edepth,
+            "Game_number": game_num,
+            "Move_number": move_num,
+            "Move": str_ml,
+            "Move_eval": eval_ml,
+            "Best_move": str_bm,
+            "Best_move_eval": eval_bm,
+            "Move_eval_diff": evaldiff,
+            "Move accuracy": move_acc,
+            "Move_type": move_type,
+            "Piece": piece,
+            "Move_colour": move_col,
+            "Castling_type": castle_type,
+            "White_castle_num": w_castle_mv_num,
+            "Black_castle_num": b_castle_mv_num,
+            "Move_time": move_time
             }, index=[0])
+        return self.move_df
+
+    def export_move_data(self, movefilepath: str,
+                         move_df: pd.DataFrame) -> None:
+        "Exports the move date to a csv."
         move_df.to_csv(
-            self.file_paths.move_data, mode='a',
+            movefilepath, mode='a',
             header=False, index=False)
 
     def append_to_game_lists(self) -> None:

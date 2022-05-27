@@ -1,6 +1,9 @@
 from src import progress
 
 
+def test_progress_bar():
+    pass
+
 def test_timer():
     timer = 1
     st = 1
