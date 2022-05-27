@@ -3,3 +3,4 @@ data/*
 logs/*
 .vscode/
 .pytest_cache/
+.coverage
