@@ -1,20 +1,13 @@
-from src.user_analysis import ChessMove
-from unittest import mock
-from pandas.testing import assert_frame_equal
+import chess
 import pandas as pd
 import unittest
-from chess.engine import PovScore, Cp, Mate
+from src.user_analysis import ChessMove
+from src.user_analysis import ChessGameHeaders
+from unittest import mock
+from pandas.testing import assert_frame_equal
 from chess import WHITE
-from chess.pgn import Headers
-import chess
-
-
-class TestUser():
-    pass
-
-
-class TestGame():
-    pass
+from chess.engine import PovScore, Cp, Mate
+from chess.pgn import read_game
 
 
 class TestMove(unittest.TestCase):
@@ -25,28 +18,20 @@ class TestMove(unittest.TestCase):
         pass
 
     def test_move_eval(self):
-        move = {'score': PovScore(Cp(10), WHITE)}
+        move = {"score": PovScore(Cp(10), WHITE)}
         assert 10 == ChessMove.move_eval(self, move)
 
     def test_move_eval_mate(self):
-        move = {'score': PovScore(Mate(-0), WHITE)}
+        move = {"score": PovScore(Mate(-0), WHITE)}
         assert 0 == ChessMove.move_eval(self, move)
 
     def test_eval_delta_white(self):
         move_num, eval_bm, eval_ml = 2, 200, 20
-        assert ChessMove.eval_delta(
-            self,
-            move_num,
-            eval_bm,
-            eval_ml) == 180
+        assert ChessMove.eval_delta(self, move_num, eval_bm, eval_ml) == 180
 
     def test_eval_delta_black(self):
         move_num, eval_bm, eval_ml = 2, 20, 20
-        assert ChessMove.eval_delta(
-            self,
-            move_num,
-            eval_bm,
-            eval_ml) == 0
+        assert ChessMove.eval_delta(self, move_num, eval_bm, eval_ml) == 0
 
     def test_move_accuracy(self):
         ed = 100
@@ -131,29 +116,25 @@ class TestMove(unittest.TestCase):
         piece = "king"
         move_col = "white"
         str_ml = "e1g1"
-        assert "white_short" == ChessMove.castling_type(
-            self, piece, move_col, str_ml)
+        assert "white_short" == ChessMove.castling_type(self, piece, move_col, str_ml)
 
     def test_castling_type_wl(self):
         piece = "king"
         move_col = "white"
         str_ml = "e1c1"
-        assert "white_long" == ChessMove.castling_type(
-            self, piece, move_col, str_ml)
+        assert "white_long" == ChessMove.castling_type(self, piece, move_col, str_ml)
 
     def test_castling_type_bs(self):
         piece = "king"
         move_col = "black"
         str_ml = "e8g8"
-        assert "black_short" == ChessMove.castling_type(
-            self, piece, move_col, str_ml)
+        assert "black_short" == ChessMove.castling_type(self, piece, move_col, str_ml)
 
     def test_castling_type_bl(self):
         piece = "king"
         move_col = "black"
         str_ml = "e8c8"
-        assert "black_long" == ChessMove.castling_type(
-            self, piece, move_col, str_ml)
+        assert "black_long" == ChessMove.castling_type(self, piece, move_col, str_ml)
 
     def test_castling_type_none(self):
         piece = "pawn"
@@ -164,97 +145,109 @@ class TestMove(unittest.TestCase):
     def test_white_castle_move_num_y(self):
         castle_type = "white_short"
         move_num = 10
-        assert ChessMove.white_castle_move_num(
-            self, castle_type, move_num) == 10
+        assert ChessMove.white_castle_move_num(self, castle_type, move_num) == 10
 
     def test_white_castle_move_num_n(self):
         castle_type = None
         move_num = 10
-        assert ChessMove.white_castle_move_num(
-            self, castle_type, move_num) == 0
+        assert ChessMove.white_castle_move_num(self, castle_type, move_num) == 0
 
     def test_black_castle_move_num_y(self):
         castle_type = "black_short"
         move_num = 10
-        assert ChessMove.black_castle_move_num(
-            self, castle_type, move_num) == 10
+        assert ChessMove.black_castle_move_num(self, castle_type, move_num) == 10
 
     def test_black_castle_move_num_n(self):
         castle_type = None
         move_num = 10
-        assert ChessMove.black_castle_move_num(
-            self, castle_type, move_num) == 0
+        assert ChessMove.black_castle_move_num(self, castle_type, move_num) == 0
 
     def test_get_time_spent_on_move_white(self) -> float:
-        self.file_path = BaseFileHandler().temp
+        self.file_path = BaseFileHandler().test
         move_num = 2
         timers = (600, 600, 0)
         assert 2.7 == ChessMove.get_time_spent_on_move(
-            self, self.file_path, move_num, timers)
+            self, self.file_path, move_num, timers
+        )
 
     def test_get_time_spent_on_move_black(self) -> float:
-        self.file_path = BaseFileHandler().temp
+        self.file_path = BaseFileHandler().test
         move_num = 3
         timers = (600, 600, 0)
         assert 5.1 == ChessMove.get_time_spent_on_move(
-            self, self.file_path, move_num, timers)
+            self, self.file_path, move_num, timers
+        )
 
     def test_filter_timecont_header(self):
-        self.file_path = BaseFileHandler().temp
-        assert ChessMove.filter_timecont_header(
-            self,
-            self.file_path) == (600, 600, 0)
+        self.file_path = BaseFileHandler().test
+        assert ChessMove.filter_timecont_header(self, self.file_path) == (600, 600, 0)
 
     def test_filter_timecont_header_interval(self):
-        self.file_path = BaseFileHandler().temp2
-        assert ChessMove.filter_timecont_header(
-            self,
-            self.file_path) == (180, 180, 5)
+        self.file_path = BaseFileHandler().test2
+        assert ChessMove.filter_timecont_header(self, self.file_path) == (180, 180, 5)
 
     def test_create_move_df(self):
-        test_move_df = pd.DataFrame({
-            "Username": "Ainceer",
-            "Game_date": "2020-11-01 00:00:00",
-            "edepth": 10,
-            "Game_number": 1,
-            "Move_number": 1,
-            "Move": "e2e4",
-            "Move_eval": 1,
-            "Best_move": "e2e4",
-            "Best_move_eval": 1,
-            "Move_eval_diff": 0,
-            "Move accuracy": 100,
-            "Move_type": 2,
-            "Piece": "pawn",
-            "Move_colour": "white",
-            "Castling_type": None,
-            "White_castle_num": 0,
-            "Black_castle_num": 0,
-            "Move_time": 10
-            }, index=[0])
-        assert_frame_equal(test_move_df, ChessMove.create_move_df(
-            self, "Ainceer", "2020-11-01 00:00:00", 10, 1,
-            1, "e2e4", 1, "e2e4", 1, 0, 100, 2,
-            "pawn", "white", None, 0, 0, 10))
+        test_move_df = pd.DataFrame(
+            {
+                "Username": "Ainceer",
+                "Game_date": "2020-11-01 00:00:00",
+                "edepth": 10,
+                "Game_number": 1,
+                "Move_number": 1,
+                "Move": "e2e4",
+                "Move_eval": 1,
+                "Best_move": "e2e4",
+                "Best_move_eval": 1,
+                "Move_eval_diff": 0,
+                "Move accuracy": 100,
+                "Move_type": 2,
+                "Piece": "pawn",
+                "Move_colour": "white",
+                "Castling_type": None,
+                "White_castle_num": 0,
+                "Black_castle_num": 0,
+                "Move_time": 10,
+            },
+            index=[0],
+        )
+        assert_frame_equal(
+            test_move_df,
+            ChessMove.create_move_df(
+                self,
+                "Ainceer",
+                "2020-11-01 00:00:00",
+                10,
+                1,
+                1,
+                "e2e4",
+                1,
+                "e2e4",
+                1,
+                0,
+                100,
+                2,
+                "pawn",
+                "white",
+                None,
+                0,
+                0,
+                10,
+            ),
+        )
 
     def test_export_move_data(self):
         self.file_paths = BaseFileHandler()
         self.file_paths.move_data = r"test.csv"
         self.username = "Ainceer"
 
-        self.test_df = pd.DataFrame({
-            "Username": self.username
-            }, index=[0])
+        self.test_df = pd.DataFrame({"Username": self.username}, index=[0])
         with mock.patch.object(self.test_df, "to_csv") as to_csv_mock:
             ChessMove.export_move_data(
-                self,
-                self.file_paths.move_data,
-                self.test_df)
+                self, self.file_paths.move_data, self.test_df
+                )
             to_csv_mock.assert_called_with(
-                'test.csv',
-                mode='a',
-                header=False,
-                index=False)
+                "test.csv", mode="a", header=False, index=False
+            )
 
     def test_append_to_game_lists(self) -> None:
         pass
@@ -265,7 +258,10 @@ class TestGameHeaders(unittest.TestCase):
         pass
 
     def test_time_control(self):
-        pass
+        tempfilepath = BaseFileHandler().test
+        chess_game_pgn = open(tempfilepath)
+        chess_game = read_game(chess_game_pgn)
+        assert ChessGameHeaders.time_control(self, chess_game) == "600"
 
     def test_player_white(self):
         pass
@@ -313,8 +309,8 @@ class TestGameHeaders(unittest.TestCase):
         pass
 
 
-class BaseFileHandler():
+class BaseFileHandler:
     def __init__(self):
         self.move_data = r"./test_move_data.csv"
-        self.temp = r"tests/test.pgn"
-        self.temp2 = r"tests/test2.pgn"
+        self.test = r"tests/test.pgn"
+        self.test2 = r"tests/test2.pgn"

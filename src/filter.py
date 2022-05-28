@@ -9,24 +9,25 @@ from os.path import exists
 from pandas import DataFrame
 
 COL_NAMES = [
-            "Username",
-            "Game_date",
-            "edepth",
-            "Game_number",
-            "Move_number",
-            "Move",
-            "Move_eval",
-            "Best_move",
-            "Best_move_eval",
-            "Move_eval_diff",
-            "Move accuracy",
-            "Move_type",
-            "Piece",
-            "Move_colour",
-            "Castling_type",
-            "White_castle_num",
-            "Black_castle_num",
-            "Move_time"]
+    "Username",
+    "Game_date",
+    "edepth",
+    "Game_number",
+    "Move_number",
+    "Move",
+    "Move_eval",
+    "Best_move",
+    "Best_move_eval",
+    "Move_eval_diff",
+    "Move accuracy",
+    "Move_type",
+    "Piece",
+    "Move_colour",
+    "Castling_type",
+    "White_castle_num",
+    "Black_castle_num",
+    "Move_time",
+]
 
 
 def get_last_logged_game(logfilepath: str) -> datetime:
@@ -34,12 +35,12 @@ def get_last_logged_game(logfilepath: str) -> datetime:
     game_log_list = get_game_log_list(logfilepath)
     llog = game_log_list[-1]
     llog_date_str = llog.split("|")[1].strip()
-    llog_date = datetime.strptime(llog_date_str, '%Y-%m-%d %H:%M:%S')
+    llog_date = datetime.strptime(llog_date_str, "%Y-%m-%d %H:%M:%S")
     return llog_date
 
 
 def clean_movecsv(movefilepath: str, logfilepath: str) -> None:
-    '''Removes last unfinished games moves from the move_data csv.'''
+    """Removes last unfinished games moves from the move_data csv."""
     if file_exist(movefilepath) and logfile_not_empty(logfilepath):
         log_list = get_game_log_list(logfilepath)
         llog_gamenum = int(log_list[-1].split("|")[2].strip())
@@ -64,7 +65,7 @@ def logfile_not_empty(logfilepath: str) -> bool:
     """Checks to see if the logfile is empty."""
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
-    if not(not lines):
+    if not (not lines):
         return True
     else:
         return False
@@ -87,16 +88,11 @@ def logfile_line_checker_multi(log_list: list, lines: list[str]) -> None:
             log_list.append(line)
 
 
-def clean_df(movefilepath: str, unclean_df: DataFrame,
-             llog_gamenum: int) -> None:
+def clean_df(movefilepath: str, unclean_df: DataFrame, llog_gamenum: int) -> None:
     """Cleans the dataframe."""
     df_filter = unclean_df["Game_number"] != llog_gamenum
     clean_df = unclean_df[df_filter]
-    clean_df.to_csv(
-        movefilepath,
-        mode="w",
-        index=False,
-        header=None)
+    clean_df.to_csv(movefilepath, mode="w", index=False, header=None)
 
 
 def init_game_logs(logfilepath: str, logger: Logger) -> None:
@@ -120,8 +116,7 @@ def set_first_game_logdate(logfilepath: str, logger: Logger) -> None:
     """Creates the default date in the logfile."""
     with open(logfilepath, "a") as _:
         game_num = 0
-        init_dt = datetime.strptime("2000-01-01 00:00:00",
-                                    '%Y-%m-%d %H:%M:%S')
+        init_dt = datetime.strptime("2000-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
         logger.info(f"| {init_dt} | {game_num}")
 
 

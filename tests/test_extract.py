@@ -14,7 +14,7 @@ def test_filter_pgncsv():
     pass
 
 
-def collect_game_data():
+def test_collect_game_data():
     pass
 
 
@@ -33,13 +33,13 @@ def test_in_cur_mth_false():
 
 
 def test_get_curr_month():
-    curmth = datetime.strptime("2022-05-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+    curmth = datetime.strptime("2022-05-01 00:00:00", "%Y-%m-%d %H:%M:%S")
     assert curmth == extract.get_curr_mth()
 
 
 def test_get_url_date():
     url = "https://api.chess.com/pub/player/ainceer/games/2020/11"
-    url_date = datetime.strptime("2020-11-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+    url_date = datetime.strptime("2020-11-01 00:00:00", "%Y-%m-%d %H:%M:%S")
     assert url_date == extract.get_url_date(url)
 
 
