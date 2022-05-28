@@ -59,7 +59,6 @@ class ChessUser:
         filter.clean_movecsv(
             self.file_paths.move_data,
             self.file_paths.userlogfile)
-        # Iterate through all users games.
         for game_num, chess_game in enumerate(all_games["game_data"]):
             self.write_temp_pgn(temp_game=chess_game)
             game = ChessGame(
@@ -565,12 +564,19 @@ class ChessMove(ChessGame):
             self.move_num, self.eval_bm, self.eval_ml)
         self.move_acc = self.move_accuracy(self.evaldiff)
         self.move_type = self.assign_move_type(self.move_acc)
-        self.piece = self.chess_piece(move)
-        self.move_col = self.move_colour()
-        self.castle_type = self.castling_type()
-        self.w_castle_mv_num = self.white_castle_move_num()
-        self.b_castle_mv_num = self.black_castle_move_num()
-        self.move_time = self.get_time_spent_on_move()
+        self.square_int = self.get_piece_square_int(move)
+        self.curr_board = self.get_curr_board()
+        self.piece = self.chess_piece(self.curr_board, self.square_int)
+        self.move_col = self.move_colour(self.move_num)
+        self.castle_type = self.castling_type(
+            self.piece, self.move_col, self.str_ml)
+        self.w_castle_mv_num = self.white_castle_move_num(
+            self.castle_type, self.move_num)
+        self.b_castle_mv_num = self.black_castle_move_num(
+            self.castle_type, self.move_num)
+        self.timers = self.filter_timecont_header(self.file_paths.temp,)
+        self.move_time = self.get_time_spent_on_move(
+            self.file_paths.temp, self.move_num, self.timers)
         self.move_df = self.create_move_df(
             self.username, self.game_datetime, self.edepth, self.game_num,
             self.move_num, self.str_ml, self.eval_ml, self.str_bm,
@@ -652,11 +658,11 @@ class ChessMove(ChessGame):
             move_type = -4
         return move_type
 
-    def chess_piece(self, move) -> str:
+    def chess_piece(self, curr_board, square_int) -> str:
         """Returns the piece type for the move played."""
-        square_int = self.get_piece_square_int(move)
-        curr_board = self.get_curr_board()
-        piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square_int)
+        piece_type_num = chess.BaseBoard.piece_type_at(
+            curr_board,
+            square_int)
         if piece_type_num == 1:
             self.piece_type = "pawn"
         elif piece_type_num == 2:
@@ -676,7 +682,8 @@ class ChessMove(ChessGame):
     def get_curr_board(self) -> chess.BaseBoard:
         """Returns the current board."""
         curr_fen = self.board.board_fen()
-        return chess.BaseBoard(board_fen=curr_fen)
+        self.curr_board = chess.BaseBoard(board_fen=curr_fen)
+        return self.curr_board
 
     def get_piece_square_int(self, move) -> int:
         """
@@ -686,66 +693,63 @@ class ChessMove(ChessGame):
         piece_col = str(move)[2:3]
         piece_row = str(move)[3:4]
         piece_square = str(piece_col + piece_row)
-        square_int = chess.parse_square(piece_square)
-        return square_int
+        self.square_int = chess.parse_square(piece_square)
+        return self.square_int
 
-    def move_colour(self) -> str:
+    def move_colour(self, move_num) -> str:
         """Returns the current moves colour."""
-        if self.move_num % 2 == 0:
-            mv_colour = "white"
+        if move_num % 2 == 0:
+            self.mv_colour = "white"
         else:
-            mv_colour = "black"
-        return mv_colour
+            self.mv_colour = "black"
+        return self.mv_colour
 
-    def castling_type(self) -> str:
+    def castling_type(self, piece, move_col, str_ml) -> str:
         """Returns the type of castling - None if current move isnt castle."""
-        if (self.piece == "king"
-                and self.move_col == "white"
-                and self.str_ml == "e1g1"):
+        if (piece == "king"
+                and move_col == "white"
+                and str_ml == "e1g1"):
             cas_type = "white_short"
-        elif (self.piece == "king"
-                and self.move_col == "white"
-                and self.str_ml == "e1c1"):
+        elif (piece == "king"
+                and move_col == "white"
+                and str_ml == "e1c1"):
             cas_type = "white_long"
-        elif (self.piece == "king"
-                and self.move_col == "black"
-                and self.str_ml == "e8g8"):
+        elif (piece == "king"
+                and move_col == "black"
+                and str_ml == "e8g8"):
             cas_type = "black_short"
-        elif (self.piece == "king"
-                and self.move_col == "black"
-                and self.str_ml == "e8c8"):
+        elif (piece == "king"
+                and move_col == "black"
+                and str_ml == "e8c8"):
             cas_type = "black_long"
         else:
             cas_type = None
         return cas_type
 
-    def white_castle_move_num(self) -> int:
+    def white_castle_move_num(self, castle_type, move_num) -> int:
         """Move which white castled in the game."""
-        if (self.castle_type == "white_short"
-                or self.castle_type == "white_long"):
-            white_castle_move = self.move_num
+        if (castle_type == "white_short"
+                or castle_type == "white_long"):
+            white_castle_move = move_num
         else:
             white_castle_move = 0
         return white_castle_move
 
-    def black_castle_move_num(self) -> int:
+    def black_castle_move_num(self, castle_type, move_num) -> int:
         """Move which black castled in the game."""
-        if (self.castle_type == "black_short"
-                or self.castle_type == "black_long"):
-            black_castle_move = self.move_num
+        if (castle_type == "black_short"
+                or castle_type == "black_long"):
+            black_castle_move = move_num
         else:
             black_castle_move = 0
         return black_castle_move
 
-    def get_time_spent_on_move(self) -> float:
+    def get_time_spent_on_move(self, tempfilepath: str,
+                               move_num: int, timers: tuple) -> float:
         """Calculated the time the player spent on the current move."""
-        chess_game_pgn = open(self.file_paths.temp)
+        chess_game_pgn = open(tempfilepath)
         game = chess.pgn.read_game(chess_game_pgn)
-        tcontrol_w = game.headers["TimeControl"]
-        tcontrol_b = game.headers["TimeControl"]
-        timerem_w, timerem_b, time_int = self.filter_timecont_header(
-            tcontrol_w,
-            tcontrol_b)
+        timerem_w, timerem_b, time_int = timers[0], timers[1], timers[2]
         time_list = []
         for num, move in enumerate(game.mainline()):
             if num % 2 == 0:
@@ -758,13 +762,17 @@ class ChessMove(ChessGame):
                 time_spent = round(timerem_b - move_time_b + time_int, 3)
                 time_list.append(time_spent)
                 timerem_b = move_time_b
-        return time_list[int(self.move_num)]
+        return time_list[int(move_num)]
 
-    def filter_timecont_header(self, tc_white: str,
-                               tc_black: str) -> tuple[float, float, int]:
+    def filter_timecont_header(self,
+                               tempfilepath: str) -> tuple[float, float, int]:
         """
         Filters time control headers if time control contains move interval.
         """
+        chess_game_pgn = open(tempfilepath)
+        game = chess.pgn.read_game(chess_game_pgn)
+        tc_white = game.headers["TimeControl"]
+        tc_black = game.headers["TimeControl"]
         if ("+" in tc_white) or ("+" in tc_black):
             time_interval = int(tc_white.split("+")[1])
             tc_white = float(tc_white.split("+")[0])
@@ -774,7 +782,7 @@ class ChessMove(ChessGame):
             tc_white = float(tc_white)
             tc_black = float(tc_black)
             time_interval = 0
-            return tc_white, tc_black, time_interval
+            return (tc_white, tc_black, time_interval)
 
     def create_move_df(self, username: str, game_datetime: datetime,
                        edepth: int, game_num: int,
@@ -1014,6 +1022,8 @@ class InputHandler:
         return {"username": username,
                 "edepth": edepth,
                 "start_date": start_date}
+
+    # chessdotcom.types.ChessDotComError:
 
     @staticmethod
     def user_input() -> str:

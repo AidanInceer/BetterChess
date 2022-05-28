@@ -1,7 +1,8 @@
 """Main function for running analysis on a given chess.com user"""
-from user_analysis import ChessUser
-from user_analysis import InputHandler
-from user_analysis import FileHandler
+from src.user_analysis import InputHandler
+from src.user_analysis import FileHandler
+from src.user_analysis import ChessUser
+
 
 if __name__ == "__main__":
     input_handler = InputHandler.get_inputs()

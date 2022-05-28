@@ -13,7 +13,7 @@
 [UTCTime "19:35:47"]
 [WhiteElo "1011"]
 [BlackElo "1009"]
-[TimeControl "600"]
+[TimeControl "180+5"]
 [Termination "JezzaShaw won by resignation"]
 [StartTime "19:35:47"]
 [EndDate "2021.02.22"]
