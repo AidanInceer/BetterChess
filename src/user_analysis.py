@@ -147,8 +147,8 @@ class ChessGame(ChessUser):
 
     def init_game_analysis(self) -> None:
         """Initalises the analysis, headers and filters past analysis runs."""
-        self.init_game()
-        self.init_board()
+        self.init_game(self.file_paths.temp)
+        self.init_board(self.chess_game)
         self.init_game_lists()
         # self.time_list()
         game_headers = ChessGameHeaders(
@@ -163,26 +163,37 @@ class ChessGame(ChessUser):
         )
         self.headers = game_headers.collect_headers()
         self.game_dt = game_headers.collect_headers()["Game_datetime"]
-        self.game_analysis_filter()
+        self.game_analysis_filter(self.file_paths.userlogfile)
 
     def analyse_game(self) -> None:
         """
         Prepares move data so it can be analysed at a game level
         and exports game data.
         """
-        self.sum_type_dict = self.sum_move_types()
-        self.user_game_data()
-        self.export_game_data()
+        self.sum_type_dict = self.sum_move_types(self.move_type_list)
+        self.game_df = self.user_game_data(
+            self.sum_type_dict,
+            self.game_dt,
+            self.gm_mv_ac,
+            self.w_castle_num,
+            self.b_castle_num,
+            self.total_moves,
+            self.headers,
+            self.username,
+            self.edepth,
+            self.game_num,
+        )
+        self.export_game_data_to_csv(self.game_df, self.file_paths.game_data)
 
-    def init_game(self) -> chess.pgn.Game:
+    def init_game(self, filepath) -> chess.pgn.Game:
         """Initialises the chess game."""
-        self.chess_game_pgn = open(self.file_paths.temp)
-        self.chess_game = chess.pgn.read_game(self.chess_game_pgn)
+        chess_game_pgn = open(filepath)
+        self.chess_game = chess.pgn.read_game(chess_game_pgn)
         return self.chess_game
 
-    def init_board(self) -> chess.Board:
+    def init_board(self, chess_game) -> chess.Board:
         """Initialises the chess board."""
-        self.board = self.chess_game.board()
+        self.board = chess_game.board()
         return self.board
 
     def init_game_lists(self) -> None:
@@ -198,127 +209,139 @@ class ChessGame(ChessUser):
         self.w_castle_num = []
         self.b_castle_num = []
 
-    def game_analysis_filter(self) -> None:
+    def game_analysis_filter(self, logfilepath) -> None:
         """
         Calls the analysis filter module to remove incomplete
         game analysis runs.
         """
-        self.log_dt = filter.get_last_logged_game(self.file_paths.userlogfile)
+        self.log_dt = filter.get_last_logged_game(logfilepath)
+        return self.log_dt
 
-    def sum_move_types(self) -> dict:
+    def sum_move_types(self, move_type_list) -> dict:
         """Returns a dictionary of the sum move types for black and white."""
-        self.w_best = self.move_type_list[::2].count(2)
-        self.b_best = self.move_type_list[1::2].count(2)
-        self.w_excl = self.move_type_list[::2].count(1)
-        self.w_excl = self.move_type_list[1::2].count(1)
-        self.w_good = self.move_type_list[::2].count(0)
-        self.b_good = self.move_type_list[1::2].count(0)
-        self.w_inac = self.move_type_list[::2].count(-1)
-        self.b_inac = self.move_type_list[1::2].count(-1)
-        self.w_mist = self.move_type_list[::2].count(-2)
-        self.b_mist = self.move_type_list[1::2].count(-2)
-        self.w_blun = self.move_type_list[::2].count(-3)
-        self.b_blun = self.move_type_list[1::2].count(-3)
-        self.w_misw = self.move_type_list[::2].count(-4)
-        self.b_misw = self.move_type_list[1::2].count(-4)
+        self.b_best = move_type_list[1::2].count(2)
+        self.w_best = move_type_list[::2].count(2)
+        self.w_excl = move_type_list[::2].count(1)
+        self.w_excl = move_type_list[1::2].count(1)
+        self.w_good = move_type_list[::2].count(0)
+        self.b_good = move_type_list[1::2].count(0)
+        self.w_inac = move_type_list[::2].count(-1)
+        self.b_inac = move_type_list[1::2].count(-1)
+        self.w_mist = move_type_list[::2].count(-2)
+        self.b_mist = move_type_list[1::2].count(-2)
+        self.w_blun = move_type_list[::2].count(-3)
+        self.b_blun = move_type_list[1::2].count(-3)
+        self.w_misw = move_type_list[::2].count(-4)
+        self.b_misw = move_type_list[1::2].count(-4)
         self.move_dict = {
-            "No_w_best": self.w_best,
-            "No_b_best": self.b_best,
-            "No_w_excl": self.w_excl,
-            "No_b_excl": self.w_excl,
-            "No_w_good": self.w_good,
-            "No_b_good": self.b_good,
-            "No_w_inac": self.w_inac,
-            "No_b_inac": self.b_inac,
-            "No_w_mist": self.w_mist,
-            "No_b_mist": self.b_mist,
-            "No_w_blun": self.w_blun,
-            "No_b_blun": self.b_blun,
-            "No_w_misw": self.w_misw,
-            "No_b_misw": self.b_misw,
+            "Num_w_best": self.w_best,
+            "Num_b_best": self.b_best,
+            "Num_w_excl": self.w_excl,
+            "Num_b_excl": self.w_excl,
+            "Num_w_good": self.w_good,
+            "Num_b_good": self.b_good,
+            "Num_w_inac": self.w_inac,
+            "Num_b_inac": self.b_inac,
+            "Num_w_mist": self.w_mist,
+            "Num_b_mist": self.b_mist,
+            "Num_w_blun": self.w_blun,
+            "Num_b_blun": self.b_blun,
+            "Num_w_misw": self.w_misw,
+            "Num_b_misw": self.b_misw,
         }
         return self.move_dict
 
-    def user_game_data(self) -> None:
+    def user_game_data(
+        self,
+        move_dict: dict,
+        game_dt: str,
+        game_move_acc: list,
+        w_castle_num: list,
+        b_castle_num: list,
+        total_moves: int,
+        headers: dict,
+        username: str,
+        edepth: int,
+        game_num: int,
+    ) -> None:
         """
         Prepares move/game analysis for export and assigns data to
         user/opp depending on what colour the user is playing as.
         """
-        if self.username == self.headers["White_player"]:
-            self.gm_acc = self.game_w_acc()
-            self.o_acc = self.op_w_acc()
-            self.m_acc = self.mid_w_acc()
-            self.e_acc = self.end_w_acc()
-            self.no_best = self.move_dict["No_w_best"]
-            self.no_excl = self.move_dict["No_w_excl"]
-            self.no_good = self.move_dict["No_w_good"]
-            self.no_inac = self.move_dict["No_w_inac"]
-            self.no_mist = self.move_dict["No_w_mist"]
-            self.no_blun = self.move_dict["No_w_blun"]
-            self.no_misw = self.move_dict["No_w_misw"]
-            self.improve = self.w_sec_imp()
-            self.user_castle_mv = self.white_castle_move_num()
-            self.opp_castle_mv = self.black_castle_move_num()
-            self.user_castled = self.has_white_castled()
-            self.opp_castled = self.has_black_castled()
-            self.user_castle_phase = self.white_castle_phase()
-            self.opp_castle_phase = self.black_castle_phase()
+        self.time_of_day = self.game_time_of_day(game_dt)
+        self.day_of_week = self.game_day_of_week(game_dt)
+        if username == headers["White_player"]:
+            self.game_acc = self.game_w_acc(game_move_acc)
+            self.opn_acc = self.op_w_acc(game_move_acc)
+            self.mid_acc = self.mid_w_acc(game_move_acc)
+            self.end_acc = self.end_w_acc(game_move_acc)
+            self.num_best_mv = move_dict["Num_w_best"]
+            self.num_excl_mv = move_dict["Num_w_excl"]
+            self.num_good_mv = move_dict["Num_w_good"]
+            self.num_inac_mv = move_dict["Num_w_inac"]
+            self.num_mist_mv = move_dict["Num_w_mist"]
+            self.num_blun_mv = move_dict["Num_w_blun"]
+            self.num_misw_mv = move_dict["Num_w_misw"]
+            self.sec_improve = self.w_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
+            self.user_castle_mv = self.white_castle_move_num(w_castle_num)
+            self.opp_castle_mv = self.black_castle_move_num(b_castle_num)
+            self.user_castled = self.has_white_castled(w_castle_num)
+            self.opp_castled = self.has_black_castled(b_castle_num)
+            self.user_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
+            self.opp_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
         else:
-            self.gm_acc = self.game_b_acc()
-            self.o_acc = self.op_b_acc()
-            self.m_acc = self.mid_b_acc()
-            self.e_acc = self.end_b_acc()
-            self.no_best = self.move_dict["No_b_best"]
-            self.no_excl = self.move_dict["No_b_excl"]
-            self.no_good = self.move_dict["No_b_good"]
-            self.no_inac = self.move_dict["No_b_inac"]
-            self.no_mist = self.move_dict["No_b_mist"]
-            self.no_blun = self.move_dict["No_b_blun"]
-            self.no_misw = self.move_dict["No_b_misw"]
-            self.improve = self.b_sec_imp()
-            self.user_castle_mv = self.black_castle_move_num()
-            self.opp_castle_mv = self.white_castle_move_num()
-            self.user_castled = self.has_black_castled()
-            self.opp_castled = self.has_white_castled()
-            self.user_castle_phase = self.black_castle_phase()
-            self.opp_castle_phase = self.white_castle_phase()
-
-    def export_game_data(self) -> None:
-        """Exports the move date to the game_data.csv."""
+            self.game_acc = self.game_b_acc(game_move_acc)
+            self.opn_acc = self.op_b_acc(game_move_acc)
+            self.mid_acc = self.mid_b_acc(game_move_acc)
+            self.end_acc = self.end_b_acc(game_move_acc)
+            self.num_best_mv = move_dict["Num_b_best"]
+            self.num_excl_mv = move_dict["Num_b_excl"]
+            self.num_good_mv = move_dict["Num_b_good"]
+            self.num_inac_mv = move_dict["Num_b_inac"]
+            self.num_mist_mv = move_dict["Num_b_mist"]
+            self.num_blun_mv = move_dict["Num_b_blun"]
+            self.num_misw_mv = move_dict["Num_b_misw"]
+            self.sec_improve = self.b_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
+            self.user_castle_mv = self.black_castle_move_num(b_castle_num)
+            self.opp_castle_mv = self.white_castle_move_num(w_castle_num)
+            self.user_castled = self.has_black_castled(b_castle_num)
+            self.opp_castled = self.has_white_castled(w_castle_num)
+            self.user_castle_phase = self.black_castle_phase(w_castle_num, total_moves)
+            self.opp_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
         game_df = pd.DataFrame(
             {
-                "Username": self.username,
+                "Username": username,
                 "Date": self.game_dt,
-                "Game_time_of_day": self.game_time_of_day(),
-                "Game_weekday": self.game_day_of_week(),
-                "Engine_depth": self.edepth,
-                "Game_number": self.game_num,
-                "Game_type": self.headers["Time_control"],
-                "White_player": self.headers["White_player"],
-                "Black_player": self.headers["Black_player"],
-                "White_rating": self.headers["White_rating"],
-                "Black_rating": self.headers["Black_rating"],
-                "User_colour": self.headers["User_Colour"],
-                "User_rating": self.headers["User_rating"],
-                "opponent_rating": self.headers["Opponent_rating"],
-                "User_winner": self.headers["User_winner"],
-                "Opening_name": self.headers["Opening_name"],
-                "Opening_class": self.headers["Opening_class"],
-                "Termination": self.headers["Termination"],
-                "End_type": self.headers["Win_draw_loss"],
+                "Game_time_of_day": self.time_of_day,
+                "Game_weekday": self.day_of_week,
+                "Engine_depth": edepth,
+                "Game_number": game_num,
+                "Game_type": headers["Time_control"],
+                "White_player": headers["White_player"],
+                "Black_player": headers["Black_player"],
+                "White_rating": headers["White_rating"],
+                "Black_rating": headers["Black_rating"],
+                "User_colour": headers["User_Colour"],
+                "User_rating": headers["User_rating"],
+                "opponent_rating": headers["Opponent_rating"],
+                "User_winner": headers["User_winner"],
+                "Opening_name": headers["Opening_name"],
+                "Opening_class": headers["Opening_class"],
+                "Termination": headers["Termination"],
+                "End_type": headers["Win_draw_loss"],
                 "Number_of_moves": self.total_moves,
-                "Accuracy": self.gm_acc,
-                "Opening_accuracy": self.o_acc,
-                "Mid_accuracy": self.m_acc,
-                "End_accuracy": self.e_acc,
-                "No_best": self.no_best,
-                "No_great": self.no_excl,
-                "No_good": self.no_good,
-                "No_inaccuracy": self.no_inac,
-                "No_mistake": self.no_mist,
-                "No_blunder": self.no_blun,
-                "No_missed_win": self.no_misw,
-                "Improvement": self.improve,
+                "Accuracy": self.game_acc,
+                "Opening_accuracy": self.opn_acc,
+                "Mid_accuracy": self.mid_acc,
+                "End_accuracy": self.end_acc,
+                "No_best": self.num_best_mv,
+                "No_excellent": self.num_excl_mv,
+                "No_good": self.num_good_mv,
+                "No_inaccuracy": self.num_inac_mv,
+                "No_mistake": self.num_mist_mv,
+                "No_blunder": self.num_blun_mv,
+                "No_missed_win": self.num_misw_mv,
+                "Improvement": self.sec_improve,
                 "user_castle_num": self.user_castle_mv,
                 "opp_castle_num": self.opp_castle_mv,
                 "user_castled": self.user_castled,
@@ -328,11 +351,20 @@ class ChessGame(ChessUser):
             },
             index=[0],
         )
-        game_df.to_csv(self.file_paths.game_data, mode="a", header=False, index=False)
+        return game_df
 
-    def game_time_of_day(self) -> str:
+    def export_game_data_to_csv(self, game_df: pd.DataFrame, game_filepath: str):
+        """Exports game data to csv.
+
+        Args:
+            game_df (pd.Dataframe): dataframe of game data
+            game_filepath (str): game csv filepath
+        """
+        game_df.to_csv(game_filepath, mode="a", header=False, index=False)
+
+    def game_time_of_day(self, game_datetime) -> str:
         """Returns the time of day as a string"""
-        day_hour = int(date.strftime(self.game_dt, "%H"))
+        day_hour = int(date.strftime(game_datetime, "%H"))
         if day_hour <= 6:
             time_of_day = "Night"
         elif day_hour <= 12:
@@ -343,9 +375,9 @@ class ChessGame(ChessUser):
             time_of_day = "Evening"
         return time_of_day
 
-    def game_day_of_week(self) -> str:
+    def game_day_of_week(self, game_datetime) -> str:
         """Returns the day of the week that the game is played."""
-        week_num_base = int(date.isoweekday(self.game_dt))
+        week_num_base = int(date.isoweekday(game_datetime))
         weekday_num = week_num_base - 1
         weekdays = [
             "Monday",
@@ -358,167 +390,173 @@ class ChessGame(ChessUser):
         ]
         return weekdays[weekday_num]
 
-    def white_castle_move_num(self) -> int:
+    def game_w_acc(self, game_move_acc: list) -> float:
+        """Returns white players game accuracy."""
+        w_list = game_move_acc[::2]
+        list_len = len(game_move_acc[::2])
+        if list_len == 0:
+            wg_acc = 0
+        else:
+            wg_acc = round(sum(w_list) / list_len, 2)
+        return wg_acc
+
+    def game_b_acc(self, game_move_acc: list) -> float:
+        """Returns black players game for accuracy."""
+        b__list = game_move_acc[1::2]
+        list_len = len(game_move_acc[1::2])
+        if list_len == 0:
+            bg_acc = 0
+        else:
+            bg_acc = round(sum(b__list) / list_len, 2)
+        return bg_acc
+
+    def op_w_acc(self, game_move_acc: list) -> float:
+        """Calculates the opening accuracy for white."""
+        list_w = game_move_acc[::2]
+        op_list_w = np.array_split(list_w, 3)[0]
+        sep_len = len(op_list_w)
+        if sep_len == 0:
+            white_opening_acc = 0
+        else:
+            white_opening_acc = round(sum(op_list_w) / (sep_len), 2)
+        return white_opening_acc
+
+    def mid_w_acc(self, game_move_acc: list) -> float:
+        """Calculates the midgame accuracy for white."""
+        list_w = game_move_acc[::2]
+        mid_list_w = np.array_split(list_w, 3)[1]
+        sep_len = len(mid_list_w)
+        if sep_len == 0:
+            white_midgame_acc = 0
+        else:
+            white_midgame_acc = round(sum(mid_list_w) / (sep_len), 2)
+        return white_midgame_acc
+
+    def end_w_acc(self, game_move_acc: list) -> float:
+        """Calculates the endgame accuracy for white."""
+        list_w = game_move_acc[::2]
+        end_list_w = np.array_split(list_w, 3)[2]
+        sep_len = len(end_list_w)
+        if sep_len == 0:
+            white_endgame_acc = 0
+        else:
+            white_endgame_acc = round(sum(end_list_w) / (sep_len), 2)
+        return white_endgame_acc
+
+    def op_b_acc(self, game_move_acc: list) -> float:
+        """Calculates the opening accuracy for black."""
+        list_b = game_move_acc[1::2]
+        op_list_b = np.array_split(list_b, 3)[0]
+        sep_len = len(op_list_b)
+        if sep_len == 0:
+            black_opening_acc = 0
+        else:
+            black_opening_acc = round(sum(op_list_b) / (sep_len), 2)
+        return black_opening_acc
+
+    def mid_b_acc(self, game_move_acc: list) -> float:
+        """Calculates the opening accuracy for white."""
+        list_b = game_move_acc[1::2]
+        mid_list_b = np.array_split(list_b, 3)[1]
+        sep_len = len(mid_list_b)
+        if sep_len == 0:
+            black_midgame_acc = 0
+        else:
+            black_midgame_acc = round(sum(mid_list_b) / (sep_len), 2)
+        return black_midgame_acc
+
+    def end_b_acc(self, game_move_acc: list) -> float:
+        """Calculates the opening accuracy for white."""
+        list_b = game_move_acc[1::2]
+        end_list_b = np.array_split(list_b, 3)[2]
+        sep_len = len(end_list_b)
+        if sep_len == 0:
+            black_endgame_acc = 0
+        else:
+            black_endgame_acc = round(sum(end_list_b) / (sep_len), 2)
+        return black_endgame_acc
+
+    def w_sec_imp(self, ow: float, mw: float, ew: float) -> str:
+        """Returns the area of improvement for the white player."""
+        if mw and ow < ew:
+            white_sector_improvement = "Opening"
+        elif mw < ow and mw < ew:
+            white_sector_improvement = "Midgame"
+        else:
+            white_sector_improvement = "Endgame"
+        return white_sector_improvement
+
+    def b_sec_imp(self, ob: float, mb: float, eb: float) -> str:
+        """Returns the area of improvement for the black player."""
+        if ob < mb and ob < eb:
+            black_sector_improvement = "Opening"
+        elif mb < ob and mb < eb:
+            black_sector_improvement = "Midgame"
+        else:
+            black_sector_improvement = "Endgame"
+        return black_sector_improvement
+
+    def white_castle_move_num(self, white_castle_num) -> int:
         """
         Returns the move which white castled
         (0 if player didn't castle).
         """
-        return sum(self.w_castle_num)
+        return sum(white_castle_num)
 
-    def black_castle_move_num(self) -> int:
+    def black_castle_move_num(self, black_castle_num) -> int:
         """
         Returns the move which black castled
         (0 if player didn't castle).
         """
-        return sum(self.b_castle_num)
+        return sum(black_castle_num)
 
-    def has_white_castled(self) -> int:
+    def has_white_castled(self, white_castle_num) -> int:
         """Checks to see if white castle in the game."""
-        if sum(self.w_castle_num) > 0:
+        if sum(white_castle_num) > 0:
             return 1
         else:
             return 0
 
-    def has_black_castled(self) -> int:
+    def has_black_castled(self, black_castle_num) -> int:
         """Checks to see if white castle in the game."""
-        if sum(self.b_castle_num) > 0:
+        if sum(black_castle_num) > 0:
             return 1
         else:
             return 0
 
-    def white_castle_phase(self) -> str:
+    def white_castle_phase(self, white_castle_num: list, total_moves: int) -> str:
         """
         Returns the game phase which white castled in -
         returns "None" if player didn't castle.
         """
-        if self.total_moves == 0:
+        if total_moves == 0:
             return "None"
         else:
-            if sum(self.w_castle_num) == 0:
+            if sum(white_castle_num) == 0:
                 return "None"
-            elif sum(self.w_castle_num) / (self.total_moves) < (1 / 3):
+            elif sum(white_castle_num) / (total_moves) < (1 / 3):
                 return "Opening"
-            elif sum(self.w_castle_num) / (self.total_moves) <= (2 / 3):
+            elif sum(white_castle_num) / (total_moves) <= (2 / 3):
                 return "Midgame"
-            elif sum(self.w_castle_num) / (self.total_moves) <= 1:
+            elif sum(white_castle_num) / (total_moves) <= 1:
                 return "Endgame"
 
-    def black_castle_phase(self) -> str:
+    def black_castle_phase(self, black_castle_num: list, total_moves: int) -> str:
         """
         Returns the game phase which black castled in -
         returns "None" if player didn't castle.
         """
-        if self.total_moves == 0:
+        if total_moves == 0:
             return "None"
         else:
-            if sum(self.b_castle_num) == 0:
+            if sum(black_castle_num) == 0:
                 return "None"
-            elif sum(self.b_castle_num) / (self.total_moves) < (1 / 3):
+            elif sum(black_castle_num) / (total_moves) < (1 / 3):
                 return "Opening"
-            elif sum(self.b_castle_num) / (self.total_moves) <= (2 / 3):
+            elif sum(black_castle_num) / (total_moves) <= (2 / 3):
                 return "Midgame"
-            elif sum(self.b_castle_num) / (self.total_moves) <= 1:
+            elif sum(black_castle_num) / (total_moves) <= 1:
                 return "Endgame"
-
-    def game_w_acc(self) -> float:
-        """Returns white players game accuracy."""
-        w_list = self.gm_mv_ac[::2]
-        list_len = len(self.gm_mv_ac[::2])
-        if list_len == 0:
-            self.wg_acc = 0
-        else:
-            self.wg_acc = round(sum(w_list) / list_len, 2)
-        return self.wg_acc
-
-    def game_b_acc(self) -> float:
-        """Returns black players game for accuracy."""
-        b__list = self.gm_mv_ac[1::2]
-        list_len = len(self.gm_mv_ac[1::2])
-        if list_len == 0:
-            self.bg_acc = 0
-        else:
-            self.bg_acc = round(sum(b__list) / list_len, 2)
-        return self.bg_acc
-
-    def op_w_acc(self) -> float:
-        """Calculates the opening accuracy for white."""
-        list_w = self.gm_mv_ac[::2]
-        sep_len = len(np.array_split(list_w, 3)[0])
-        if sep_len == 0:
-            self.ow = 0
-        else:
-            self.ow = round(sum(list_w) / (sep_len * 3), 2)
-        return self.ow
-
-    def mid_w_acc(self) -> float:
-        """Calculates the midgame accuracy for white."""
-        list_w = self.gm_mv_ac[::2]
-        sep_len = len(np.array_split(list_w, 3)[1])
-        if sep_len == 0:
-            self.mw = 0
-        else:
-            self.mw = round(sum(list_w) / (sep_len * 3), 2)
-        return self.mw
-
-    def end_w_acc(self) -> float:
-        """Calculates the endgame accuracy for white."""
-        list_w = self.gm_mv_ac[::2]
-        sep_len = len(np.array_split(list_w, 3)[2])
-        if sep_len == 0:
-            self.ew = 0
-        else:
-            self.ew = round(sum(list_w) / (sep_len * 3), 2)
-        return self.ew
-
-    def op_b_acc(self) -> float:
-        """Calculates the opening accuracy for black."""
-        list_b = self.gm_mv_ac[1::2]
-        sep_len = len(np.array_split(list_b, 3)[0])
-        if sep_len == 0:
-            self.ob = 0
-        else:
-            self.ob = round(sum(list_b) / (sep_len * 3), 2)
-        return self.ob
-
-    def mid_b_acc(self) -> float:
-        """Calculates the opening accuracy for white."""
-        list_b = self.gm_mv_ac[1::2]
-        sep_len = len(np.array_split(list_b, 3)[1])
-        if sep_len == 0:
-            self.mb = 0
-        else:
-            self.mb = round(sum(list_b) / (sep_len * 3), 2)
-        return self.mb
-
-    def end_b_acc(self) -> float:
-        """Calculates the opening accuracy for white."""
-        list_b = self.gm_mv_ac[1::2]
-        sep_len = len(np.array_split(list_b, 3)[2])
-        if sep_len == 0:
-            self.eb = 0
-        else:
-            self.eb = round(sum(list_b) / (sep_len * 3), 2)
-        return self.eb
-
-    def w_sec_imp(self) -> str:
-        """Returns the area of improvement for the white player."""
-        if self.ow < self.mw and self.ow < self.ew:
-            self.imp_w = "Opening"
-        elif self.mw < self.ow and self.mw < self.ew:
-            self.imp_w = "Midgame"
-        else:
-            self.imp_w = "Endgame"
-        return self.imp_w
-
-    def b_sec_imp(self) -> str:
-        """Returns the area of improvement for the black player."""
-        if self.ob < self.mb and self.ob < self.eb:
-            self.imp_b = "Opening"
-        elif self.mb < self.ob and self.mb < self.eb:
-            self.imp_b = "Midgame"
-        else:
-            self.imp_b = "Endgame"
-        return self.imp_b
 
 
 class ChessMove(ChessGame):
