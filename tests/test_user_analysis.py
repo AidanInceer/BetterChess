@@ -9,6 +9,7 @@ from pandas.testing import assert_frame_equal
 from src.user_analysis import ChessGame
 from src.user_analysis import ChessMove
 from src.user_analysis import ChessGameHeaders
+from unittest.mock import patch
 from unittest import mock
 
 
@@ -85,8 +86,37 @@ class TestGame:
         assert ChessGame.sum_move_types(self, move_type_list) == test_dict
         pass
 
-    def test_user_game_data(self):
-        pass
+
+    @patch("src.user_analysis.ChessGame.game_time_of_day")
+    @patch("src.user_analysis.ChessGame.game_day_of_week")
+    @patch("src.user_analysis.ChessGame.game_w_acc")
+    @patch("src.user_analysis.ChessGame.op_w_acc")
+    @patch("src.user_analysis.ChessGame.mid_w_acc")
+    @patch("src.user_analysis.ChessGame.end_w_acc")
+    @patch("src.user_analysis.ChessGame.w_sec_imp")
+    @patch("src.user_analysis.ChessGame.white_castle_move_num")
+    @patch("src.user_analysis.ChessGame.black_castle_move_num")
+    @patch("src.user_analysis.ChessGame.has_white_castled")
+    @patch("src.user_analysis.ChessGame.has_black_castled")
+    @patch("src.user_analysis.ChessGame.white_castle_phase")
+    @patch("src.user_analysis.ChessGame.black_castle_phase")
+    def test_user_game_data(self, mock_gtod, mock_gdow, gwa, owa, mow, eow,
+                            wsi, wcmn, bcmn, hwc, hbc, wcp, bcp):
+        mock_gtod.return_value = 1
+        mock_gdow.return_value = 1
+        gwa.return_value = 1
+        owa.return_value = 1
+        mow.return_value = 1
+        eow.return_value = 1
+        wsi.return_value = 1
+        wcmn.return_value = 1
+        bcmn.return_value = 1
+        hwc.return_value = 1
+        hbc.return_value = 1
+        wcp.return_value = 1
+        bcp.return_value = 1
+        
+        
 
     def test_export_game_data(self):
         pass

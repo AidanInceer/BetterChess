@@ -362,7 +362,8 @@ class ChessGame(ChessUser):
         """
         game_df.to_csv(game_filepath, mode="a", header=False, index=False)
 
-    def game_time_of_day(self, game_datetime) -> str:
+    @staticmethod
+    def game_time_of_day(game_datetime) -> str:
         """Returns the time of day as a string"""
         day_hour = int(date.strftime(game_datetime, "%H"))
         if day_hour <= 6:
@@ -375,7 +376,8 @@ class ChessGame(ChessUser):
             time_of_day = "Evening"
         return time_of_day
 
-    def game_day_of_week(self, game_datetime) -> str:
+    @staticmethod
+    def game_day_of_week(game_datetime) -> str:
         """Returns the day of the week that the game is played."""
         week_num_base = int(date.isoweekday(game_datetime))
         weekday_num = week_num_base - 1
@@ -390,7 +392,8 @@ class ChessGame(ChessUser):
         ]
         return weekdays[weekday_num]
 
-    def game_w_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def game_w_acc(game_move_acc: list) -> float:
         """Returns white players game accuracy."""
         w_list = game_move_acc[::2]
         list_len = len(game_move_acc[::2])
@@ -400,7 +403,8 @@ class ChessGame(ChessUser):
             wg_acc = round(sum(w_list) / list_len, 2)
         return wg_acc
 
-    def game_b_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def game_b_acc(game_move_acc: list) -> float:
         """Returns black players game for accuracy."""
         b__list = game_move_acc[1::2]
         list_len = len(game_move_acc[1::2])
@@ -410,7 +414,8 @@ class ChessGame(ChessUser):
             bg_acc = round(sum(b__list) / list_len, 2)
         return bg_acc
 
-    def op_w_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def op_w_acc(game_move_acc: list) -> float:
         """Calculates the opening accuracy for white."""
         list_w = game_move_acc[::2]
         op_list_w = np.array_split(list_w, 3)[0]
@@ -421,7 +426,8 @@ class ChessGame(ChessUser):
             white_opening_acc = round(sum(op_list_w) / (sep_len), 2)
         return white_opening_acc
 
-    def mid_w_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def mid_w_acc(game_move_acc: list) -> float:
         """Calculates the midgame accuracy for white."""
         list_w = game_move_acc[::2]
         mid_list_w = np.array_split(list_w, 3)[1]
@@ -432,7 +438,8 @@ class ChessGame(ChessUser):
             white_midgame_acc = round(sum(mid_list_w) / (sep_len), 2)
         return white_midgame_acc
 
-    def end_w_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def end_w_acc(game_move_acc: list) -> float:
         """Calculates the endgame accuracy for white."""
         list_w = game_move_acc[::2]
         end_list_w = np.array_split(list_w, 3)[2]
@@ -443,7 +450,8 @@ class ChessGame(ChessUser):
             white_endgame_acc = round(sum(end_list_w) / (sep_len), 2)
         return white_endgame_acc
 
-    def op_b_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def op_b_acc(game_move_acc: list) -> float:
         """Calculates the opening accuracy for black."""
         list_b = game_move_acc[1::2]
         op_list_b = np.array_split(list_b, 3)[0]
@@ -454,7 +462,8 @@ class ChessGame(ChessUser):
             black_opening_acc = round(sum(op_list_b) / (sep_len), 2)
         return black_opening_acc
 
-    def mid_b_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def mid_b_acc(game_move_acc: list) -> float:
         """Calculates the opening accuracy for white."""
         list_b = game_move_acc[1::2]
         mid_list_b = np.array_split(list_b, 3)[1]
@@ -465,7 +474,8 @@ class ChessGame(ChessUser):
             black_midgame_acc = round(sum(mid_list_b) / (sep_len), 2)
         return black_midgame_acc
 
-    def end_b_acc(self, game_move_acc: list) -> float:
+    @staticmethod
+    def end_b_acc(game_move_acc: list) -> float:
         """Calculates the opening accuracy for white."""
         list_b = game_move_acc[1::2]
         end_list_b = np.array_split(list_b, 3)[2]
@@ -476,7 +486,8 @@ class ChessGame(ChessUser):
             black_endgame_acc = round(sum(end_list_b) / (sep_len), 2)
         return black_endgame_acc
 
-    def w_sec_imp(self, ow: float, mw: float, ew: float) -> str:
+    @staticmethod
+    def w_sec_imp(ow: float, mw: float, ew: float) -> str:
         """Returns the area of improvement for the white player."""
         if mw and ow < ew:
             white_sector_improvement = "Opening"
@@ -486,7 +497,8 @@ class ChessGame(ChessUser):
             white_sector_improvement = "Endgame"
         return white_sector_improvement
 
-    def b_sec_imp(self, ob: float, mb: float, eb: float) -> str:
+    @staticmethod
+    def b_sec_imp(ob: float, mb: float, eb: float) -> str:
         """Returns the area of improvement for the black player."""
         if ob < mb and ob < eb:
             black_sector_improvement = "Opening"
@@ -496,35 +508,40 @@ class ChessGame(ChessUser):
             black_sector_improvement = "Endgame"
         return black_sector_improvement
 
-    def white_castle_move_num(self, white_castle_num) -> int:
+    @staticmethod
+    def white_castle_move_num(white_castle_num) -> int:
         """
         Returns the move which white castled
         (0 if player didn't castle).
         """
         return sum(white_castle_num)
 
-    def black_castle_move_num(self, black_castle_num) -> int:
+    @staticmethod
+    def black_castle_move_num(black_castle_num) -> int:
         """
         Returns the move which black castled
         (0 if player didn't castle).
         """
         return sum(black_castle_num)
 
-    def has_white_castled(self, white_castle_num) -> int:
+    @staticmethod
+    def has_white_castled(white_castle_num) -> int:
         """Checks to see if white castle in the game."""
         if sum(white_castle_num) > 0:
             return 1
         else:
             return 0
 
-    def has_black_castled(self, black_castle_num) -> int:
+    @staticmethod
+    def has_black_castled(black_castle_num) -> int:
         """Checks to see if white castle in the game."""
         if sum(black_castle_num) > 0:
             return 1
         else:
             return 0
 
-    def white_castle_phase(self, white_castle_num: list, total_moves: int) -> str:
+    @staticmethod
+    def white_castle_phase(white_castle_num: list, total_moves: int) -> str:
         """
         Returns the game phase which white castled in -
         returns "None" if player didn't castle.
@@ -541,7 +558,8 @@ class ChessGame(ChessUser):
             elif sum(white_castle_num) / (total_moves) <= 1:
                 return "Endgame"
 
-    def black_castle_phase(self, black_castle_num: list, total_moves: int) -> str:
+    @staticmethod
+    def black_castle_phase(black_castle_num: list, total_moves: int) -> str:
         """
         Returns the game phase which black castled in -
         returns "None" if player didn't castle.
@@ -677,7 +695,8 @@ class ChessMove(ChessGame):
         board.pop()
         return str_bm, eval_bm
 
-    def move_eval(self, move) -> None:
+    @staticmethod
+    def move_eval(move) -> None:
         """Returns the evalaution of the move played."""
         get_eval = str(move["score"].white())
         if "#" in get_eval:
@@ -687,7 +706,8 @@ class ChessMove(ChessGame):
         get_eval = int(get_eval)
         return get_eval
 
-    def eval_delta(self, move_num, eval_bm, eval_ml) -> float:
+    @staticmethod
+    def eval_delta(move_num, eval_bm, eval_ml) -> float:
         """Returns the eval difference between the best and mainline move."""
         if move_num % 2 == 0:
             eval_diff = round(abs(eval_bm - eval_ml), 3)
@@ -696,13 +716,15 @@ class ChessMove(ChessGame):
             eval_diff = round(abs(eval_ml - eval_bm), 3)
             return eval_diff
 
-    def move_accuracy(self, eval_diff) -> float:
+    @staticmethod
+    def move_accuracy(eval_diff) -> float:
         """Returns the move accuracy for a given move."""
         m, v = 0, 1.5
         move_acc = round(math.exp(-0.00003 * ((eval_diff - m) / v) ** 2) * 100, 1)
         return move_acc
 
-    def assign_move_type(self, move_acc) -> int:
+    @staticmethod
+    def assign_move_type(move_acc) -> int:
         """Returns the move type for a given move."""
         # best = 2, excellent = 1, good = 0,
         # inacc = -1, mistake = -2, blunder = -3, missed win = -4
@@ -722,7 +744,8 @@ class ChessMove(ChessGame):
             move_type = -4
         return move_type
 
-    def chess_piece(self, curr_board, square_int) -> str:
+    @staticmethod
+    def chess_piece(curr_board, square_int) -> str:
         """Returns the piece type for the move played."""
         piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square_int)
         if piece_type_num == 1:
@@ -747,7 +770,8 @@ class ChessMove(ChessGame):
         curr_board = chess.BaseBoard(board_fen=curr_fen)
         return curr_board
 
-    def get_piece_square_int(self, move) -> int:
+    @staticmethod
+    def get_piece_square_int(move) -> int:
         """
         Returns an integer between 0-63 which represents
         the pieces position on the board.
@@ -758,7 +782,8 @@ class ChessMove(ChessGame):
         square_int = chess.parse_square(piece_square)
         return square_int
 
-    def move_colour(self, move_num) -> str:
+    @staticmethod
+    def move_colour(move_num) -> str:
         """Returns the current moves colour."""
         if move_num % 2 == 0:
             mv_colour = "white"
@@ -766,7 +791,8 @@ class ChessMove(ChessGame):
             mv_colour = "black"
         return mv_colour
 
-    def castling_type(self, piece, move_col, str_ml) -> str:
+    @staticmethod
+    def castling_type(piece, move_col, str_ml) -> str:
         """Returns the type of castling - None if current move isnt castle."""
         if piece == "king" and move_col == "white" and str_ml == "e1g1":
             cas_type = "white_short"
@@ -780,7 +806,8 @@ class ChessMove(ChessGame):
             cas_type = None
         return cas_type
 
-    def white_castle_move_num(self, castle_type, move_num) -> int:
+    @staticmethod
+    def white_castle_move_num(castle_type, move_num) -> int:
         """Move which white castled in the game."""
         if castle_type == "white_short" or castle_type == "white_long":
             white_castle_move = move_num
@@ -788,7 +815,8 @@ class ChessMove(ChessGame):
             white_castle_move = 0
         return white_castle_move
 
-    def black_castle_move_num(self, castle_type, move_num) -> int:
+    @staticmethod
+    def black_castle_move_num(castle_type, move_num) -> int:
         """Move which black castled in the game."""
         if castle_type == "black_short" or castle_type == "black_long":
             black_castle_move = move_num
@@ -796,8 +824,9 @@ class ChessMove(ChessGame):
             black_castle_move = 0
         return black_castle_move
 
+    @staticmethod
     def get_time_spent_on_move(
-        self, tempfilepath: str, move_num: int, timers: tuple
+        tempfilepath: str, move_num: int, timers: tuple
     ) -> float:
         """Calculated the time the player spent on the current move."""
         chess_game_pgn = open(tempfilepath)
@@ -817,7 +846,8 @@ class ChessMove(ChessGame):
                 timerem_b = move_time_b
         return time_list[int(move_num)]
 
-    def filter_timecont_header(self, tempfilepath: str) -> tuple[float, float, int]:
+    @staticmethod
+    def filter_timecont_header(tempfilepath: str) -> tuple[float, float, int]:
         """
         Filters time control headers if time control contains move interval.
         """
