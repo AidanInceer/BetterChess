@@ -2,6 +2,7 @@
 import chess
 import chess.engine
 import chess.pgn
+from chess import Board
 import math
 import os
 import logging
@@ -107,7 +108,7 @@ class ChessGame(ChessUser):
 
     def run_game_analysis(self) -> None:
         """main function for ChessGame class, runs the init."""
-        self.init_game_analysis()
+        self.init_game_analysis(self.file_paths.temp, self.chess_game, self.file_paths.userlogfile)
         if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
             start = time.perf_counter()
             self.logger.info(f"| {self.game_dt} |{self.game_num}")
@@ -141,16 +142,15 @@ class ChessGame(ChessUser):
                 self.total_moves = move_num
             except UnboundLocalError:
                 self.total_moves = 0
-            self.analyse_game()
+            self.analyse_game(self.move_type_list)
             end = time.perf_counter()
             progress.progress_bar(self.game_num, self.tot_games, start, end)
 
-    def init_game_analysis(self) -> None:
+    def init_game_analysis(self, tempfilepath, chess_game, user_logfile) -> None:
         """Initalises the analysis, headers and filters past analysis runs."""
-        self.init_game(self.file_paths.temp)
-        self.init_board(self.chess_game)
+        self.init_game(tempfilepath)
+        self.init_board(chess_game)
         self.init_game_lists()
-        # self.time_list()
         game_headers = ChessGameHeaders(
             self.username,
             self.edepth,
@@ -159,18 +159,18 @@ class ChessGame(ChessUser):
             self.game_num,
             self.logger,
             self.tot_games,
-            self.chess_game,
+            chess_game,
         )
         self.headers = game_headers.collect_headers()
         self.game_dt = game_headers.collect_headers()["Game_datetime"]
-        self.game_analysis_filter(self.file_paths.userlogfile)
+        self.game_analysis_filter(user_logfile)
 
-    def analyse_game(self) -> None:
+    def analyse_game(self, move_type_list) -> None:
         """
         Prepares move data so it can be analysed at a game level
         and exports game data.
         """
-        self.sum_type_dict = self.sum_move_types(self.move_type_list)
+        self.sum_type_dict = self.sum_move_types(move_type_list)
         self.game_df = self.user_game_data(
             self.sum_type_dict,
             self.game_dt,
@@ -311,7 +311,7 @@ class ChessGame(ChessUser):
         game_df = pd.DataFrame(
             {
                 "Username": username,
-                "Date": self.game_dt,
+                "Date": game_dt,
                 "Game_time_of_day": self.time_of_day,
                 "Game_weekday": self.day_of_week,
                 "Engine_depth": edepth,
@@ -329,7 +329,7 @@ class ChessGame(ChessUser):
                 "Opening_class": headers["Opening_class"],
                 "Termination": headers["Termination"],
                 "End_type": headers["Win_draw_loss"],
-                "Number_of_moves": self.total_moves,
+                "Number_of_moves": total_moves,
                 "Accuracy": self.game_acc,
                 "Opening_accuracy": self.opn_acc,
                 "Mid_accuracy": self.mid_acc,
@@ -671,7 +671,7 @@ class ChessMove(ChessGame):
         self.export_move_data(self.file_paths.move_data, self.move_df)
         self.append_to_game_lists()
 
-    def mainline_move(self, move, board, engine) -> tuple:
+    def mainline_move(self, move, board: Board, engine: chess.engine.SimpleEngine) -> tuple:
         """Returns the users move and its evaluation."""
         str_ml = str(move)
         board.push_san(str_ml)
@@ -681,7 +681,7 @@ class ChessMove(ChessGame):
         eval_ml = self.move_eval(eval_ml_init)
         return str_ml, eval_ml
 
-    def best_move(self, board, engine) -> tuple:
+    def best_move(self, board: Board, engine: chess.engine.SimpleEngine) -> tuple:
         """Returns the best move from the engine and its evaluation."""
         best_move = engine.play(
             board, chess.engine.Limit(depth=self.edepth), game=object()

@@ -4,6 +4,7 @@ import requests
 from chessdotcom import get_player_game_archives
 from datetime import datetime
 from logging import Logger
+import pandas as pd
 
 
 def data_extract(
@@ -61,7 +62,6 @@ def extract_filter(
 def filter_pgncsv(filepath: str, logfilepath: str) -> None:
     """Removes games of the current month in the csv
     and then reruns the extract for that month."""
-    # Opens logging file
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
     llog = lines[-1]
@@ -75,7 +75,8 @@ def filter_pgncsv(filepath: str, logfilepath: str) -> None:
 
 def collect_game_data(url: str) -> list:
     """returns a list of all the users chess games."""
-    data = requests.get(url).json()
+    response = requests.get(url)
+    data = response.json()
     url_games_list = []
     for game_pgn in data["games"]:
         chess_game_string = str(game_pgn["pgn"]).replace("\n", " ; ")
@@ -130,9 +131,11 @@ def simple_progress_bar(num, total, type) -> None:
     """Simple progress bar."""
     if type == 0:
         x = "of User's data extracted"
+        percent = 100 * ((num + 1) / float(total))
+        bar = "❚" * int(percent / 2.5) + "-" * (40 - int(percent / 2.5))
+        print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")
     elif type == 1:
         x = "of User's games analysed"
-    """Creates a progress bar and estimates time to completion."""
-    percent = 100 * ((num + 1) / float(total))
-    bar = "❚" * int(percent / 2.5) + "-" * (40 - int(percent / 2.5))
-    print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")
+        percent = 100 * ((num + 1) / float(total))
+        bar = "❚" * int(percent / 2.5) + "-" * (40 - int(percent / 2.5))
+        print(f"\r| {bar}| {percent:.2f}% {x}", end="\r")
