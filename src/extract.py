@@ -4,7 +4,6 @@ import requests
 from chessdotcom import get_player_game_archives
 from datetime import datetime
 from logging import Logger
-import pandas as pd
 
 
 def data_extract(

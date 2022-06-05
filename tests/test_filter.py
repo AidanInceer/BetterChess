@@ -1,9 +1,8 @@
 import os
 import unittest
-from src import filter
-from unittest.mock import patch
 import logging
 import pandas as pd
+from src import filter
 
 
 class TestFilter(unittest.TestCase):

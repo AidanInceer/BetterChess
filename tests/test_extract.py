@@ -42,7 +42,7 @@ class TestExtract(unittest.TestCase):
             datefmt="%Y/%m/%d %I:%M:%S",
         )
         logger = logging.getLogger(__name__)
-        assert extract.data_extract(username, filepath, logfilepath, logger) == None
+        assert extract.data_extract(username, filepath, logfilepath, logger) is None
         os.remove(filepath)
         os.remove(logfilepath)
 
@@ -122,10 +122,10 @@ class TestExtract(unittest.TestCase):
         test_type = 0
         num = 1
         total = 100
-        assert extract.simple_progress_bar(num, total, test_type) == None
+        assert extract.simple_progress_bar(num, total, test_type) is None
 
     def test_simple_progress_bar_t1(self):
         test_type = 1
         num = 1
         total = 100
-        assert extract.simple_progress_bar(num, total, test_type) == None
+        assert extract.simple_progress_bar(num, total, test_type) is None

@@ -1,5 +1,5 @@
-from datetime import datetime
 import unittest
+from datetime import datetime
 from src import progress
 from unittest.mock import patch
 

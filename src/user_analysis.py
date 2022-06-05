@@ -12,7 +12,6 @@ import time
 from src import progress
 from src import extract
 from src import filter
-import regex as re
 from datetime import date
 from datetime import datetime
 from logging import Logger
