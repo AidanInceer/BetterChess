@@ -11,8 +11,8 @@ class TestExtract(unittest.TestCase):
     @patch("src.extract.extract_filter")
     def test_data_extract_typeerror(self, mock_ef):
         mock_ef.return_value = 1
-        filepath = r"tests/test_pgn2.csv"
-        logfilepath = r"tests/test_extract.log"
+        filepath = r"tests/test_files/test_pgn2.csv"
+        logfilepath = r"tests/test_files/test_extract.log"
         open(logfilepath, "x")
         open(filepath, "x")
         username = "JM333"
@@ -30,8 +30,8 @@ class TestExtract(unittest.TestCase):
         os.remove(logfilepath)
 
     def test_data_extract(self):
-        filepath = r"tests/test_pgn2.csv"
-        logfilepath = r"tests/test_extract.log"
+        filepath = r"tests/test_files/test_pgn2.csv"
+        logfilepath = r"tests/test_files/test_extract.log"
         open(logfilepath, "x")
         open(filepath, "x")
         username = "JM333"
@@ -52,8 +52,8 @@ class TestExtract(unittest.TestCase):
         url = "https://api.chess.com/pub/player/EZE-123/games/2021/11"
         in_log = False
         in_curr = True
-        filepath = r"tests/test_pgn.csv"
-        logfilepath = r"tests/test.log"
+        filepath = r"tests/test_files/test_pgn.csv"
+        logfilepath = r"tests/test_files/test.log"
         assert extract.extract_filter(in_log, in_curr, url, filepath, logfilepath) == 1
 
     @patch("src.extract.filter_pgncsv")
@@ -62,21 +62,21 @@ class TestExtract(unittest.TestCase):
         url = "https://api.chess.com/pub/player/EZE-123/games/2021/11"
         in_log = True
         in_curr = True
-        filepath = r"tests/test_pgn.csv"
-        logfilepath = r"tests/test.log"
+        filepath = r"tests/test_files/test_pgn.csv"
+        logfilepath = r"tests/test_files/test.log"
         assert extract.extract_filter(in_log, in_curr, url, filepath, logfilepath) == []
 
     def test_extract_filter(self):
         url = "https://api.chess.com/pub/player/EZE-123/games/2021/11"
         in_log = True
         in_curr = False
-        filepath = r"tests/test_pgn.csv"
-        logfilepath = r"tests/test.log"
+        filepath = r"tests/test_files/test_pgn.csv"
+        logfilepath = r"tests/test_files/test.log"
         assert extract.extract_filter(in_log, in_curr, url, filepath, logfilepath) == []
 
     def test_filter_pgncsv(self):
-        filepath = r"tests/test_pgn.csv"
-        logfilepath = r"tests/test.log"
+        filepath = r"tests/test_files/test_pgn.csv"
+        logfilepath = r"tests/test_files/test.log"
         assert extract.filter_pgncsv(filepath, logfilepath) == None
 
     def test_collect_game_data(self):
@@ -89,12 +89,12 @@ class TestExtract(unittest.TestCase):
 
     def test_url_in_log_false(self):
         url = "https://api.chess.com/pub/player/ainceer/games/2021/11"
-        logfilepath = r"tests/test.log"
+        logfilepath = r"tests/test_files/test.log"
         assert extract.url_in_log(url, logfilepath) is False
 
     def test_url_in_log_true(self):
         url = "https://api.chess.com/pub/player/ainceer/games/2021/01"
-        logfilepath = r"tests/test.log"
+        logfilepath = r"tests/test_files/test.log"
         assert extract.url_in_log(url, logfilepath) is True
 
     def test_in_cur_mth_false(self):

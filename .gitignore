@@ -4,3 +4,5 @@ logs/*
 .vscode/
 .pytest_cache/
 .coverage
+.flake8
+pytest.ini

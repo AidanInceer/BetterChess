@@ -55,12 +55,12 @@ class ChessUser:
 
     def analyse_user(self) -> None:
         """Analyses all of the given users games."""
-        all_games = self.init_all_games()
+        all_games = self.init_all_games(self.file_paths.pgn_data)
         print("Analysing users data: ")
         filter.init_game_logs(self.file_paths.userlogfile, self.logger)
         filter.clean_movecsv(self.file_paths.move_data, self.file_paths.userlogfile)
         for game_num, chess_game in enumerate(all_games["game_data"]):
-            self.write_temp_pgn(temp_game=chess_game)
+            self.write_temp_pgn(self.file_paths.temp, temp_game=chess_game)
             game = ChessGame(
                 self.username,
                 self.edepth,
@@ -73,17 +73,17 @@ class ChessUser:
             game.run_game_analysis()
             del game
 
-    def init_all_games(self) -> pd.DataFrame:
+    def init_all_games(self, filepath) -> pd.DataFrame:
         """Returns a dataframe of all users games from the users pgn csv."""
         all_games = pd.read_csv(
-            self.file_paths.pgn_data, delimiter="|", names=["url_date", "game_data"]
+            filepath, delimiter="|", names=["url_date", "game_data"]
         )
         self.tot_games = len(all_games["game_data"])
         return all_games
 
-    def write_temp_pgn(self, temp_game) -> None:
+    def write_temp_pgn(self, tempfilepath, temp_game) -> None:
         """Writes the current game to the temp.pgn file."""
-        with open(self.file_paths.temp, "w") as temp_pgn:
+        with open(tempfilepath, "w") as temp_pgn:
             temp_pgn.write(str(temp_game.replace(" ; ", "\n")))
 
 
@@ -108,7 +108,9 @@ class ChessGame(ChessUser):
 
     def run_game_analysis(self) -> None:
         """main function for ChessGame class, runs the init."""
-        self.init_game_analysis(self.file_paths.temp, self.chess_game, self.file_paths.userlogfile)
+        self.init_game_analysis(
+            self.file_paths.temp, self.chess_game, self.file_paths.userlogfile
+        )
         if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
             start = time.perf_counter()
             self.logger.info(f"| {self.game_dt} |{self.game_num}")
@@ -671,7 +673,9 @@ class ChessMove(ChessGame):
         self.export_move_data(self.file_paths.move_data, self.move_df)
         self.append_to_game_lists()
 
-    def mainline_move(self, move, board: Board, engine: chess.engine.SimpleEngine) -> tuple:
+    def mainline_move(
+        self, move, board: Board, engine: chess.engine.SimpleEngine
+    ) -> tuple:
         """Returns the users move and its evaluation."""
         str_ml = str(move)
         board.push_san(str_ml)
@@ -1139,52 +1143,28 @@ class InputHandler:
     @staticmethod
     def user_input() -> str:
         username = input("Enter your username: ")
-        if len(username) == 0:
-            print("Please enter a valid username")
-            InputHandler.user_input()
-        if not isinstance(username, str):
-            print("Please enter a valid username")
-            InputHandler.user_input()
+
         return username
 
     @staticmethod
     def depth_input() -> str:
         edepth = input("Enter the engine depth (1-20): ")
-        if len(edepth) == 0:
-            print("Please enter a valid depth")
-            InputHandler.depth_input()
-        if int(edepth) > 20 or int(edepth) < 1:
-            print("Please enter a valid depth")
-            InputHandler.depth_input()
+
         return edepth
 
     @staticmethod
     def year_input() -> str:
         start_year = input("Enter the start year for analysis (e.g. 2020): ")
-        if len(start_year) != 4 or (re.match(r"^([\s\d]+)$", start_year) is None):
-            print("Please enter a valid start year")
-            InputHandler.depth_input()
+
         return start_year
 
     @staticmethod
     def month_input() -> str:
         start_month = input("Enter the start month for analysis (e.g. 01): ")
-        if len(start_month) != 2 or (re.match(r"^([\s\d]+)$", start_month) is None):
-            print("Please enter a valid start month")
-            InputHandler.depth_input()
-        if int(start_month) > 12 or int(start_month) < 1:
-            print("Please enter a valid start month")
-            InputHandler.depth_input()
         return start_month
 
     @staticmethod
     def start_datetime(start_year: str, start_month: str) -> datetime:
         start_datetime = start_year + "-" + start_month + "-01" + " 00:00:00"
         start_date = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M:%S")
-        current_date = datetime.now()
-        if start_date > current_date:
-            start_year = InputHandler.year_input()
-            start_month = InputHandler.month_input()
-            InputHandler.start_datetime(start_year, start_month)
-        else:
-            return start_date
+        return start_date

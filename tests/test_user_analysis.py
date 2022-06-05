@@ -1,38 +1,58 @@
 import chess
+import chess.engine
 import pandas as pd
 import unittest
 import logging
+import os
 from chess import WHITE
 from chess.engine import PovScore, Cp, Mate
 from chess.pgn import read_game
-import chess.engine
 from datetime import datetime
 from pandas.testing import assert_frame_equal
 from src.user_analysis import ChessGame, ChessUser
 from src.user_analysis import ChessMove
 from src.user_analysis import ChessGameHeaders
+from src.user_analysis import InputHandler
 from unittest.mock import patch
 from unittest import mock, TestCase
+from logging import Logger
 
 
-class TestUser:
+class TestUser(TestCase):
     def test_create_logger(self):
-        pass
+        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+        c_user.file_paths = BaseFileHandler()
+        self.assertIsInstance(c_user.create_logger(), Logger)
 
     def test_create_engine(self):
-        pass
+        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+        c_user.file_paths = BaseFileHandler()
+        self.assertIsInstance(c_user.create_engine(), chess.engine.SimpleEngine)
 
-    def test_run_analysis(self):
-        pass
+    @patch("src.user_analysis.extract.data_extract")
+    @patch("src.user_analysis.ChessUser.analyse_user")
+    def test_run_analysis(self, mock_de, mock_au):
+        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+        c_user.logger = "test_logger"
+        assert c_user.run_analysis() is None
 
-    def test_analyse_user(self):
-        pass
-
-    def test_init_all_games(self):
-        pass
+    @patch("src.user_analysis.filter.init_game_logs")
+    @patch("src.user_analysis.filter.clean_movecsv")
+    @patch("src.user_analysis.ChessGame.run_game_analysis")
+    @patch("src.user_analysis.ChessUser.write_temp_pgn")
+    def test_analyse_user(self, mock_igl, mock_cm, mock_rga, mock_wtp):
+        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+        c_user.file_paths = BaseFileHandler()
+        c_user.file_paths.temp = BaseFileHandler().temp
+        c_user.logger = "test_logger"
+        c_user.engine = "test_engine"
+        assert c_user.analyse_user() is None
 
     def test_write_temp_pgn(self):
-        pass
+        temp_game = "A ; B"
+        tempfilepath = BaseFileHandler().write_temp
+        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+        assert c_user.write_temp_pgn(tempfilepath, temp_game) is None
 
 
 class TestGame(TestCase):
@@ -40,14 +60,14 @@ class TestGame(TestCase):
     @patch("src.user_analysis.ChessMove.analyse_move")
     @patch("src.user_analysis.ChessGame.analyse_game")
     @patch("src.user_analysis.progress.progress_bar")
-    def test_run_game_analysis(self, mock_iga, mock_am, mock_ag, mock_pb):
+    def test_run_game_analysis_unbounderror(self, mock_iga, mock_am, mock_ag, mock_pb):
         logfilepath = BaseFileHandler().logpath
-        tempfilepath = BaseFileHandler().test
+        tempfilepath = BaseFileHandler().false_game
         enginepath = BaseFileHandler().enginepath
         engine = chess.engine.SimpleEngine.popen_uci(enginepath)
         chess_game_pgn = open(tempfilepath)
         chess_game = read_game(chess_game_pgn)
-        
+
         logging.basicConfig(
             filename=logfilepath,
             format="[%(levelname)s %(module)s] %(message)s",
@@ -72,7 +92,45 @@ class TestGame(TestCase):
         c_game.move_type_list = []
         c_game.w_castle_num = []
         c_game.b_castle_num = []
-        assert c_game.run_game_analysis() == None
+        assert c_game.run_game_analysis() is None
+
+    @patch("src.user_analysis.ChessGame.init_game_analysis")
+    @patch("src.user_analysis.ChessMove.analyse_move")
+    @patch("src.user_analysis.ChessGame.analyse_game")
+    @patch("src.user_analysis.progress.progress_bar")
+    def test_run_game_analysis(self, mock_iga, mock_am, mock_ag, mock_pb):
+        logfilepath = BaseFileHandler().logpath
+        tempfilepath = BaseFileHandler().test
+        enginepath = BaseFileHandler().enginepath
+        engine = chess.engine.SimpleEngine.popen_uci(enginepath)
+        chess_game_pgn = open(tempfilepath)
+        chess_game = read_game(chess_game_pgn)
+
+        logging.basicConfig(
+            filename=logfilepath,
+            format="[%(levelname)s %(module)s] %(message)s",
+            level=logging.INFO,
+            datefmt="%Y/%m/%d %I:%M:%S",
+        )
+        logger = logging.getLogger(__name__)
+        c_game = ChessGame(
+            "LucidKoala", "1", datetime(2020, 1, 1, 1, 1, 1), engine, 1, logger, 100
+        )
+        c_game.chess_game = chess_game
+        c_game.board = chess_game.board()
+        c_game.game_dt = datetime(2020, 11, 8, 23, 10, 17)
+        c_game.log_dt = datetime(2020, 10, 8, 23, 10, 17)
+        c_game.gm_mv_num = []
+        c_game.gm_mv = []
+        c_game.gm_best_mv = []
+        c_game.best_move_eval = []
+        c_game.mainline_eval = []
+        c_game.move_eval_diff = []
+        c_game.gm_mv_ac = []
+        c_game.move_type_list = []
+        c_game.w_castle_num = []
+        c_game.b_castle_num = []
+        assert c_game.run_game_analysis() is None
 
     @patch("src.user_analysis.ChessGame.init_game")
     @patch("src.user_analysis.ChessGame.init_board")
@@ -102,8 +160,8 @@ class TestGame(TestCase):
         )
         c_game.chess_game = chess_game
         c_game.engine = engine
-        headers = {"Game_date": 1, "Game_datetime": datetime(2020, 11, 8, 23, 10, 17)}
-        assert c_game.init_game_analysis(tempfilepath, chess_game, logfilepath) == None
+        # headers = {"Game_date": 1, "Game_datetime": datetime(2020, 11, 8, 23, 10, 17)}
+        assert c_game.init_game_analysis(tempfilepath, chess_game, logfilepath) is None
 
     @patch("src.user_analysis.ChessGame.sum_move_types", return_value=1)
     @patch("src.user_analysis.ChessGame.user_game_data", return_value=2)
@@ -119,7 +177,7 @@ class TestGame(TestCase):
         c_game.total_moves = 10
         c_game.headers = {}
         mtl = []
-        assert c_game.analyse_game(mtl) == None
+        assert c_game.analyse_game(mtl) is None
         pass
 
     def test_init_game(self):
@@ -137,7 +195,7 @@ class TestGame(TestCase):
         assert ChessGame.init_board(self, chess_game) == chess_game.board()
 
     def test_init_game_lists(self):
-        assert ChessGame.init_game_lists(self) == None
+        assert ChessGame.init_game_lists(self) is None
 
     def test_game_analysis_filter(self):
         tempfilepath = BaseFileHandler().logpath
@@ -274,7 +332,7 @@ class TestGame(TestCase):
                 "Opening_class": "A40",
                 "Termination": "Win by resignation",
                 "End_type": "White",
-                "Number_of_moves": 69,
+                "Number_of_moves": total_moves,
                 "Accuracy": 90,
                 "Opening_accuracy": 90,
                 "Mid_accuracy": 90,
@@ -425,7 +483,7 @@ class TestGame(TestCase):
                 "Opening_class": "A40",
                 "Termination": "Loss by resignation",
                 "End_type": "White",
-                "Number_of_moves": 69,
+                "Number_of_moves": total_moves,
                 "Accuracy": 80.0,
                 "Opening_accuracy": 80.0,
                 "Mid_accuracy": 80.0,
@@ -447,7 +505,6 @@ class TestGame(TestCase):
             },
             index=[0],
         )
-        c_user = ChessUser("LucidKoala", "1", datetime(2020, 1, 1, 1, 1, 1))
         c_game = ChessGame(
             "LucidKoala", "1", datetime(2020, 1, 1, 1, 1, 1), "", 1, "", "100"
         )
@@ -467,10 +524,26 @@ class TestGame(TestCase):
             test_df,
         )
 
-    def test_export_game_data(self):
-        pass
+    def test_export_game_data_to_csv(self):
+        game_filepath = "tests/test_files/test_export.csv"
+        open(game_filepath, "x")
+        test_df = pd.DataFrame({"Username": "Ainceer"}, index=[0])
+        assert ChessGame.export_game_data_to_csv(self, test_df, game_filepath) is None
+        os.remove(game_filepath)
 
-    def test_game_time_of_day(self):
+    def test_game_time_of_day_night(self):
+        game_datetime = datetime(2022, 5, 29, 4, 35, 47)
+        assert ChessGame.game_time_of_day(game_datetime) == "Night"
+
+    def test_game_time_of_day_morning(self):
+        game_datetime = datetime(2022, 5, 29, 9, 35, 47)
+        assert ChessGame.game_time_of_day(game_datetime) == "Morning"
+
+    def test_game_time_of_day_afternoon(self):
+        game_datetime = datetime(2022, 5, 29, 13, 35, 47)
+        assert ChessGame.game_time_of_day(game_datetime) == "Afternoon"
+
+    def test_game_time_of_day_evening(self):
         game_datetime = datetime(2022, 5, 29, 19, 35, 47)
         assert ChessGame.game_time_of_day(game_datetime) == "Evening"
 
@@ -678,7 +751,7 @@ class TestMove(unittest.TestCase):
             [],
             [],
         )
-        assert chessmove.analyse_move(move) == None
+        assert chessmove.analyse_move(move) is None
 
     def test_mainline_move(self):
         enginepath = BaseFileHandler().enginepath
@@ -1047,10 +1120,7 @@ class TestGameHeaders(unittest.TestCase):
         tempfilepath = BaseFileHandler().test2
         chess_game_pgn = open(tempfilepath)
         chess_game = read_game(chess_game_pgn)
-        assert (
-            ChessGameHeaders.opening_nm(self, chess_game)
-            == "NA"
-        )
+        assert ChessGameHeaders.opening_nm(self, chess_game) == "NA"
 
     def test_game_termination_loss(self):
         tempfilepath = BaseFileHandler().test2
@@ -1149,11 +1219,55 @@ class TestGameHeaders(unittest.TestCase):
         )
 
 
+class TestInputHandler(unittest.TestCase):
+    @patch("src.user_analysis.InputHandler.user_input", return_value="Ainceer")
+    @patch("src.user_analysis.InputHandler.depth_input", return_value=1)
+    @patch("src.user_analysis.InputHandler.year_input", return_value=2021)
+    @patch("src.user_analysis.InputHandler.month_input", return_value=11)
+    @patch("src.user_analysis.InputHandler.start_datetime", return_value="2021-11-01")
+    def test_get_inputs(self, mock_ui, mock_di, mock_yi, mock_mi, mock_sd):
+        return_dict = {"username": "Ainceer", "edepth": 1, "start_date": "2021-11-01"}
+        assert InputHandler.get_inputs() == return_dict
+
+    @patch("builtins.input")
+    def test_user_input(self, mock_ui):
+        mock_ui.return_value = "Ainceer"
+        assert InputHandler.user_input() == "Ainceer"
+
+    @patch("builtins.input")
+    def test_depth_input(self, mock_di):
+        mock_di.return_value = "1"
+        assert InputHandler.depth_input() == "1"
+
+    @patch("builtins.input")
+    def test_year_input(self, mock_yi):
+        mock_yi.return_value = "2020"
+        assert InputHandler.year_input() == "2020"
+
+    @patch("builtins.input")
+    def test_month_input(self, mock_mi):
+        mock_mi.return_value = "01"
+        assert InputHandler.month_input() == "01"
+
+    def test_start_datetime(self):
+        start_year = "2020"
+        start_month = "01"
+        assert InputHandler.start_datetime(start_year, start_month) == datetime(
+            2020, 1, 1, 0, 0, 0
+        )
+
+
 class BaseFileHandler:
     def __init__(self):
-        self.move_data = r"./test_move_data.csv"
-        self.test = r"tests/test.pgn"
-        self.test2 = r"tests/test2.pgn"
-        self.test_draw = r"tests/test_draw.pgn"
-        self.logpath = r"tests/test.log"
+        self.move_data = r"./test_files/test_move_data.csv"
+        self.test = r"tests/test_files/test.pgn"
+        self.test2 = r"tests/test_files/test2.pgn"
+        self.test_draw = r"tests/test_files/test_draw.pgn"
+        self.logpath = r"tests/test_files/test.log"
+        self.userlogfile = r"tests/test_files/test_userlog.log"
         self.enginepath = r"./lib/stkfsh_14.1/stk_14.1.exe"
+        self.stockfish = r"./lib/stkfsh_14.1/stk_14.1.exe"
+        self.pgn_data = r"tests/test_files/test_pgndata.csv"
+        self.write_temp = r"tests/test_files/write_temppgn.csv"
+        self.temp = r"tests/test_files/temp.pgn"
+        self.false_game = r"tests/test_files/false_game.pgn"
