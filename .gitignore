@@ -1,9 +1,9 @@
 lib/*
-data/*
+data/
 logs/*
-.vscode/*
-.pytest_cache/*
-.coverage/*
-.flake8/*
-pytest.ini/*
-__pycache__/*
+.vscode/
+.pytest_cache/
+*.coverage
+*.flake8
+*pytest.ini
+*__pycache__
