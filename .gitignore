@@ -8,3 +8,4 @@ logs/*
 *pytest.ini
 *__pycache__
 *.pyc
+*.pgn
