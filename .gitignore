@@ -1,4 +1,4 @@
-lib/*
+lib/
 data/
 logs/*
 .vscode/
@@ -7,3 +7,4 @@ logs/*
 *.flake8
 *pytest.ini
 *__pycache__
+*.pyc

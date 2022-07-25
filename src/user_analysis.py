@@ -107,6 +107,7 @@ class ChessGame(ChessUser):
 
     def run_game_analysis(self) -> None:
         """main function for ChessGame class, runs the init."""
+        self.chess_game = self.init_game(self.file_paths.temp)
         self.init_game_analysis(
             self.file_paths.temp, self.chess_game, self.file_paths.userlogfile
         )
@@ -149,7 +150,6 @@ class ChessGame(ChessUser):
 
     def init_game_analysis(self, tempfilepath, chess_game, user_logfile) -> None:
         """Initalises the analysis, headers and filters past analysis runs."""
-        self.init_game(tempfilepath)
         self.init_board(chess_game)
         self.init_game_lists()
         game_headers = ChessGameHeaders(
