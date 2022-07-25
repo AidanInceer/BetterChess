@@ -1,5 +1,5 @@
 lib/
-data/
+data/*.pgn
 logs/*
 .vscode/
 .pytest_cache/
@@ -8,4 +8,3 @@ logs/*
 *pytest.ini
 *__pycache__
 *.pyc
-*.pgn

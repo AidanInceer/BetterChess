@@ -7,31 +7,24 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
-strategy:
-  matrix:
-    Python27:
-      python.version: '2.7'
-    Python35:
-      python.version: '3.5'
-    Python36:
-      python.version: '3.6'
-    Python37:
-      python.version: '3.7'
+  vmImage: 'windows-latest'
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
+    versionSpec: '3.6'
   displayName: 'Use Python $(python.version)'
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+- script: python -m pip install --upgrade pip setuptools wheel
+  displayName: 'Install tools'
 
 - script: |
     pip install pytest pytest-azurepipelines
-    pytest
+    pip install pytest-cov
+    pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
   displayName: 'pytest'
 
+- script: |
+    python -m pip install flake8
+    flake8 .
+  displayName: 'Run linting tests'
