@@ -23,10 +23,10 @@ class TestUser(TestCase):
         c_user.file_paths = BaseFileHandler()
         self.assertIsInstance(c_user.create_logger(), Logger)
 
-    # def test_create_engine(self):
-    #     c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
-    #     c_user.file_paths = BaseFileHandler()
-    #     self.assertIsInstance(c_user.create_engine(), chess.engine.SimpleEngine)
+    def test_create_engine(self):
+        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+        c_user.file_paths = BaseFileHandler()
+        self.assertIsInstance(c_user.create_engine(), chess.engine.SimpleEngine)
 
     @patch("src.user_analysis.extract.data_extract")
     @patch("src.user_analysis.ChessUser.analyse_user")
