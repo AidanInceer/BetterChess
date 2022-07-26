@@ -29,8 +29,8 @@ steps:
     flake8 .  --ignore=E501,W503
   displayName: 'lint flake8'
 
-# - script: |
-#     pip install pytest pytest-azurepipelines
-#     pip install pytest-cov
-#     pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
-#   displayName: 'pytest'
+- script: |
+    pip install pytest pytest-azurepipelines
+    pip install pytest-cov
+    pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
+  displayName: 'pytest'
