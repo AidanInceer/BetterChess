@@ -94,43 +94,43 @@ class TestGame(TestCase):
     #     c_game.b_castle_num = []
     #     assert c_game.run_game_analysis() is None
 
-    @patch("src.user_analysis.ChessGame.init_game_analysis")
-    @patch("src.user_analysis.ChessMove.analyse_move")
-    @patch("src.user_analysis.ChessGame.analyse_game")
-    @patch("src.user_analysis.progress.progress_bar")
-    def test_run_game_analysis(self, mock_iga, mock_am, mock_ag, mock_pb):
-        logfilepath = BaseFileHandler().logpath
-        tempfilepath = BaseFileHandler().test
-        enginepath = BaseFileHandler().enginepath
-        engine = chess.engine.SimpleEngine.popen_uci(enginepath)
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
+    # @patch("src.user_analysis.ChessGame.init_game_analysis")
+    # @patch("src.user_analysis.ChessMove.analyse_move")
+    # @patch("src.user_analysis.ChessGame.analyse_game")
+    # @patch("src.user_analysis.progress.progress_bar")
+    # def test_run_game_analysis(self, mock_iga, mock_am, mock_ag, mock_pb):
+    #     logfilepath = BaseFileHandler().logpath
+    #     tempfilepath = BaseFileHandler().test
+    #     enginepath = BaseFileHandler().enginepath
+    #     engine = chess.engine.SimpleEngine.popen_uci(enginepath)
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
 
-        logging.basicConfig(
-            filename=logfilepath,
-            format="[%(levelname)s %(module)s] %(message)s",
-            level=logging.INFO,
-            datefmt="%Y/%m/%d %I:%M:%S",
-        )
-        logger = logging.getLogger(__name__)
-        c_game = ChessGame(
-            "LucidKoala", "1", datetime(2020, 1, 1, 1, 1, 1), engine, 1, logger, 100
-        )
-        c_game.chess_game = chess_game
-        c_game.board = chess_game.board()
-        c_game.game_dt = datetime(2020, 11, 8, 23, 10, 17)
-        c_game.log_dt = datetime(2020, 10, 8, 23, 10, 17)
-        c_game.gm_mv_num = []
-        c_game.gm_mv = []
-        c_game.gm_best_mv = []
-        c_game.best_move_eval = []
-        c_game.mainline_eval = []
-        c_game.move_eval_diff = []
-        c_game.gm_mv_ac = []
-        c_game.move_type_list = []
-        c_game.w_castle_num = []
-        c_game.b_castle_num = []
-        assert c_game.run_game_analysis() is None
+    #     logging.basicConfig(
+    #         filename=logfilepath,
+    #         format="[%(levelname)s %(module)s] %(message)s",
+    #         level=logging.INFO,
+    #         datefmt="%Y/%m/%d %I:%M:%S",
+    #     )
+    #     logger = logging.getLogger(__name__)
+    #     c_game = ChessGame(
+    #         "LucidKoala", "1", datetime(2020, 1, 1, 1, 1, 1), engine, 1, logger, 100
+    #     )
+    #     c_game.chess_game = chess_game
+    #     c_game.board = chess_game.board()
+    #     c_game.game_dt = datetime(2020, 11, 8, 23, 10, 17)
+    #     c_game.log_dt = datetime(2020, 10, 8, 23, 10, 17)
+    #     c_game.gm_mv_num = []
+    #     c_game.gm_mv = []
+    #     c_game.gm_best_mv = []
+    #     c_game.best_move_eval = []
+    #     c_game.mainline_eval = []
+    #     c_game.move_eval_diff = []
+    #     c_game.gm_mv_ac = []
+    #     c_game.move_type_list = []
+    #     c_game.w_castle_num = []
+    #     c_game.b_castle_num = []
+    #     assert c_game.run_game_analysis() is None
 
     # @patch("src.user_analysis.ChessGame.init_game")
     # @patch("src.user_analysis.ChessGame.init_board")
