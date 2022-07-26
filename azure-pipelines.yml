@@ -32,5 +32,5 @@ steps:
 - script: |
     pip install pytest pytest-azurepipelines
     pip install pytest-cov
-    pytest --cov=. --cov-report=xml
+    pytest -v --cov=. cov-report=xml
   displayName: 'pytest'
