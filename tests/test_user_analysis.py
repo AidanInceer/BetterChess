@@ -1,5 +1,6 @@
 import chess
 import chess.engine
+import logging
 import pandas as pd
 import unittest
 import os
