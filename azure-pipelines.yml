@@ -25,6 +25,6 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    pip install pytest 
+    pip install pytest
     pytest
   displayName: 'pytest'
