@@ -110,7 +110,7 @@ class TestExtract(unittest.TestCase):
         assert extract.in_curr_month(url) is True
 
     def test_get_curr_month(self):
-        curmth = datetime.strptime("2022-06-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+        curmth = datetime.strptime("2022-07-01 00:00:00", "%Y-%m-%d %H:%M:%S")
         assert curmth == extract.get_curr_mth()
 
     def test_get_url_date(self):
