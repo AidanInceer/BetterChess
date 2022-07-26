@@ -12,7 +12,7 @@ class TestProgress(unittest.TestCase):
         t = 100
         start_time = datetime(2020, 1, 1, 1, 1, 0)
         end_time = datetime(2020, 1, 1, 1, 1, 30)
-        assert progress.progress_bar(g, t, start_time, end_time) == None
+        assert progress.progress_bar(g, t, start_time, end_time) is None
 
     @patch("src.progress.timers")
     def test_progress_bar_10hrs(self, mock_t):
@@ -21,7 +21,7 @@ class TestProgress(unittest.TestCase):
         t = 13
         start_time = datetime(2020, 1, 1, 1, 1, 0)
         end_time = datetime(2020, 1, 1, 1, 1, 30)
-        assert progress.progress_bar(g, t, start_time, end_time) == None
+        assert progress.progress_bar(g, t, start_time, end_time) is None
 
     @patch("src.progress.timers")
     def test_progress_bar_10mins(self, mock_t):
@@ -30,7 +30,7 @@ class TestProgress(unittest.TestCase):
         t = 13
         start_time = datetime(2020, 1, 1, 1, 1, 0)
         end_time = datetime(2020, 1, 1, 1, 1, 30)
-        assert progress.progress_bar(g, t, start_time, end_time) == None
+        assert progress.progress_bar(g, t, start_time, end_time) is None
 
     def test_timer(self):
         timer = 1

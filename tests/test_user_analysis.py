@@ -2,7 +2,6 @@ import chess
 import chess.engine
 import pandas as pd
 import unittest
-import logging
 import os
 from chess import WHITE
 from chess.engine import PovScore, Cp, Mate

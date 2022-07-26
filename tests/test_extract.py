@@ -3,7 +3,6 @@ import logging
 from src import extract
 from datetime import datetime
 from unittest.mock import patch
-from unittest import mock, TestCase
 import os
 
 
@@ -77,7 +76,7 @@ class TestExtract(unittest.TestCase):
     def test_filter_pgncsv(self):
         filepath = r"tests/test_files/test_pgn.csv"
         logfilepath = r"tests/test_files/test.log"
-        assert extract.filter_pgncsv(filepath, logfilepath) == None
+        assert extract.filter_pgncsv(filepath, logfilepath) is None
 
     def test_collect_game_data(self):
         url = "https://api.chess.com/pub/player/EZE-123/games/2021/11"
