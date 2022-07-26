@@ -4,6 +4,5 @@ logs/*
 .pytest_cache/
 *.coverage
 *.flake8
-*pytest.ini
 *__pycache__
 *.pyc
