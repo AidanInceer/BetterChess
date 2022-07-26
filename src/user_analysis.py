@@ -18,7 +18,7 @@ from logging import Logger
 
 
 class ChessUser:
-    """ "Information and methods relating to a user of Chess.com."""
+    """Information and methods relating to a user of Chess.com."""
 
     def __init__(self, username: str, edepth: int, start_date: datetime):
         self.username = username
