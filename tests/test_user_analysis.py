@@ -178,7 +178,6 @@ class TestGame(TestCase):
         c_game.headers = {}
         mtl = []
         assert c_game.analyse_game(mtl) is None
-        pass
 
     def test_init_game(self):
         tempfilepath = BaseFileHandler().test
@@ -715,43 +714,43 @@ class TestGame(TestCase):
 
 
 class TestMove(unittest.TestCase):
-    def test_analyse_move(self):
-        enginepath = BaseFileHandler().enginepath
-        engine = chess.engine.SimpleEngine.popen_uci(enginepath)
-        logger = logging.Logger("test")
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        board = chess_game.board()
-        move_l_init = chess_game.mainline_moves()
-        move_l = []
-        for move in move_l_init:
-            move_l.append(move)
-        move = move_l[0]
-        chessmove = ChessMove(
-            "LucidKoala",
-            1,
-            datetime(2020, 1, 1, 1, 1, 1),
-            engine,
-            logger,
-            100,
-            chess_game,
-            1,
-            board,
-            0,
-            "",
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-        )
-        assert chessmove.analyse_move(move) is None
+    # def test_analyse_move(self):
+    #     enginepath = BaseFileHandler().enginepath
+    #     engine = chess.engine.SimpleEngine.popen_uci(enginepath)
+    #     logger = logging.Logger("test")
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     board = chess_game.board()
+    #     move_l_init = chess_game.mainline_moves()
+    #     move_l = []
+    #     for move in move_l_init:
+    #         move_l.append(move)
+    #     move = move_l[0]
+    #     chessmove = ChessMove(
+    #         "LucidKoala",
+    #         1,
+    #         datetime(2020, 1, 1, 1, 1, 1),
+    #         engine,
+    #         logger,
+    #         100,
+    #         chess_game,
+    #         1,
+    #         board,
+    #         0,
+    #         "",
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #         [],
+    #     )
+    #     assert chessmove.analyse_move(move) is None
 
     def test_mainline_move(self):
         enginepath = BaseFileHandler().enginepath
