@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from querys.sql_querys import (
+from src.sql_querys import (
     DROP_MOVE_TABLE,
     DROP_GAME_TABLE,
     CREATE_MOVE_TABLE,
@@ -16,7 +16,7 @@ class FileHandler:
     def __init__(self):
         self.dir = os.path.dirname(__file__)
         self.db_location = "./data/betterchess.db"
-        self.log_path = r"../logs/logs.log"
+        self.log_path = r"./logs/logs.log"
 
 
 def reset_db():
