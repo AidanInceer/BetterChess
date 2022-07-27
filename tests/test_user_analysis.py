@@ -166,7 +166,7 @@ class TestGame(TestCase):
 
     @patch("src.user_analysis.ChessGame.sum_move_types", return_value=1)
     @patch("src.user_analysis.ChessGame.user_game_data", return_value=2)
-    @patch("src.user_analysis.ChessGame.export_game_data_to_csv", return_value=3)
+    @patch("src.user_analysis.ChessGame.export_game_data", return_value=3)
     def test_analyse_game(self, mock_smt, mock_usd, mock_egdtc):
         c_game = ChessGame(
             "LucidKoala", "1", datetime(2020, 1, 1, 1, 1, 1), "", 1, "", "100"
@@ -314,7 +314,7 @@ class TestGame(TestCase):
         test_df = pd.DataFrame(
             {
                 "Username": "JezzaShaw",
-                "Date": datetime.strptime(game_date_time, "%Y.%m.%d %H:%M:%S"),
+                "Game_date": datetime.strptime(game_date_time, "%Y.%m.%d %H:%M:%S"),
                 "Game_time_of_day": "Afternoon",
                 "Game_weekday": "Monday",
                 "Engine_depth": 1,
@@ -326,7 +326,7 @@ class TestGame(TestCase):
                 "Black_rating": 1009,
                 "User_colour": "Black",
                 "User_rating": 1011,
-                "opponent_rating": 1009,
+                "Opponent_rating": 1009,
                 "User_winner": "Win",
                 "Opening_name": "Queens Pawn Opening Mikenas Defense 2.c4 e5 3.d5",
                 "Opening_class": "A40",
@@ -345,11 +345,11 @@ class TestGame(TestCase):
                 "No_blunder": 0,
                 "No_missed_win": 0,
                 "Improvement": "Opening",
-                "user_castle_num": 25,
-                "opp_castle_num": 26,
-                "user_castled": 1,
-                "opp_castled": 1,
-                "user_castle_phase": "Midgame",
+                "User_castle_num": 25,
+                "Opp_castle_num": 26,
+                "User_castled": 1,
+                "Opp_castled": 1,
+                "User_castle_phase": "Midgame",
                 "Opp_castle_phase": "Midgame",
             },
             index=[0],
@@ -465,7 +465,7 @@ class TestGame(TestCase):
         test_df = pd.DataFrame(
             {
                 "Username": "LucidKoala",
-                "Date": datetime.strptime(game_date_time, "%Y.%m.%d %H:%M:%S"),
+                "Game_date": datetime.strptime(game_date_time, "%Y.%m.%d %H:%M:%S"),
                 "Game_time_of_day": "Afternoon",
                 "Game_weekday": "Monday",
                 "Engine_depth": 1,
@@ -477,7 +477,7 @@ class TestGame(TestCase):
                 "Black_rating": 1009,
                 "User_colour": "Black",
                 "User_rating": 1009,
-                "opponent_rating": 1011,
+                "Opponent_rating": 1011,
                 "User_winner": "Loss",
                 "Opening_name": "Queens Pawn Opening Mikenas Defense 2.c4 e5 3.d5",
                 "Opening_class": "A40",
@@ -496,11 +496,11 @@ class TestGame(TestCase):
                 "No_blunder": 0,
                 "No_missed_win": 0,
                 "Improvement": "Endgame",
-                "user_castle_num": 26,
-                "opp_castle_num": 25,
-                "user_castled": 1,
-                "opp_castled": 1,
-                "user_castle_phase": "Midgame",
+                "User_castle_num": 26,
+                "Opp_castle_num": 25,
+                "User_castled": 1,
+                "Opp_castled": 1,
+                "User_castle_phase": "Midgame",
                 "Opp_castle_phase": "Midgame",
             },
             index=[0],
@@ -523,13 +523,6 @@ class TestGame(TestCase):
             ),
             test_df,
         )
-
-    def test_export_game_data_to_csv(self):
-        game_filepath = "tests/test_files/test_export.csv"
-        open(game_filepath, "x")
-        test_df = pd.DataFrame({"Username": "Ainceer"}, index=[0])
-        assert ChessGame.export_game_data_to_csv(self, test_df, game_filepath) is None
-        os.remove(game_filepath)
 
     def test_game_time_of_day_night(self):
         game_datetime = datetime(2022, 5, 29, 4, 35, 47)
@@ -994,7 +987,7 @@ class TestMove(unittest.TestCase):
             {
                 "Username": "Ainceer",
                 "Game_date": "2020-11-01 00:00:00",
-                "edepth": 10,
+                "Engine_depth": 10,
                 "Game_number": 1,
                 "Move_number": 1,
                 "Move": "e2e4",
@@ -1002,7 +995,7 @@ class TestMove(unittest.TestCase):
                 "Best_move": "e2e4",
                 "Best_move_eval": 1,
                 "Move_eval_diff": 0,
-                "Move accuracy": 100,
+                "Move_accuracy": 100,
                 "Move_type": 2,
                 "Piece": "pawn",
                 "Move_colour": "white",
@@ -1038,17 +1031,17 @@ class TestMove(unittest.TestCase):
             ),
         )
 
-    def test_export_move_data(self):
-        self.file_paths = BaseFileHandler()
-        self.file_paths.move_data = r"test.csv"
-        self.username = "Ainceer"
+    # def test_export_move_data(self):
+    #     self.file_paths = BaseFileHandler()
+    #     self.file_paths.move_data = r"test.csv"
+    #     self.username = "Ainceer"
 
-        self.test_df = pd.DataFrame({"Username": self.username}, index=[0])
-        with mock.patch.object(self.test_df, "to_csv") as to_csv_mock:
-            ChessMove.export_move_data(self, self.file_paths.move_data, self.test_df)
-            to_csv_mock.assert_called_with(
-                "test.csv", mode="a", header=False, index=False
-            )
+    #     self.test_df = pd.DataFrame({"Username": self.username}, index=[0])
+    #     with mock.patch.object(self.test_df, "to_sql") as to_sql_mock:
+    #         ChessMove.export_move_data(self, self.file_paths.move_data, self.test_df)
+    #         to_sql_mock.assert_called_with(
+    #             "test.csv", mode="a", header=False, index=False
+    #         )
 
 
 class TestGameHeaders(unittest.TestCase):

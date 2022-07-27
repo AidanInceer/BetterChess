@@ -344,7 +344,7 @@ class ChessGame(ChessUser):
                 "No_blunder": self.num_blun_mv,
                 "No_missed_win": self.num_misw_mv,
                 "Improvement": self.sec_improve,
-                "user_castle_num": self.user_castle_mv,
+                "User_castle_num": self.user_castle_mv,
                 "Opp_castle_num": self.opp_castle_mv,
                 "User_castled": self.user_castled,
                 "Opp_castled": self.opp_castled,
