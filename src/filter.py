@@ -4,7 +4,6 @@ incomplete games.
 """
 import pandas as pd
 import sqlite3
-from sql_querys import DELETE_WHERE_GAME_NUM_AND_USER_EQUAL
 from datetime import datetime
 from logging import Logger
 from os.path import exists
