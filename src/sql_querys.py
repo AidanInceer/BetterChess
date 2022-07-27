@@ -62,11 +62,5 @@ CREATE_GAME_TABLE = """
     User_castle_phase TEXT,
     Opp_castle_phase TEXT
 )"""
-
-DELETE_WHERE_GAME_NUM_AND_USER_EQUAL = """
-    DELETE FROM :table
-    WHERE Game_number = :game_num and Username = :username
-"""
-
 SELECT_MOVE_DATA = """SELECT * FROM move_data limit 10"""
 SELECT_GAME_DATA = """SELECT * FROM game_data limit 10"""

@@ -4,10 +4,12 @@ incomplete games.
 """
 import pandas as pd
 import sqlite3
+from sql_querys import DELETE_WHERE_GAME_NUM_AND_USER_EQUAL
 from datetime import datetime
 from logging import Logger
 from os.path import exists
 from pandas import DataFrame
+
 # from sql_querys import DELETE_WHERE_GAME_NUM_AND_USER_EQUAL
 
 COL_NAMES = [
@@ -36,7 +38,7 @@ def clean_sql_table(database: str, table: str, game_num: int, username: str):
     conn = sqlite3.connect(database)
     curs = conn.cursor()
     curs.execute(
-        DELETE_WHERE_GAME_NUM_AND_USER_EQUAL,
+        "DELETE FROM :table WHERE Game_number = :game_num and Username = :username",
         {"table": table, "game_num": game_num, "username": username},
     )
     conn.commit()

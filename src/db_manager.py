@@ -6,7 +6,7 @@ from sql_querys import (
     CREATE_MOVE_TABLE,
     CREATE_GAME_TABLE,
     SELECT_GAME_DATA,
-    SELECT_MOVE_DATA
+    SELECT_MOVE_DATA,
 )
 
 
@@ -69,7 +69,11 @@ def view_db_tables():
 
 if __name__ == "__main__":
     print("=================================================")
-    x = str.upper(input("R = RESET, S = SELECT ALL TABLES, I = TABLE COLUMN INFO, S = TABLE SIZE: "))
+    x = str.upper(
+        input(
+            "R = RESET, S = SELECT ALL TABLES, I = TABLE COLUMN INFO, S = TABLE SIZE: "
+        )
+    )
     if x == ("R"):
         print("Resetting Database")
         reset_db()
