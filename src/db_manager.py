@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from sql_querys import (
+from querys.sql_querys import (
     DROP_MOVE_TABLE,
     DROP_GAME_TABLE,
     CREATE_MOVE_TABLE,
