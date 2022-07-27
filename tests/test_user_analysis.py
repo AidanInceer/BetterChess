@@ -1,9 +1,7 @@
 import chess
 import chess.engine
-import logging
 import pandas as pd
 import unittest
-import os
 from chess import WHITE
 from chess.engine import PovScore, Cp, Mate
 from chess.pgn import read_game
@@ -15,7 +13,7 @@ from src.user_analysis import ChessMove
 from src.user_analysis import ChessGameHeaders
 from src.user_analysis import InputHandler
 from unittest.mock import patch
-from unittest import mock, TestCase
+from unittest import TestCase
 from logging import Logger
 
 
