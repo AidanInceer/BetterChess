@@ -3,10 +3,12 @@ Module for filtering the move_data.csv file to remove any
 incomplete games.
 """
 import pandas as pd
+import sqlite3
 from datetime import datetime
 from logging import Logger
 from os.path import exists
 from pandas import DataFrame
+# from sql_querys import DELETE_WHERE_GAME_NUM_AND_USER_EQUAL
 
 COL_NAMES = [
     "Username",
@@ -28,6 +30,17 @@ COL_NAMES = [
     "Black_castle_num",
     "Move_time",
 ]
+
+
+def clean_sql_table(database: str, table: str, game_num: int, username: str):
+    conn = sqlite3.connect(database)
+    curs = conn.cursor()
+    curs.execute(
+        DELETE_WHERE_GAME_NUM_AND_USER_EQUAL,
+        {"table": table, "game_num": game_num, "username": username},
+    )
+    conn.commit()
+    curs.close()
 
 
 def get_last_logged_game(logfilepath: str) -> datetime:

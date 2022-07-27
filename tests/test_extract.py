@@ -109,8 +109,10 @@ class TestExtract(unittest.TestCase):
         assert extract.in_curr_month(url) is True
 
     def test_get_curr_month(self):
-        curmth = datetime.strptime("2022-07-01 00:00:00", "%Y-%m-%d %H:%M:%S")
-        assert curmth == extract.get_curr_mth()
+        cyv = datetime.now().year
+        cmv = datetime.now().month
+        curr_mth = datetime.strptime(f"{cyv}-{cmv}-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+        assert curr_mth == extract.get_curr_mth()
 
     def test_get_url_date(self):
         url = "https://api.chess.com/pub/player/ainceer/games/2020/11"

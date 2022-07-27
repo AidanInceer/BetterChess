@@ -9,6 +9,7 @@ import logging
 import numpy as np
 import pandas as pd
 import time
+import sqlite3
 from src import progress
 from src import extract
 from src import filter
@@ -184,7 +185,7 @@ class ChessGame(ChessUser):
             self.edepth,
             self.game_num,
         )
-        self.export_game_data_to_csv(self.game_df, self.file_paths.game_data)
+        self.export_game_data(self.game_df)
 
     def init_game(self, filepath) -> chess.pgn.Game:
         """Initialises the chess game."""
@@ -312,7 +313,7 @@ class ChessGame(ChessUser):
         game_df = pd.DataFrame(
             {
                 "Username": username,
-                "Date": game_dt,
+                "Game_date": game_dt,
                 "Game_time_of_day": self.time_of_day,
                 "Game_weekday": self.day_of_week,
                 "Engine_depth": edepth,
@@ -324,7 +325,7 @@ class ChessGame(ChessUser):
                 "Black_rating": headers["Black_rating"],
                 "User_colour": headers["User_Colour"],
                 "User_rating": headers["User_rating"],
-                "opponent_rating": headers["Opponent_rating"],
+                "Opponent_rating": headers["Opponent_rating"],
                 "User_winner": headers["User_winner"],
                 "Opening_name": headers["Opening_name"],
                 "Opening_class": headers["Opening_class"],
@@ -344,24 +345,26 @@ class ChessGame(ChessUser):
                 "No_missed_win": self.num_misw_mv,
                 "Improvement": self.sec_improve,
                 "user_castle_num": self.user_castle_mv,
-                "opp_castle_num": self.opp_castle_mv,
-                "user_castled": self.user_castled,
-                "opp_castled": self.opp_castled,
-                "user_castle_phase": self.user_castle_phase,
+                "Opp_castle_num": self.opp_castle_mv,
+                "User_castled": self.user_castled,
+                "Opp_castled": self.opp_castled,
+                "User_castle_phase": self.user_castle_phase,
                 "Opp_castle_phase": self.opp_castle_phase,
             },
             index=[0],
         )
         return game_df
 
-    def export_game_data_to_csv(self, game_df: pd.DataFrame, game_filepath: str):
+    def export_game_data(self, game_df: pd.DataFrame):
         """Exports game data to csv.
 
         Args:
             game_df (pd.Dataframe): dataframe of game data
-            game_filepath (str): game csv filepath
         """
-        game_df.to_csv(game_filepath, mode="a", header=False, index=False)
+        conn = sqlite3.connect(FileHandler(username=self.username).db_location)
+        game_df.to_sql("game_data", conn, if_exists="append", index=False)
+        conn.commit
+        conn.close
 
     @staticmethod
     def game_time_of_day(game_datetime) -> str:
@@ -669,7 +672,7 @@ class ChessMove(ChessGame):
             self.b_castle_mv_num,
             self.move_time,
         )
-        self.export_move_data(self.file_paths.move_data, self.move_df)
+        self.export_move_data(self.move_df, self.username)
         self.append_to_game_lists()
 
     def mainline_move(
@@ -894,7 +897,7 @@ class ChessMove(ChessGame):
             {
                 "Username": username,
                 "Game_date": game_datetime,
-                "edepth": edepth,
+                "Engine_depth": edepth,
                 "Game_number": game_num,
                 "Move_number": move_num,
                 "Move": str_ml,
@@ -902,7 +905,7 @@ class ChessMove(ChessGame):
                 "Best_move": str_bm,
                 "Best_move_eval": eval_bm,
                 "Move_eval_diff": evaldiff,
-                "Move accuracy": move_acc,
+                "Move_accuracy": move_acc,
                 "Move_type": move_type,
                 "Piece": piece,
                 "Move_colour": move_col,
@@ -915,9 +918,12 @@ class ChessMove(ChessGame):
         )
         return self.move_df
 
-    def export_move_data(self, movefilepath: str, move_df: pd.DataFrame) -> None:
-        "Exports the move date to a csv."
-        move_df.to_csv(movefilepath, mode="a", header=False, index=False)
+    def export_move_data(self, move_df: pd.DataFrame, username: str) -> None:
+        "Exports the move date to a sqlite3 server."
+        conn = sqlite3.connect(FileHandler(username=self.username).db_location)
+        move_df.to_sql("move_data", conn, if_exists="append", index=False)
+        conn.commit
+        conn.close
 
     def append_to_game_lists(self) -> None:
         self.gm_mv_num.append(self.move_num)
@@ -1121,6 +1127,7 @@ class FileHandler:
         self.pgn_data = os.path.join(
             self.dir, rf"../data/pgn_data/{self.username}_pgn_data.csv"
         )
+        self.db_location = "./data/betterchess.db"
 
 
 class InputHandler:
