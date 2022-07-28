@@ -6,3 +6,4 @@ logs/*
 *.flake8
 *__pycache__
 *.pyc
+*.pbix
