@@ -36,15 +36,17 @@ class TestUser(TestCase):
         assert c_user.run_analysis() is None
 
     @patch("src.user_analysis.filter.init_game_logs")
-    @patch("src.user_analysis.filter.clean_movecsv")
+    @patch("src.user_analysis.filter.clean_sql_table")
     @patch("src.user_analysis.ChessGame.run_game_analysis")
     @patch("src.user_analysis.ChessUser.write_temp_pgn")
-    def test_analyse_user(self, mock_igl, mock_cm, mock_rga, mock_wtp):
+    @patch("src.user_analysis.filter.get_last_logged_game_num")
+    def test_analyse_user(self, mock_igl, mock_cm, mock_rga, mock_wtp, mock_gllgm):
         c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
         c_user.file_paths = BaseFileHandler()
         c_user.file_paths.temp = BaseFileHandler().temp
         c_user.logger = "test_logger"
         c_user.engine = "test_engine"
+        c_user.last_logged_game_num = 1
         assert c_user.analyse_user() is None
 
     def test_write_temp_pgn(self):
@@ -1262,3 +1264,4 @@ class BaseFileHandler:
         self.write_temp = r"tests/test_files/write_temppgn.csv"
         self.temp = r"tests/test_files/temp.pgn"
         self.false_game = r"tests/test_files/false_game.pgn"
+        self.db_location = r"tests/test_files/db"
