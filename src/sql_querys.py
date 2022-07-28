@@ -64,3 +64,6 @@ CREATE_GAME_TABLE = """
 )"""
 SELECT_MOVE_DATA = """SELECT * FROM move_data limit 10"""
 SELECT_GAME_DATA = """SELECT * FROM game_data limit 10"""
+
+SELECT_MOVE_DATA_ALL = """SELECT * FROM move_data"""
+SELECT_GAME_DATA_ALL = """SELECT * FROM game_data"""

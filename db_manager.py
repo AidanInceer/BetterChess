@@ -7,6 +7,8 @@ from src.sql_querys import (
     CREATE_GAME_TABLE,
     SELECT_GAME_DATA,
     SELECT_MOVE_DATA,
+    SELECT_MOVE_DATA_ALL,
+    SELECT_GAME_DATA_ALL
 )
 
 
@@ -43,10 +45,10 @@ def view_table_column_info():
 def view_table_size():
     conn = sqlite3.connect(FileHandler().db_location)
     curs = conn.cursor()
-    curs.execute(SELECT_MOVE_DATA)
+    curs.execute(SELECT_MOVE_DATA_ALL)
     move_rows = curs.fetchall()
     print(f"move_data rows: {len(move_rows)}")
-    curs.execute(SELECT_GAME_DATA)
+    curs.execute(SELECT_GAME_DATA_ALL)
     game_rows = curs.fetchall()
     print(f"game_rows rows: {len(game_rows)}")
     conn.close()
@@ -67,11 +69,29 @@ def view_db_tables():
     conn.close()
 
 
+def view_move_table():
+    conn = sqlite3.connect(FileHandler().db_location)
+    curs = conn.cursor()
+    curs.execute(SELECT_MOVE_DATA_ALL)
+    move_rows = curs.fetchall()
+    for row in move_rows:
+        print(row)
+
+
+def view_game_table():
+    conn = sqlite3.connect(FileHandler().db_location)
+    curs = conn.cursor()
+    curs.execute(SELECT_GAME_DATA_ALL)
+    move_rows = curs.fetchall()
+    for row in move_rows:
+        print(row)
+
+
 if __name__ == "__main__":
     print("=================================================")
     x = str.upper(
         input(
-            "R = RESET, S = SELECT ALL TABLES, I = TABLE COLUMN INFO, S = TABLE SIZE: "
+            "R = RESET, S = SELECT ALL TABLES, I = TABLE COLUMN INFO, X = TABLE SIZE, VM = VIEW MOVE FULL TABLE, VG = VIEW MOVE FULL TABLE: "
         )
     )
     if x == ("R"):
@@ -85,8 +105,14 @@ if __name__ == "__main__":
     elif x == ("I"):
         view_table_column_info()
         print("=================================================")
-    elif x == ("S"):
+    elif x == ("X"):
         view_table_size()
+        print("=================================================")
+    elif x == ("VM"):
+        view_move_table()
+        print("=================================================")
+    elif x == ("VG"):
+        view_game_table()
         print("=================================================")
     else:
         pass

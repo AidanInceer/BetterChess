@@ -58,7 +58,14 @@ class ChessUser:
         all_games = self.init_all_games(self.file_paths.pgn_data)
         print("Analysing users data: ")
         filter.init_game_logs(self.file_paths.userlogfile, self.logger)
-        filter.clean_movecsv(self.file_paths.move_data, self.file_paths.userlogfile)
+        self.last_logged_game_num = filter.get_last_logged_game_num(
+            self.file_paths.userlogfile
+        )
+        filter.clean_sql_table(
+            database=self.file_paths.db_location,
+            game_num=self.last_logged_game_num,
+            username=self.username,
+        )
         for game_num, chess_game in enumerate(all_games["game_data"]):
             self.write_temp_pgn(self.file_paths.temp, temp_game=chess_game)
             game = ChessGame(

@@ -33,15 +33,32 @@ COL_NAMES = [
 ]
 
 
-def clean_sql_table(database: str, table: str, game_num: int, username: str):
+def clean_sql_table(database: str, game_num: int, username: str):
     conn = sqlite3.connect(database)
     curs = conn.cursor()
     curs.execute(
-        "DELETE FROM :table WHERE Game_number = :game_num and Username = :username",
-        {"table": table, "game_num": game_num, "username": username},
+        "DELETE FROM move_data WHERE Game_number = :game_num and Username = :username",
+        {"game_num": game_num, "username": username},
     )
     conn.commit()
     curs.close()
+
+
+def get_last_logged_game_num(logfilepath: str) -> int:
+    """Gets the last logged games number.
+
+    Args:
+        logfilepath (str): path to logfile.
+
+    Returns:
+        int: last logged game number.
+    """
+    if logfile_not_empty(logfilepath):
+        log_list = get_game_log_list(logfilepath)
+        last_logged_game_num = int(log_list[-1].split("|")[2].strip())
+        return last_logged_game_num
+    else:
+        pass
 
 
 def get_last_logged_game(logfilepath: str) -> datetime:
@@ -94,12 +111,12 @@ def get_game_log_list(logfilepath: str) -> list:
     return game_log_list
 
 
-def logfile_line_checker_multi(log_list: list, lines: list[str]) -> None:
+def logfile_line_checker_multi(game_log_list: list, lines: list[str]) -> None:
     for line in lines:
         if "filter" in line:
-            log_list.append(line)
+            game_log_list.append(line)
         elif "user_analysis" in line:
-            log_list.append(line)
+            game_log_list.append(line)
 
 
 def clean_df(movefilepath: str, unclean_df: DataFrame, llog_gamenum: int) -> None:
