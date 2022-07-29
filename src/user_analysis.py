@@ -79,6 +79,7 @@ class ChessUser:
             )
             game.run_game_analysis()
             del game
+        print("\nFinalising analysis")
 
     def init_all_games(self, filepath) -> pd.DataFrame:
         """Returns a dataframe of all users games from the users pgn csv."""
@@ -874,10 +875,16 @@ class ChessMove(ChessGame):
             tc_black = float(tc_black.split("+")[0])
             return (tc_white, tc_black, time_interval)
         else:
-            tc_white = float(tc_white)
-            tc_black = float(tc_black)
-            time_interval = 0
-            return (tc_white, tc_black, time_interval)
+            try:
+                tc_white = float(tc_white)
+                tc_black = float(tc_black)
+                time_interval = 0
+                return (tc_white, tc_black, time_interval)
+            except ValueError:
+                tc_white = 180.0
+                tc_black = 180.0
+                time_interval = 0
+                return (tc_white, tc_black, time_interval)
 
     def create_move_df(
         self,
