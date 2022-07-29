@@ -8,7 +8,7 @@ from src.sql_querys import (
     SELECT_GAME_DATA,
     SELECT_MOVE_DATA,
     SELECT_MOVE_DATA_ALL,
-    SELECT_GAME_DATA_ALL
+    SELECT_GAME_DATA_ALL,
 )
 
 
