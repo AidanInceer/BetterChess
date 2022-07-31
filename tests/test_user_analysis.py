@@ -235,8 +235,10 @@ class TestGame(TestCase):
     @patch("src.user_analysis.ChessGame.has_black_castled")
     @patch("src.user_analysis.ChessGame.white_castle_phase")
     @patch("src.user_analysis.ChessGame.black_castle_phase")
+    @patch("src.user_analysis.ChessGame.get_predicted_win_percentage")
     def test_user_game_data_white(
         self,
+        gpwp,
         bcp,
         wcp,
         hbc,
@@ -264,6 +266,7 @@ class TestGame(TestCase):
         hbc.return_value = 1
         wcp.return_value = "Midgame"
         bcp.return_value = "Midgame"
+        gpwp.return_value = 50.0
         move_dict = {
             "Num_w_best": 0,
             "Num_b_best": 0,
@@ -321,12 +324,14 @@ class TestGame(TestCase):
                 "Game_number": 1,
                 "Game_type": 600,
                 "White_player": "JezzaShaw",
-                "Black_player": "LucidKoala",
                 "White_rating": 1011,
+                "Black_player": "LucidKoala",
                 "Black_rating": 1009,
                 "User_colour": "Black",
                 "User_rating": 1011,
                 "Opponent_rating": 1009,
+                "User_win_percent": 50.0,
+                "Opp_win_percent": 50.0,
                 "User_winner": "Win",
                 "Opening_name": "Queens Pawn Opening Mikenas Defense 2.c4 e5 3.d5",
                 "Opening_class": "A40",
@@ -386,8 +391,10 @@ class TestGame(TestCase):
     @patch("src.user_analysis.ChessGame.has_black_castled")
     @patch("src.user_analysis.ChessGame.white_castle_phase")
     @patch("src.user_analysis.ChessGame.black_castle_phase")
+    @patch("src.user_analysis.ChessGame.get_predicted_win_percentage")
     def test_user_game_data_black(
         self,
+        gpwp,
         bcp,
         wcp,
         hbc,
@@ -415,6 +422,7 @@ class TestGame(TestCase):
         hbc.return_value = 1
         wcp.return_value = "Midgame"
         bcp.return_value = "Midgame"
+        gpwp.return_value = 50.0
         move_dict = {
             "Num_w_best": 0,
             "Num_b_best": 0,
@@ -472,12 +480,14 @@ class TestGame(TestCase):
                 "Game_number": 1,
                 "Game_type": 600,
                 "White_player": "JezzaShaw",
-                "Black_player": "LucidKoala",
                 "White_rating": 1011,
+                "Black_player": "LucidKoala",
                 "Black_rating": 1009,
                 "User_colour": "Black",
                 "User_rating": 1009,
                 "Opponent_rating": 1011,
+                "User_win_percent": 50.0,
+                "Opp_win_percent": 50.0,
                 "User_winner": "Loss",
                 "Opening_name": "Queens Pawn Opening Mikenas Defense 2.c4 e5 3.d5",
                 "Opening_class": "A40",

@@ -117,9 +117,7 @@ class ChessGame(ChessUser):
     def run_game_analysis(self) -> None:
         """main function for ChessGame class, runs the init."""
         self.chess_game = self.init_game(self.file_paths.temp)
-        self.init_game_analysis(
-            self.file_paths.temp, self.chess_game, self.file_paths.userlogfile
-        )
+        self.init_game_analysis(self.chess_game, self.file_paths.userlogfile)
         if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
             start = time.perf_counter()
             self.logger.info(f"| {self.game_dt} |{self.game_num}")
@@ -157,7 +155,7 @@ class ChessGame(ChessUser):
             end = time.perf_counter()
             progress.progress_bar(self.game_num, self.tot_games, start, end)
 
-    def init_game_analysis(self, tempfilepath, chess_game, user_logfile) -> None:
+    def init_game_analysis(self, chess_game, user_logfile) -> None:
         """Initalises the analysis, headers and filters past analysis runs."""
         self.init_board(chess_game)
         self.init_game_lists()
@@ -280,6 +278,7 @@ class ChessGame(ChessUser):
         """
         self.time_of_day = self.game_time_of_day(game_dt)
         self.day_of_week = self.game_day_of_week(game_dt)
+
         if username == headers["White_player"]:
             self.game_acc = self.game_w_acc(game_move_acc)
             self.opn_acc = self.op_w_acc(game_move_acc)
@@ -299,6 +298,12 @@ class ChessGame(ChessUser):
             self.opp_castled = self.has_black_castled(b_castle_num)
             self.user_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
             self.opp_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
+            self.user_win_percent = self.get_predicted_win_percentage(
+                headers["White_rating"], headers["Black_rating"]
+            )
+            self.opp_win_percent = self.get_predicted_win_percentage(
+                headers["Black_rating"], headers["White_rating"]
+            )
         else:
             self.game_acc = self.game_b_acc(game_move_acc)
             self.opn_acc = self.op_b_acc(game_move_acc)
@@ -318,6 +323,12 @@ class ChessGame(ChessUser):
             self.opp_castled = self.has_white_castled(w_castle_num)
             self.user_castle_phase = self.black_castle_phase(w_castle_num, total_moves)
             self.opp_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
+            self.user_win_percent = self.get_predicted_win_percentage(
+                headers["Black_rating"], headers["White_rating"]
+            )
+            self.opp_win_percent = self.get_predicted_win_percentage(
+                headers["White_rating"], headers["Black_rating"]
+            )
         game_df = pd.DataFrame(
             {
                 "Username": username,
@@ -328,12 +339,14 @@ class ChessGame(ChessUser):
                 "Game_number": game_num,
                 "Game_type": headers["Time_control"],
                 "White_player": headers["White_player"],
-                "Black_player": headers["Black_player"],
                 "White_rating": headers["White_rating"],
+                "Black_player": headers["Black_player"],
                 "Black_rating": headers["Black_rating"],
                 "User_colour": headers["User_Colour"],
                 "User_rating": headers["User_rating"],
                 "Opponent_rating": headers["Opponent_rating"],
+                "User_win_percent": self.user_win_percent,
+                "Opp_win_percent": self.opp_win_percent,
                 "User_winner": headers["User_winner"],
                 "Opening_name": headers["Opening_name"],
                 "Opening_class": headers["Opening_class"],
@@ -587,6 +600,17 @@ class ChessGame(ChessUser):
                 return "Midgame"
             elif sum(black_castle_num) / (total_moves) <= 1:
                 return "Endgame"
+
+    @staticmethod
+    def get_predicted_win_percentage(player_1: int, player_2: int) -> float:
+        """Determines the percentage chance of the user winning the game.
+
+        Returns:
+            pred_win_percent (float): user win percentage.
+        """
+        exp_term = (player_2 - player_1) / 400
+        pred_win_percent = round((1 / (1 + 10**exp_term)) * 100, 2)
+        return pred_win_percent
 
 
 class ChessMove(ChessGame):
