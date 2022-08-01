@@ -1,11 +1,14 @@
-"""Progress bars for printing analysis progress."""
+"""Progress bars for printing analysis progress.
+
+Eventually module to be removed as this will display in the front end.
+"""
 
 from datetime import datetime
 
 
 def progress_bar(g: int, t: int, start_time: datetime, end_time: datetime) -> None:
     """Creates a progress bar and estimates time to completion."""
-    avg_game_time = timers(start_time, end_time)
+    avg_game_time = timers(start_time=start_time, end_time=end_time)
     time_r = ((t - (g + 1)) * (avg_game_time)) / 3600
     hours_r = int(time_r)
     if hours_r < 10:

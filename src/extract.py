@@ -21,19 +21,25 @@ def data_extract(
     init_dt = "2000-01-01 00:00:00"
     init_extlogger = datetime.strptime(init_dt, "%Y-%m-%d %H:%M:%S")
     logger.info(f"| {username} | {init_extlogger}")
-    urls = chessdotcom.get_player_game_archives(username).json
+    urls = chessdotcom.get_player_game_archives(username=username).json
     username_list = []
     url_date_list = []
     games_list = []
     tot_urls = len(urls["archives"])
     print("Extracting users data: ")
     for url_num, url in enumerate(urls["archives"]):
-        simple_progress_bar(url_num, tot_urls, 0)
-        in_curr = in_curr_month(url)
-        in_log = url_in_log(url, logfilepath)
-        url_date = get_url_date(url)
+        simple_progress_bar(num=url_num, total=tot_urls, type=0)
+        in_curr = in_curr_month(url=url)
+        in_log = url_in_log(url=url, logfilepath=logfilepath)
+        url_date = get_url_date(url=url)
         logger.info(f"| {username} | {url_date}")
-        url_games_list = extract_filter(username, in_log, in_curr, url, dbfilepath)
+        url_games_list = extract_filter(
+            username=username,
+            in_log=in_log,
+            in_curr=in_curr,
+            url=url,
+            dbfilepath=dbfilepath,
+        )
         try:
             for game in url_games_list:
                 username_list.append(username)
@@ -48,8 +54,8 @@ def data_extract(
         "game_data": games_list,
     }
     game_pgn_data_df = pd.DataFrame(game_dict)
-    conn = conn = sqlite3.connect(dbfilepath)
-    game_pgn_data_df.to_sql("pgn_data", conn, if_exists="append", index=False)
+    conn = conn = sqlite3.connect(database=dbfilepath)
+    game_pgn_data_df.to_sql(name="pgn_data", con=conn, if_exists="append", index=False)
     conn.commit
     conn.close
 
@@ -64,11 +70,11 @@ def extract_filter(
     """Filter to remove any incomplete games"""
     empty_list = []
     if not in_log:
-        return collect_game_data(url)
+        return collect_game_data(url=url)
     elif in_log and not in_curr:
         return empty_list
     elif in_log and in_curr:
-        filter_pgn_table(username, dbfilepath)
+        filter_pgn_table(username=username, dbfilepath=dbfilepath)
         return collect_game_data(url)
 
 
@@ -79,10 +85,10 @@ def filter_pgn_table(username: str, dbfilepath: str) -> None:
     sql_query = (
         """delete from pgn_data where username=:username and url_date=:curr_month"""
     )
-    input_dict = {"username": username, "curr_month": curr_month}
-    conn = sqlite3.connect(dbfilepath)
+    params = {"username": username, "curr_month": curr_month}
+    conn = sqlite3.connect(database=dbfilepath)
     curs = conn.cursor()
-    curs.execute(sql_query, input_dict)
+    curs.execute(sql_query, params)
     conn.commit
     conn.close
 
@@ -100,7 +106,7 @@ def collect_game_data(url: str) -> list:
 
 def url_in_log(url: str, logfilepath: str) -> bool:
     """Checks to see if the url is allready in the logfile"""
-    url_date = get_url_date(url)
+    url_date = get_url_date(url=url)
     with open(logfilepath, "r") as log_file:
         lines = log_file.readlines()
     url_date_list = []
@@ -117,7 +123,7 @@ def url_in_log(url: str, logfilepath: str) -> bool:
 
 def in_curr_month(url: str) -> bool:
     """Checks to see if the extracted month equals the current month"""
-    url_date = get_url_date(url)
+    url_date = get_url_date(url=url)
     curr_mth = get_curr_mth()
     if curr_mth == url_date:
         return True
@@ -141,7 +147,7 @@ def get_url_date(url: str) -> datetime:
     return url_date
 
 
-def simple_progress_bar(num, total, type) -> None:
+def simple_progress_bar(num: int, total: int, type: int) -> None:
     """Simple progress bar."""
     if type == 0:
         x = "of User's data extracted"

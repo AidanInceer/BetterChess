@@ -46,20 +46,26 @@ class ChessUser:
     def run_analysis(self) -> None:
         """Extracts users data and runs the analysis on their games."""
         extract.data_extract(
-            self.username,
-            self.file_paths.db_location,
-            self.file_paths.userlogfile,
-            self.logger,
+            username=self.username,
+            dbfilepath=self.file_paths.db_location,
+            logfilepath=self.file_paths.userlogfile,
+            logger=self.logger,
         )
         self.analyse_user()
 
     def analyse_user(self) -> None:
         """Analyses all of the given users games."""
-        all_games = self.init_all_games(self.file_paths.db_location, self.username)
+        all_games = self.init_all_games(
+            dbfilepath=self.file_paths.db_location, username=self.username
+        )
         print("Analysing users data: ")
-        filter.init_game_logs(self.username, self.file_paths.userlogfile, self.logger)
+        filter.init_game_logs(
+            username=self.username,
+            logfilepath=self.file_paths.userlogfile,
+            logger=self.logger,
+        )
         self.last_logged_game_num = filter.get_last_logged_game_num(
-            self.file_paths.userlogfile
+            logfilepath=self.file_paths.userlogfile
         )
         filter.clean_sql_table(
             database=self.file_paths.db_location,
@@ -67,7 +73,7 @@ class ChessUser:
             username=self.username,
         )
         for game_num, chess_game in enumerate(all_games["game_data"]):
-            self.write_temp_pgn(self.file_paths.temp, temp_game=chess_game)
+            self.write_temp_pgn(tempfilepath=self.file_paths.temp, temp_game=chess_game)
             game = ChessGame(
                 self.username,
                 self.edepth,
@@ -85,14 +91,14 @@ class ChessUser:
         """Returns a dataframe of all users games from the users pgn csv."""
         sql_query = """select game_data from pgn_data where username =:username"""
         params = {"username": username}
-        conn = sqlite3.connect(dbfilepath)
-        all_games = pd.read_sql(sql_query, conn, params=params)
+        conn = sqlite3.connect(database=dbfilepath)
+        all_games = pd.read_sql(sql=sql_query, con=conn, params=params)
         self.tot_games = len(all_games["game_data"])
         return all_games
 
     def write_temp_pgn(self, tempfilepath, temp_game) -> None:
         """Writes the current game to the temp.pgn file."""
-        with open(tempfilepath, "w") as temp_pgn:
+        with open(file=tempfilepath, mode="w") as temp_pgn:
             temp_pgn.write(str(temp_game.replace(" ; ", "\n")))
 
 
@@ -117,8 +123,10 @@ class ChessGame(ChessUser):
 
     def run_game_analysis(self) -> None:
         """main function for ChessGame class, runs the init."""
-        self.chess_game = self.init_game(self.file_paths.temp)
-        self.init_game_analysis(self.chess_game, self.file_paths.userlogfile)
+        self.chess_game = self.init_game(filepath=self.file_paths.temp)
+        self.init_game_analysis(
+            chess_game=self.chess_game, user_logfile=self.file_paths.userlogfile
+        )
         if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
             start = time.perf_counter()
             self.logger.info(f"| {self.username} | {self.game_dt} |{self.game_num}")
@@ -146,19 +154,21 @@ class ChessGame(ChessUser):
                     self.w_castle_num,
                     self.b_castle_num,
                 )
-                chess_move.analyse_move(move)
+                chess_move.analyse_move(move=move)
                 del chess_move
             try:
                 self.total_moves = move_num
             except UnboundLocalError:
                 self.total_moves = 0
-            self.analyse_game(self.move_type_list)
+            self.analyse_game(move_type_list=self.move_type_list)
             end = time.perf_counter()
-            progress.progress_bar(self.game_num, self.tot_games, start, end)
+            progress.progress_bar(
+                g=self.game_num, t=self.tot_games, start_time=start, end_time=end
+            )
 
     def init_game_analysis(self, chess_game, user_logfile) -> None:
         """Initalises the analysis, headers and filters past analysis runs."""
-        self.init_board(chess_game)
+        self.init_board(chess_game=chess_game)
         self.init_game_lists()
         game_headers = ChessGameHeaders(
             self.username,
@@ -172,32 +182,32 @@ class ChessGame(ChessUser):
         )
         self.headers = game_headers.collect_headers()
         self.game_dt = game_headers.collect_headers()["Game_datetime"]
-        self.game_analysis_filter(user_logfile)
+        self.game_analysis_filter(logfilepath=user_logfile)
 
     def analyse_game(self, move_type_list) -> None:
         """
         Prepares move data so it can be analysed at a game level
         and exports game data.
         """
-        self.sum_type_dict = self.sum_move_types(move_type_list)
+        self.sum_type_dict = self.sum_move_types(move_type_list=move_type_list)
         self.game_df = self.user_game_data(
-            self.sum_type_dict,
-            self.game_dt,
-            self.gm_mv_ac,
-            self.w_castle_num,
-            self.b_castle_num,
-            self.total_moves,
-            self.headers,
-            self.username,
-            self.edepth,
-            self.game_num,
+            move_dict=self.sum_type_dict,
+            game_dt=self.game_dt,
+            game_move_acc=self.gm_mv_ac,
+            w_castle_num=self.w_castle_num,
+            b_castle_num=self.b_castle_num,
+            total_moves=self.total_moves,
+            headers=self.headers,
+            username=self.username,
+            edepth=self.edepth,
+            game_num=self.game_num,
         )
-        self.export_game_data(self.game_df)
+        self.export_game_data(game_df=self.game_df)
 
     def init_game(self, filepath) -> chess.pgn.Game:
         """Initialises the chess game."""
-        chess_game_pgn = open(filepath)
-        self.chess_game = chess.pgn.read_game(chess_game_pgn)
+        chess_game_pgn = open(file=filepath)
+        self.chess_game = chess.pgn.read_game(handle=chess_game_pgn)
         return self.chess_game
 
     def init_board(self, chess_game) -> chess.Board:
@@ -223,7 +233,7 @@ class ChessGame(ChessUser):
         Calls the analysis filter module to remove incomplete
         game analysis runs.
         """
-        self.log_dt = filter.get_last_logged_game(logfilepath)
+        self.log_dt = filter.get_last_logged_game(logfilepath=logfilepath)
         return self.log_dt
 
     def sum_move_types(self, move_type_list) -> dict:
@@ -277,14 +287,14 @@ class ChessGame(ChessUser):
         Prepares move/game analysis for export and assigns data to
         user/opp depending on what colour the user is playing as.
         """
-        self.time_of_day = self.game_time_of_day(game_dt)
-        self.day_of_week = self.game_day_of_week(game_dt)
+        self.time_of_day = self.game_time_of_day(game_datetime=game_dt)
+        self.day_of_week = self.game_day_of_week(game_datetime=game_dt)
 
         if username == headers["White_player"]:
-            self.game_acc = self.game_w_acc(game_move_acc)
-            self.opn_acc = self.op_w_acc(game_move_acc)
-            self.mid_acc = self.mid_w_acc(game_move_acc)
-            self.end_acc = self.end_w_acc(game_move_acc)
+            self.game_acc = self.game_w_acc(game_move_acc=game_move_acc)
+            self.opn_acc = self.op_w_acc(game_move_acc=game_move_acc)
+            self.mid_acc = self.mid_w_acc(game_move_acc=game_move_acc)
+            self.end_acc = self.end_w_acc(game_move_acc=game_move_acc)
             self.num_best_mv = move_dict["Num_w_best"]
             self.num_excl_mv = move_dict["Num_w_excl"]
             self.num_good_mv = move_dict["Num_w_good"]
@@ -292,24 +302,34 @@ class ChessGame(ChessUser):
             self.num_mist_mv = move_dict["Num_w_mist"]
             self.num_blun_mv = move_dict["Num_w_blun"]
             self.num_misw_mv = move_dict["Num_w_misw"]
-            self.sec_improve = self.w_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
-            self.user_castle_mv = self.white_castle_move_num(w_castle_num)
-            self.opp_castle_mv = self.black_castle_move_num(b_castle_num)
-            self.user_castled = self.has_white_castled(w_castle_num)
-            self.opp_castled = self.has_black_castled(b_castle_num)
-            self.user_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
-            self.opp_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
+            self.sec_improve = self.w_sec_imp(
+                ow=self.opn_acc, mw=self.mid_acc, ew=self.end_acc
+            )
+            self.user_castle_mv = self.white_castle_move_num(
+                white_castle_num=w_castle_num
+            )
+            self.opp_castle_mv = self.black_castle_move_num(
+                black_castle_num=b_castle_num
+            )
+            self.user_castled = self.has_white_castled(white_castle_num=w_castle_num)
+            self.opp_castled = self.has_black_castled(black_castle_num=b_castle_num)
+            self.user_castle_phase = self.white_castle_phase(
+                white_castle_num=w_castle_num, total_moves=total_moves
+            )
+            self.opp_castle_phase = self.black_castle_phase(
+                black_castle_num=b_castle_num, total_moves=total_moves
+            )
             self.user_win_percent = self.get_predicted_win_percentage(
-                headers["White_rating"], headers["Black_rating"]
+                player_1=headers["White_rating"], player_2=headers["Black_rating"]
             )
             self.opp_win_percent = self.get_predicted_win_percentage(
-                headers["Black_rating"], headers["White_rating"]
+                player_1=headers["Black_rating"], player_2=headers["White_rating"]
             )
         else:
-            self.game_acc = self.game_b_acc(game_move_acc)
-            self.opn_acc = self.op_b_acc(game_move_acc)
-            self.mid_acc = self.mid_b_acc(game_move_acc)
-            self.end_acc = self.end_b_acc(game_move_acc)
+            self.game_acc = self.game_b_acc(game_move_acc=game_move_acc)
+            self.opn_acc = self.op_b_acc(game_move_acc=game_move_acc)
+            self.mid_acc = self.mid_b_acc(game_move_acc=game_move_acc)
+            self.end_acc = self.end_b_acc(game_move_acc=game_move_acc)
             self.num_best_mv = move_dict["Num_b_best"]
             self.num_excl_mv = move_dict["Num_b_excl"]
             self.num_good_mv = move_dict["Num_b_good"]
@@ -317,18 +337,28 @@ class ChessGame(ChessUser):
             self.num_mist_mv = move_dict["Num_b_mist"]
             self.num_blun_mv = move_dict["Num_b_blun"]
             self.num_misw_mv = move_dict["Num_b_misw"]
-            self.sec_improve = self.b_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
-            self.user_castle_mv = self.black_castle_move_num(b_castle_num)
-            self.opp_castle_mv = self.white_castle_move_num(w_castle_num)
-            self.user_castled = self.has_black_castled(b_castle_num)
-            self.opp_castled = self.has_white_castled(w_castle_num)
-            self.user_castle_phase = self.black_castle_phase(w_castle_num, total_moves)
-            self.opp_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
+            self.sec_improve = self.b_sec_imp(
+                ob=self.opn_acc, mb=self.mid_acc, eb=self.end_acc
+            )
+            self.user_castle_mv = self.black_castle_move_num(
+                black_castle_num=b_castle_num
+            )
+            self.opp_castle_mv = self.white_castle_move_num(
+                white_castle_num=w_castle_num
+            )
+            self.user_castled = self.has_black_castled(black_castle_num=b_castle_num)
+            self.opp_castled = self.has_white_castled(white_castle_num=w_castle_num)
+            self.user_castle_phase = self.black_castle_phase(
+                black_castle_num=b_castle_num, total_moves=total_moves
+            )
+            self.opp_castle_phase = self.white_castle_phase(
+                white_castle_num=w_castle_num, total_moves=total_moves
+            )
             self.user_win_percent = self.get_predicted_win_percentage(
-                headers["Black_rating"], headers["White_rating"]
+                player_1=headers["Black_rating"], player_2=headers["White_rating"]
             )
             self.opp_win_percent = self.get_predicted_win_percentage(
-                headers["White_rating"], headers["Black_rating"]
+                player_1=headers["White_rating"], player_2=headers["Black_rating"]
             )
         game_df = pd.DataFrame(
             {
@@ -383,8 +413,8 @@ class ChessGame(ChessUser):
         Args:
             game_df (pd.Dataframe): dataframe of game data
         """
-        conn = sqlite3.connect(FileHandler(username=self.username).db_location)
-        game_df.to_sql("game_data", conn, if_exists="append", index=False)
+        conn = sqlite3.connect(database=FileHandler(username=self.username).db_location)
+        game_df.to_sql(name="game_data", con=conn, if_exists="append", index=False)
         conn.commit
         conn.close
 
@@ -663,27 +693,37 @@ class ChessMove(ChessGame):
 
     def analyse_move(self, move) -> None:
         """Analyses a users move"""
-        self.str_bm, self.eval_bm = self.best_move(self.board, self.engine)
-        self.str_ml, self.eval_ml = self.mainline_move(move, self.board, self.engine)
-        self.evaldiff = self.eval_delta(self.move_num, self.eval_bm, self.eval_ml)
-        self.move_acc = self.move_accuracy(self.evaldiff)
-        self.move_type = self.assign_move_type(self.move_acc)
-        self.square_int = self.get_piece_square_int(move)
+        self.str_bm, self.eval_bm = self.best_move(board=self.board, engine=self.engine)
+        self.str_ml, self.eval_ml = self.mainline_move(
+            move=move, board=self.board, engine=self.engine
+        )
+        self.evaldiff = self.eval_delta(
+            move_num=self.move_num, eval_bm=self.eval_bm, eval_ml=self.eval_ml
+        )
+        self.move_acc = self.move_accuracy(eval_diff=self.evaldiff)
+        self.move_type = self.assign_move_type(move_acc=self.move_acc)
+        self.square_int = self.get_piece_square_int(move=move)
         self.curr_board = self.get_curr_board()
-        self.piece = self.chess_piece(self.curr_board, self.square_int)
-        self.move_col = self.move_colour(self.move_num)
-        self.castle_type = self.castling_type(self.piece, self.move_col, self.str_ml)
+        self.piece = self.chess_piece(
+            curr_board=self.curr_board, square_int=self.square_int
+        )
+        self.move_col = self.move_colour(move_num=self.move_num)
+        self.castle_type = self.castling_type(
+            piece=self.piece, move_col=self.move_col, str_ml=self.str_ml
+        )
         self.w_castle_mv_num = self.white_castle_move_num(
-            self.castle_type, self.move_num
+            castle_type=self.castle_type, move_num=self.move_num
         )
         self.b_castle_mv_num = self.black_castle_move_num(
-            self.castle_type, self.move_num
+            castle_type=self.castle_type, move_num=self.move_num
         )
         self.timers = self.filter_timecont_header(
-            self.file_paths.temp,
+            tempfilepath=self.file_paths.temp,
         )
         self.move_time = self.get_time_spent_on_move(
-            self.file_paths.temp, self.move_num, self.timers
+            tempfilepath=self.file_paths.temp,
+            move_num=self.move_num,
+            timers=self.timers,
         )
         self.move_df = self.create_move_df(
             self.username,
@@ -705,7 +745,7 @@ class ChessMove(ChessGame):
             self.b_castle_mv_num,
             self.move_time,
         )
-        self.export_move_data(self.move_df, self.username)
+        self.export_move_data(move_df=self.move_df, username=self.username)
         self.append_to_game_lists()
 
     def mainline_move(
@@ -713,24 +753,24 @@ class ChessMove(ChessGame):
     ) -> tuple:
         """Returns the users move and its evaluation."""
         str_ml = str(move)
-        board.push_san(str_ml)
+        board.push_san(san=str_ml)
         eval_ml_init = engine.analyse(
-            board, chess.engine.Limit(depth=self.edepth), game=object()
+            board=board, limit=chess.engine.Limit(depth=self.edepth), game=object()
         )
-        eval_ml = self.move_eval(eval_ml_init)
+        eval_ml = self.move_eval(move=eval_ml_init)
         return str_ml, eval_ml
 
     def best_move(self, board: Board, engine: chess.engine.SimpleEngine) -> tuple:
         """Returns the best move from the engine and its evaluation."""
         best_move = engine.play(
-            board, chess.engine.Limit(depth=self.edepth), game=object()
+            board=board, limit=chess.engine.Limit(depth=self.edepth), game=object()
         )
         str_bm = str(best_move.move)
-        board.push_san(str_bm)
+        board.push_san(san=str_bm)
         eval_bm_init = engine.analyse(
-            board, chess.engine.Limit(depth=self.edepth), game=object()
+            board=board, limit=chess.engine.Limit(depth=self.edepth), game=object()
         )
-        eval_bm = self.move_eval(eval_bm_init)
+        eval_bm = self.move_eval(move=eval_bm_init)
         board.pop()
         return str_bm, eval_bm
 
@@ -786,7 +826,7 @@ class ChessMove(ChessGame):
     @staticmethod
     def chess_piece(curr_board, square_int) -> str:
         """Returns the piece type for the move played."""
-        piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square_int)
+        piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square=square_int)
         if piece_type_num == 1:
             piece_type = "pawn"
         elif piece_type_num == 2:
@@ -818,7 +858,7 @@ class ChessMove(ChessGame):
         piece_col = str(move)[2:3]
         piece_row = str(move)[3:4]
         piece_square = str(piece_col + piece_row)
-        square_int = chess.parse_square(piece_square)
+        square_int = chess.parse_square(name=piece_square)
         return square_int
 
     @staticmethod
@@ -868,8 +908,8 @@ class ChessMove(ChessGame):
         tempfilepath: str, move_num: int, timers: tuple
     ) -> float:
         """Calculated the time the player spent on the current move."""
-        chess_game_pgn = open(tempfilepath)
-        game = chess.pgn.read_game(chess_game_pgn)
+        chess_game_pgn = open(file=tempfilepath)
+        game = chess.pgn.read_game(handle=chess_game_pgn)
         timerem_w, timerem_b, time_int = timers[0], timers[1], timers[2]
         time_list = []
         for num, move in enumerate(game.mainline()):
@@ -890,8 +930,8 @@ class ChessMove(ChessGame):
         """
         Filters time control headers if time control contains move interval.
         """
-        chess_game_pgn = open(tempfilepath)
-        game = chess.pgn.read_game(chess_game_pgn)
+        chess_game_pgn = open(file=tempfilepath)
+        game = chess.pgn.read_game(handle=chess_game_pgn)
         tc_white = game.headers["TimeControl"]
         tc_black = game.headers["TimeControl"]
         if ("+" in tc_white) or ("+" in tc_black):
@@ -959,8 +999,8 @@ class ChessMove(ChessGame):
 
     def export_move_data(self, move_df: pd.DataFrame, username: str) -> None:
         "Exports the move date to a sqlite3 server."
-        conn = sqlite3.connect(FileHandler(username=self.username).db_location)
-        move_df.to_sql("move_data", conn, if_exists="append", index=False)
+        conn = sqlite3.connect(database=FileHandler(username=self.username).db_location)
+        move_df.to_sql(name="move_data", con=conn, if_exists="append", index=False)
         conn.commit
         conn.close
 
@@ -994,26 +1034,30 @@ class ChessGameHeaders(ChessGame):
         )
         self.chess_game = chess_game
         self.engine = engine
-        self.game_date = self.game_dt(self.chess_game)
-        self.game_time = self.game_t(self.chess_game)
-        self.game_datetime = self.game_dt_time(self.game_date, self.game_time)
-        self.time_cont = self.time_control(self.chess_game)
-        self.white = self.player_white(self.chess_game)
-        self.black = self.player_black(self.chess_game)
-        self.player = self.user_colour(self.white, self.username)
-        self.ratingwhite = self.rating_white(self.chess_game)
-        self.ratingblack = self.rating_black(self.chess_game)
-        self.opening_class = self.opening_cls(self.chess_game)
-        self.opening_name = self.opening_nm(self.chess_game)
-        self.termination = self.game_termination(self.chess_game, self.username)
-        self.end_type = self.win_draw_loss(self.chess_game)
+        self.game_date = self.game_dt(chess_game=self.chess_game)
+        self.game_time = self.game_t(chess_game=self.chess_game)
+        self.game_datetime = self.game_dt_time(
+            game_date=self.game_date, game_time=self.game_time
+        )
+        self.time_cont = self.time_control(chess_game=self.chess_game)
+        self.white = self.player_white(chess_game=self.chess_game)
+        self.black = self.player_black(chess_game=self.chess_game)
+        self.player = self.user_colour(white=self.white, username=self.username)
+        self.ratingwhite = self.rating_white(chess_game=self.chess_game)
+        self.ratingblack = self.rating_black(chess_game=self.chess_game)
+        self.opening_class = self.opening_cls(chess_game=self.chess_game)
+        self.opening_name = self.opening_nm(chess_game=self.chess_game)
+        self.termination = self.game_termination(
+            chess_game=self.chess_game, username=self.username
+        )
+        self.end_type = self.win_draw_loss(chess_game=self.chess_game)
         self.user_rating = self.rating_user(
-            self.player, self.ratingwhite, self.ratingblack
+            player=self.player, rating_w=self.ratingwhite, rating_b=self.ratingblack
         )
         self.opp_rating = self.rating_opponent(
-            self.player, self.ratingwhite, self.ratingblack
+            player=self.player, rating_w=self.ratingwhite, rating_b=self.ratingblack
         )
-        self.user_winner = self.user_winr(self.player, self.end_type)
+        self.user_winner = self.user_winr(winner=self.player, player=self.end_type)
 
     def collect_headers(self) -> dict:
         """Dictionary of all the headers required for analysis."""

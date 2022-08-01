@@ -1,6 +1,5 @@
 import os
 import unittest
-import logging
 import pandas as pd
 from src import filter
 
@@ -20,14 +19,6 @@ class TestFilter(unittest.TestCase):
         log_list = []
         lines = ["1", "2", "3"]
         assert filter.logfile_line_checker_multi(log_list, lines) is None
-
-    def test_clean_df(self):
-        movefilepath = "tests/test_files/test_clean_df.csv"
-        open(movefilepath, "x")
-        llog_gamenum = 10
-        unclean_df = pd.DataFrame({"Game_number": 10}, index=[0])
-        assert filter.clean_df(movefilepath, unclean_df, llog_gamenum) is None
-        os.remove(movefilepath)
 
     # def test_init_game_logs_pass(self):
     #     logfilepath = "tests/test_files/test.log"
