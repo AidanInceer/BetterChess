@@ -4,7 +4,6 @@ import pandas as pd
 import unittest
 from chess import WHITE
 from chess.engine import PovScore, Cp, Mate
-from chess.pgn import read_game
 from datetime import datetime
 from pandas.testing import assert_frame_equal
 from src.user_analysis import ChessGame
@@ -50,11 +49,11 @@ class TestUser(TestCase):
     #     c_user.last_logged_game_num = 1
     #     assert c_user.analyse_user() is None
 
-    def test_write_temp_pgn(self):
-        temp_game = "A ; B"
-        tempfilepath = BaseFileHandler().write_temp
-        c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
-        assert c_user.write_temp_pgn(tempfilepath, temp_game) is None
+    # def test_write_temp_pgn(self):
+    #     temp_game = "A ; B"
+    #     tempfilepath = BaseFileHandler().write_temp
+    #     c_user = ChessUser("Ainceer", 1, datetime(2020, 11, 8, 23, 10, 17))
+    #     assert c_user.write_temp_pgn(tempfilepath, temp_game) is None
 
 
 class TestGame(TestCase):
@@ -181,19 +180,19 @@ class TestGame(TestCase):
         mtl = []
         assert c_game.analyse_game(mtl) is None
 
-    def test_init_game(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        ob1 = isinstance(chess_game, chess.Board)
-        ob2 = isinstance(ChessGame.init_game(self, tempfilepath), chess.Board)
-        assert ob1 == ob2
+    # def test_init_game(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     ob1 = isinstance(chess_game, chess.Board)
+    #     ob2 = isinstance(ChessGame.init_game(self, tempfilepath), chess.Board)
+    #     assert ob1 == ob2
 
-    def test_init_board(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGame.init_board(self, chess_game) == chess_game.board()
+    # def test_init_board(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGame.init_board(self, chess_game) == chess_game.board()
 
     def test_init_game_lists(self):
         assert ChessGame.init_game_lists(self) is None
@@ -973,25 +972,25 @@ class TestMove(unittest.TestCase):
         move_num = 10
         assert ChessMove.black_castle_move_num(castle_type, move_num) == 0
 
-    def test_get_time_spent_on_move_white(self) -> float:
-        self.file_path = BaseFileHandler().test
-        move_num = 2
-        timers = (600, 600, 0)
-        assert 2.7 == ChessMove.get_time_spent_on_move(self.file_path, move_num, timers)
+    # def test_get_time_spent_on_move_white(self) -> float:
+    #     self.file_path = BaseFileHandler().test
+    #     move_num = 2
+    #     timers = (600, 600, 0)
+    #     assert 2.7 == ChessMove.get_time_spent_on_move(self.file_path, move_num, timers)
 
-    def test_get_time_spent_on_move_black(self) -> float:
-        self.file_path = BaseFileHandler().test
-        move_num = 3
-        timers = (600, 600, 0)
-        assert 5.1 == ChessMove.get_time_spent_on_move(self.file_path, move_num, timers)
+    # def test_get_time_spent_on_move_black(self) -> float:
+    #     self.file_path = BaseFileHandler().test
+    #     move_num = 3
+    #     timers = (600, 600, 0)
+    #     assert 5.1 == ChessMove.get_time_spent_on_move(self.file_path, move_num, timers)
 
-    def test_filter_timecont_header(self):
-        self.file_path = BaseFileHandler().test
-        assert ChessMove.filter_timecont_header(self.file_path) == (600, 600, 0)
+    # def test_filter_timecont_header(self):
+    #     self.file_path = BaseFileHandler().test
+    #     assert ChessMove.filter_timecont_header(self.file_path) == (600, 600, 0)
 
-    def test_filter_timecont_header_interval(self):
-        self.file_path = BaseFileHandler().test2
-        assert ChessMove.filter_timecont_header(self.file_path) == (180, 180, 5)
+    # def test_filter_timecont_header_interval(self):
+    #     self.file_path = BaseFileHandler().test2
+    #     assert ChessMove.filter_timecont_header(self.file_path) == (180, 180, 5)
 
     def test_create_move_df(self):
         test_move_df = pd.DataFrame(
@@ -1059,23 +1058,23 @@ class TestGameHeaders(unittest.TestCase):
     def test_collect_headers(self):
         pass
 
-    def test_time_control(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.time_control(self, chess_game) == "600"
+    # def test_time_control(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.time_control(self, chess_game) == "600"
 
-    def test_player_white(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.player_white(self, chess_game) == "JezzaShaw"
+    # def test_player_white(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.player_white(self, chess_game) == "JezzaShaw"
 
-    def test_player_black(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.player_black(self, chess_game) == "LucidKoala"
+    # def test_player_black(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.player_black(self, chess_game) == "LucidKoala"
 
     def test_user_colour_true(self):
         white = "JezzaShaw"
@@ -1087,74 +1086,74 @@ class TestGameHeaders(unittest.TestCase):
         username = "LucidKoala"
         assert ChessGameHeaders.user_colour(self, white, username) == "Black"
 
-    def test_rating_white(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.rating_white(self, chess_game) == 1011
+    # def test_rating_white(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.rating_white(self, chess_game) == 1011
 
-    def test_test_rating_black(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.rating_black(self, chess_game) == 1009
+    # def test_test_rating_black(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.rating_black(self, chess_game) == 1009
 
-    def test_opening_cls_no_err(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.opening_cls(self, chess_game) == "A40"
+    # def test_opening_cls_no_err(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.opening_cls(self, chess_game) == "A40"
 
-    def test_opening_cls_key_err(self):
-        tempfilepath = BaseFileHandler().test2
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.opening_cls(self, chess_game) == "000"
+    # def test_opening_cls_key_err(self):
+    #     tempfilepath = BaseFileHandler().test2
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.opening_cls(self, chess_game) == "000"
 
-    def test_opening_nm(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert (
-            ChessGameHeaders.opening_nm(self, chess_game)
-            == "Queens Pawn Opening Mikenas Defense 2.c4 e5 3.d5"
-        )
+    # def test_opening_nm(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert (
+    #         ChessGameHeaders.opening_nm(self, chess_game)
+    #         == "Queens Pawn Opening Mikenas Defense 2.c4 e5 3.d5"
+    #     )
 
-    def test_opening_nm_keyerror(self):
-        tempfilepath = BaseFileHandler().test2
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.opening_nm(self, chess_game) == "NA"
+    # def test_opening_nm_keyerror(self):
+    #     tempfilepath = BaseFileHandler().test2
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.opening_nm(self, chess_game) == "NA"
 
-    def test_game_termination_loss(self):
-        tempfilepath = BaseFileHandler().test2
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        username = "LucidKoala"
-        assert (
-            ChessGameHeaders.game_termination(self, chess_game, username)
-            == "Loss by resignation"
-        )
+    # def test_game_termination_loss(self):
+    #     tempfilepath = BaseFileHandler().test2
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     username = "LucidKoala"
+    #     assert (
+    #         ChessGameHeaders.game_termination(self, chess_game, username)
+    #         == "Loss by resignation"
+    #     )
 
-    def test_game_termination_win(self):
-        tempfilepath = BaseFileHandler().test2
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        username = "JezzaShaw"
-        assert (
-            ChessGameHeaders.game_termination(self, chess_game, username)
-            == "Win by resignation"
-        )
+    # def test_game_termination_win(self):
+    #     tempfilepath = BaseFileHandler().test2
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     username = "JezzaShaw"
+    #     assert (
+    #         ChessGameHeaders.game_termination(self, chess_game, username)
+    #         == "Win by resignation"
+    #     )
 
-    def test_game_termination_draw(self):
-        tempfilepath = BaseFileHandler().test_draw
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        username = "LucidKoala"
-        assert (
-            ChessGameHeaders.game_termination(self, chess_game, username)
-            == "Draw by agreement"
-        )
+    # def test_game_termination_draw(self):
+    #     tempfilepath = BaseFileHandler().test_draw
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     username = "LucidKoala"
+    #     assert (
+    #         ChessGameHeaders.game_termination(self, chess_game, username)
+    #         == "Draw by agreement"
+    #     )
 
     def test_rating_user(self):
         player = "LucidKoala"
@@ -1170,23 +1169,23 @@ class TestGameHeaders(unittest.TestCase):
             ChessGameHeaders.rating_opponent(self, player, rating_w, rating_b) == 1011
         )
 
-    def test_win_draw_loss_white(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.win_draw_loss(self, chess_game) == "White"
+    # def test_win_draw_loss_white(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.win_draw_loss(self, chess_game) == "White"
 
-    def test_win_draw_loss_black(self):
-        tempfilepath = BaseFileHandler().test2
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.win_draw_loss(self, chess_game) == "Black"
+    # def test_win_draw_loss_black(self):
+    #     tempfilepath = BaseFileHandler().test2
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.win_draw_loss(self, chess_game) == "Black"
 
-    def test_win_draw_loss_draw(self):
-        tempfilepath = BaseFileHandler().test_draw
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.win_draw_loss(self, chess_game) == "Draw"
+    # def test_win_draw_loss_draw(self):
+    #     tempfilepath = BaseFileHandler().test_draw
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.win_draw_loss(self, chess_game) == "Draw"
 
     def test_user_winr_win(self):
         winner = "White"
@@ -1203,17 +1202,17 @@ class TestGameHeaders(unittest.TestCase):
         player = "Black"
         assert ChessGameHeaders.user_winr(self, winner, player) == "Draw"
 
-    def test_game_dt(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.game_dt(self, chess_game) == "2021.02.22"
+    # def test_game_dt(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.game_dt(self, chess_game) == "2021.02.22"
 
-    def test_game_t(self):
-        tempfilepath = BaseFileHandler().test
-        chess_game_pgn = open(tempfilepath)
-        chess_game = read_game(chess_game_pgn)
-        assert ChessGameHeaders.game_t(self, chess_game) == "19:35:47"
+    # def test_game_t(self):
+    #     tempfilepath = BaseFileHandler().test
+    #     chess_game_pgn = open(tempfilepath)
+    #     chess_game = read_game(chess_game_pgn)
+    #     assert ChessGameHeaders.game_t(self, chess_game) == "19:35:47"
 
     def test_game_dt_time(self):
         game_date = "2021.02.22"

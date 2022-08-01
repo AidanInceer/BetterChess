@@ -1,19 +1,17 @@
-import os
 import unittest
-import pandas as pd
 from src import filter
 
 
 class TestFilter(unittest.TestCase):
-    def test_logfile_not_empty_true(self):
-        logfilepath = "tests/test_files/test.log"
-        assert filter.logfile_not_empty(logfilepath) is True
+    # def test_logfile_not_empty_true(self):
+    #     logfilepath = "tests/test_files/test.log"
+    #     assert filter.logfile_not_empty(logfilepath) is True
 
-    def test_logfile_not_empty_false(self):
-        logfilepath = "tests/test_files/test_empty.log"
-        open(logfilepath, "x")
-        assert filter.logfile_not_empty(logfilepath) is False
-        os.remove(logfilepath)
+    # def test_logfile_not_empty_false(self):
+    #     logfilepath = "tests/test_files/test_empty.log"
+    #     open(logfilepath, "x")
+    #     assert filter.logfile_not_empty(logfilepath) is False
+    #     os.remove(logfilepath)
 
     def test_logfile_line_checker_multi(self):
         log_list = []

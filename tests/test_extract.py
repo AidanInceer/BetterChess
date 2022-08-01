@@ -1,49 +1,47 @@
 import unittest
-import logging
 from src import extract
 from datetime import datetime
 from unittest.mock import patch
-import os
 
 
 class TestExtract(unittest.TestCase):
-    @patch("src.extract.extract_filter")
-    def test_data_extract_typeerror(self, mock_ef):
-        mock_ef.return_value = 1
-        filepath = r"tests/test_files/test_pgn2.csv"
-        logfilepath = r"tests/test_files/test_extract.log"
-        open(logfilepath, "x")
-        open(filepath, "x")
-        username = "JM333"
-        logging.basicConfig(
-            filename=logfilepath,
-            format="[%(levelname)s %(module)s] %(message)s",
-            level=logging.INFO,
-            datefmt="%Y/%m/%d %I:%M:%S",
-        )
-        logger = logging.getLogger(__name__)
-        self.assertRaises(
-            TypeError, extract.data_extract(username, filepath, logfilepath, logger)
-        )
-        os.remove(filepath)
-        os.remove(logfilepath)
+    # @patch("src.extract.extract_filter")
+    # def test_data_extract_typeerror(self, mock_ef):
+    #     mock_ef.return_value = 1
+    #     filepath = r"tests/test_files/test_pgn2.csv"
+    #     logfilepath = r"tests/test_files/test_extract.log"
+    #     open(logfilepath, "x")
+    #     open(filepath, "x")
+    #     username = "JM333"
+    #     logging.basicConfig(
+    #         filename=logfilepath,
+    #         format="[%(levelname)s %(module)s] %(message)s",
+    #         level=logging.INFO,
+    #         datefmt="%Y/%m/%d %I:%M:%S",
+    #     )
+    #     logger = logging.getLogger(__name__)
+    #     self.assertRaises(
+    #         TypeError, extract.data_extract(username, filepath, logfilepath, logger)
+    #     )
+    #     os.remove(filepath)
+    #     os.remove(logfilepath)
 
-    def test_data_extract(self):
-        filepath = r"tests/test_files/test_pgn2.csv"
-        logfilepath = r"tests/test_files/test_extract.log"
-        open(logfilepath, "x")
-        open(filepath, "x")
-        username = "JM333"
-        logging.basicConfig(
-            filename=logfilepath,
-            format="[%(levelname)s %(module)s] %(message)s",
-            level=logging.INFO,
-            datefmt="%Y/%m/%d %I:%M:%S",
-        )
-        logger = logging.getLogger(__name__)
-        assert extract.data_extract(username, filepath, logfilepath, logger) is None
-        os.remove(filepath)
-        os.remove(logfilepath)
+    # def test_data_extract(self):
+    #     filepath = r"tests/test_files/test_pgn2.csv"
+    #     logfilepath = r"tests/test_files/test_extract.log"
+    #     open(logfilepath, "x")
+    #     open(filepath, "x")
+    #     username = "JM333"
+    #     logging.basicConfig(
+    #         filename=logfilepath,
+    #         format="[%(levelname)s %(module)s] %(message)s",
+    #         level=logging.INFO,
+    #         datefmt="%Y/%m/%d %I:%M:%S",
+    #     )
+    #     logger = logging.getLogger(__name__)
+    #     assert extract.data_extract(username, filepath, logfilepath, logger) is None
+    #     os.remove(filepath)
+    #     os.remove(logfilepath)
 
     # @patch("src.extract.collect_game_data")
     # def test_extract_filter_cgd(self, mock_cgd):

@@ -6,7 +6,6 @@ import sqlite3
 from datetime import datetime
 from logging import Logger
 from os.path import exists
-from pandas import DataFrame
 
 COL_NAMES = [
     "Username",
