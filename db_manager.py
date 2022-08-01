@@ -3,12 +3,16 @@ import os
 from src.sql_querys import (
     DROP_MOVE_TABLE,
     DROP_GAME_TABLE,
+    DROP_PGN_TABLE,
     CREATE_MOVE_TABLE,
     CREATE_GAME_TABLE,
+    CREATE_PGN_TABLE,
     SELECT_GAME_DATA,
     SELECT_MOVE_DATA,
+    SELECT_PGN_DATA,
     SELECT_MOVE_DATA_ALL,
     SELECT_GAME_DATA_ALL,
+    SELECT_PGN_DATA_ALL,
 )
 
 
@@ -26,8 +30,10 @@ def reset_db():
     curs = conn.cursor()
     curs.execute(DROP_MOVE_TABLE)
     curs.execute(DROP_GAME_TABLE)
+    curs.execute(DROP_PGN_TABLE)
     curs.execute(CREATE_MOVE_TABLE)
     curs.execute(CREATE_GAME_TABLE)
+    curs.execute(CREATE_PGN_TABLE)
     conn.commit()
     conn.close()
 
@@ -51,6 +57,9 @@ def view_table_size():
     curs.execute(SELECT_GAME_DATA_ALL)
     game_rows = curs.fetchall()
     print(f"game_rows rows: {len(game_rows)}")
+    curs.execute(SELECT_PGN_DATA_ALL)
+    pgn_rows = curs.fetchall()
+    print(f"pgn_rows rows: {len(pgn_rows)}")
     conn.close()
 
 
@@ -63,6 +72,12 @@ def view_db_tables():
         print(row)
     print("-------------------------------------------------")
     curs.execute(SELECT_GAME_DATA)
+    rows = curs.fetchall()
+    for row in rows:
+        print(row)
+    conn.close()
+    print("-------------------------------------------------")
+    curs.execute(SELECT_PGN_DATA)
     rows = curs.fetchall()
     for row in rows:
         print(row)
@@ -87,11 +102,20 @@ def view_game_table():
         print(row)
 
 
+def view_pgn_table():
+    conn = sqlite3.connect(FileHandler().db_location)
+    curs = conn.cursor()
+    curs.execute(SELECT_PGN_DATA_ALL)
+    move_rows = curs.fetchall()
+    for row in move_rows:
+        print(row)
+
+
 if __name__ == "__main__":
     print("=================================================")
     x = str.upper(
         input(
-            "R = RESET, S = SELECT ALL TABLES, I = TABLE COLUMN INFO, X = TABLE SIZE, VM = VIEW MOVE FULL TABLE, VG = VIEW MOVE FULL TABLE: "
+            "R = RESET, S = SELECT ALL TABLES, I = TABLE COLUMN INFO, X = TABLE SIZE, VM = VIEW MOVE FULL TABLE, VG = VIEW MOVE FULL TABLE, VP: VIEW FULL PGN DATA: "
         )
     )
     if x == ("R"):
@@ -113,6 +137,9 @@ if __name__ == "__main__":
         print("=================================================")
     elif x == ("VG"):
         view_game_table()
+        print("=================================================")
+    elif x == ("VP"):
+        view_pgn_table()
         print("=================================================")
     else:
         pass

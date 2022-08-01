@@ -2,7 +2,6 @@
 Module for filtering the move_data.csv file to remove any
 incomplete games.
 """
-import pandas as pd
 import sqlite3
 from datetime import datetime
 from logging import Logger
@@ -55,7 +54,7 @@ def get_last_logged_game_num(logfilepath: str) -> int:
     """
     if logfile_not_empty(logfilepath):
         log_list = get_game_log_list(logfilepath)
-        last_logged_game_num = int(log_list[-1].split("|")[2].strip())
+        last_logged_game_num = int(log_list[-1].split("|")[3].strip())
         return last_logged_game_num
     else:
         pass
@@ -65,20 +64,9 @@ def get_last_logged_game(logfilepath: str) -> datetime:
     """Returns the last logged game datatime."""
     game_log_list = get_game_log_list(logfilepath)
     llog = game_log_list[-1]
-    llog_date_str = llog.split("|")[1].strip()
+    llog_date_str = llog.split("|")[2].strip()
     llog_date = datetime.strptime(llog_date_str, "%Y-%m-%d %H:%M:%S")
     return llog_date
-
-
-def clean_movecsv(movefilepath: str, logfilepath: str) -> None:
-    """Removes last unfinished games moves from the move_data csv."""
-    if file_exist(movefilepath) and logfile_not_empty(logfilepath):
-        log_list = get_game_log_list(logfilepath)
-        llog_gamenum = int(log_list[-1].split("|")[2].strip())
-        unclean_df = pd.read_csv(movefilepath, names=COL_NAMES)
-        clean_df(movefilepath, unclean_df, llog_gamenum)
-    else:
-        pass
 
 
 def file_exist(movefilepath: str):
@@ -126,12 +114,12 @@ def clean_df(movefilepath: str, unclean_df: DataFrame, llog_gamenum: int) -> Non
     clean_df.to_csv(movefilepath, mode="w", index=False, header=None)
 
 
-def init_game_logs(logfilepath: str, logger: Logger) -> None:
+def init_game_logs(username: str, logfilepath: str, logger: Logger) -> None:
     """Initalises the logfile."""
     if numlines_in_logfile(logfilepath) != 0:
         pass
     else:
-        set_first_game_logdate(logfilepath, logger)
+        set_first_game_logdate(username, logfilepath, logger)
 
 
 def numlines_in_logfile(logfilepath: str) -> int:
@@ -143,12 +131,12 @@ def numlines_in_logfile(logfilepath: str) -> int:
     return len(game_log_list)
 
 
-def set_first_game_logdate(logfilepath: str, logger: Logger) -> None:
+def set_first_game_logdate(username: str, logfilepath: str, logger: Logger) -> None:
     """Creates the default date in the logfile."""
     with open(logfilepath, "a") as _:
         game_num = 0
         init_dt = datetime.strptime("2000-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
-        logger.info(f"| {init_dt} | {game_num}")
+        logger.info(f"| {username} | {init_dt} | {game_num}")
 
 
 def logfile_line_checker_single(log_list: list, lines: list[str]) -> None:

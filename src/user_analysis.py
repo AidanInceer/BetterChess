@@ -47,7 +47,7 @@ class ChessUser:
         """Extracts users data and runs the analysis on their games."""
         extract.data_extract(
             self.username,
-            self.file_paths.pgn_data,
+            self.file_paths.db_location,
             self.file_paths.userlogfile,
             self.logger,
         )
@@ -55,9 +55,9 @@ class ChessUser:
 
     def analyse_user(self) -> None:
         """Analyses all of the given users games."""
-        all_games = self.init_all_games(self.file_paths.pgn_data)
+        all_games = self.init_all_games(self.file_paths.db_location, self.username)
         print("Analysing users data: ")
-        filter.init_game_logs(self.file_paths.userlogfile, self.logger)
+        filter.init_game_logs(self.username, self.file_paths.userlogfile, self.logger)
         self.last_logged_game_num = filter.get_last_logged_game_num(
             self.file_paths.userlogfile
         )
@@ -81,11 +81,12 @@ class ChessUser:
             del game
         print("\nFinalising analysis")
 
-    def init_all_games(self, filepath) -> pd.DataFrame:
+    def init_all_games(self, dbfilepath: str, username: str) -> pd.DataFrame:
         """Returns a dataframe of all users games from the users pgn csv."""
-        all_games = pd.read_csv(
-            filepath, delimiter="|", names=["url_date", "game_data"]
-        )
+        sql_query = """select game_data from pgn_data where username =:username"""
+        params = {"username": username}
+        conn = sqlite3.connect(dbfilepath)
+        all_games = pd.read_sql(sql_query, conn, params=params)
         self.tot_games = len(all_games["game_data"])
         return all_games
 
@@ -120,7 +121,7 @@ class ChessGame(ChessUser):
         self.init_game_analysis(self.chess_game, self.file_paths.userlogfile)
         if self.game_dt >= self.log_dt and self.game_dt >= self.start_date:
             start = time.perf_counter()
-            self.logger.info(f"| {self.game_dt} |{self.game_num}")
+            self.logger.info(f"| {self.username} | {self.game_dt} |{self.game_num}")
             for move_num, move in enumerate(self.chess_game.mainline_moves()):
                 chess_move = ChessMove(
                     self.username,
@@ -661,7 +662,7 @@ class ChessMove(ChessGame):
         self.b_castle_num = b_castle_num
 
     def analyse_move(self, move) -> None:
-        """Analyses a users move and exports results to move_data.csv"""
+        """Analyses a users move"""
         self.str_bm, self.eval_bm = self.best_move(self.board, self.engine)
         self.str_ml, self.eval_ml = self.mainline_move(move, self.board, self.engine)
         self.evaldiff = self.eval_delta(self.move_num, self.eval_bm, self.eval_ml)

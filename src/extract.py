@@ -1,13 +1,14 @@
 """Extracts the data of a given chess.com user."""
+import chessdotcom
 import pandas as pd
 import requests
-from chessdotcom import get_player_game_archives
 from datetime import datetime
 from logging import Logger
+import sqlite3
 
 
 def data_extract(
-    username: str, filepath: str, logfilepath: str, logger: Logger
+    username: str, dbfilepath: str, logfilepath: str, logger: Logger
 ) -> None:
     """Extracts user data for a given username.
     Args:
@@ -19,8 +20,9 @@ def data_extract(
     """
     init_dt = "2000-01-01 00:00:00"
     init_extlogger = datetime.strptime(init_dt, "%Y-%m-%d %H:%M:%S")
-    logger.info(f"| {init_extlogger}")
-    urls = get_player_game_archives(username).json
+    logger.info(f"| {username} | {init_extlogger}")
+    urls = chessdotcom.get_player_game_archives(username).json
+    username_list = []
     url_date_list = []
     games_list = []
     tot_urls = len(urls["archives"])
@@ -30,22 +32,34 @@ def data_extract(
         in_curr = in_curr_month(url)
         in_log = url_in_log(url, logfilepath)
         url_date = get_url_date(url)
-        logger.info(f"| {url_date}")
-        url_games_list = extract_filter(in_log, in_curr, url, filepath, logfilepath)
+        logger.info(f"| {username} | {url_date}")
+        url_games_list = extract_filter(username, in_log, in_curr, url, dbfilepath)
         try:
             for game in url_games_list:
+                username_list.append(username)
                 url_date_list.append(url_date)
                 games_list.append(game)
         except TypeError:
             continue
     print("\n")
-    game_dict = {"url_date": url_date_list, "game_data": games_list}
-    df = pd.DataFrame(game_dict)
-    df.to_csv(filepath, mode="a", index=False, sep="|", header=False)
+    game_dict = {
+        "username": username_list,
+        "url_date": url_date_list,
+        "game_data": games_list,
+    }
+    game_pgn_data_df = pd.DataFrame(game_dict)
+    conn = conn = sqlite3.connect(dbfilepath)
+    game_pgn_data_df.to_sql("pgn_data", conn, if_exists="append", index=False)
+    conn.commit
+    conn.close
 
 
 def extract_filter(
-    in_log: bool, in_curr: bool, url: str, filepath: str, logfilepath: str
+    username: str,
+    in_log: bool,
+    in_curr: bool,
+    url: str,
+    dbfilepath: str,
 ) -> list:
     """Filter to remove any incomplete games"""
     empty_list = []
@@ -54,22 +68,23 @@ def extract_filter(
     elif in_log and not in_curr:
         return empty_list
     elif in_log and in_curr:
-        filter_pgncsv(filepath, logfilepath)
-        return empty_list
+        filter_pgn_table(username, dbfilepath)
+        return collect_game_data(url)
 
 
-def filter_pgncsv(filepath: str, logfilepath: str) -> None:
-    """Removes games of the current month in the csv
+def filter_pgn_table(username: str, dbfilepath: str) -> None:
+    """Removes games of the current month in the sql database (pgn_data)
     and then reruns the extract for that month."""
-    with open(logfilepath, "r") as log_file:
-        lines = log_file.readlines()
-    llog = lines[-1]
-    llog_dt = llog.split("|")[1].strip()
-    col_names = ["url_date", "game_data"]
-    unclean_df = pd.read_csv(filepath, names=col_names, delimiter="|", header=None)
-    df_filter = unclean_df["url_date"] != llog_dt
-    clean_df = unclean_df[df_filter]
-    clean_df.to_csv(filepath, mode="w", sep="|", index=False, header=None)
+    curr_month = get_curr_mth()
+    sql_query = (
+        """delete from pgn_data where username=:username and url_date=:curr_month"""
+    )
+    input_dict = {"username": username, "curr_month": curr_month}
+    conn = sqlite3.connect(dbfilepath)
+    curs = conn.cursor()
+    curs.execute(sql_query, input_dict)
+    conn.commit
+    conn.close
 
 
 def collect_game_data(url: str) -> list:
@@ -91,7 +106,7 @@ def url_in_log(url: str, logfilepath: str) -> bool:
     url_date_list = []
     for line in lines:
         log_url_date = datetime.strptime(
-            line.split("|")[1].strip(), "%Y-%m-%d %H:%M:%S"
+            line.split("|")[2].strip(), "%Y-%m-%d %H:%M:%S"
         )
         url_date_list.append(log_url_date)
     if url_date in url_date_list:

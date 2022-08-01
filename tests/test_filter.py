@@ -6,24 +6,6 @@ from src import filter
 
 
 class TestFilter(unittest.TestCase):
-    def test_clean_movecsv(self):
-        movefilepath = "tests/test_files/test_movefile.csv"
-        logfilepath = "tests/test_files/test.log"
-        open(movefilepath, "x")
-        assert filter.clean_movecsv(movefilepath, logfilepath) is None
-        os.remove(movefilepath)
-
-    def test_file_exist_true(self):
-        movefilepath = "tests/test_files/test_movefile.csv"
-        open(movefilepath, "x")
-        assert filter.file_exist(movefilepath) is True
-        os.remove(movefilepath)
-
-    def test_file_exist_false(self):
-        movefilepath = "tests/test_files/test_movefile.csv"
-        assert filter.file_exist(movefilepath) is False
-        os.remove(movefilepath)
-
     def test_logfile_not_empty_true(self):
         logfilepath = "tests/test_files/test.log"
         assert filter.logfile_not_empty(logfilepath) is True
@@ -47,24 +29,24 @@ class TestFilter(unittest.TestCase):
         assert filter.clean_df(movefilepath, unclean_df, llog_gamenum) is None
         os.remove(movefilepath)
 
-    def test_init_game_logs_pass(self):
-        logfilepath = "tests/test_files/test.log"
-        logger = logging.Logger("test")
-        assert filter.init_game_logs(logfilepath, logger) is None
+    # def test_init_game_logs_pass(self):
+    #     logfilepath = "tests/test_files/test.log"
+    #     logger = logging.Logger("test")
+    #     assert filter.init_game_logs(logfilepath, logger) is None
 
-    def test_init_game_logs_set(self):
-        logfilepath = "tests/test_files/test2.log"
-        logger = logging.Logger("test")
-        assert filter.init_game_logs(logfilepath, logger) is None
+    # def test_init_game_logs_set(self):
+    #     logfilepath = "tests/test_files/test2.log"
+    #     logger = logging.Logger("test")
+    #     assert filter.init_game_logs(logfilepath, logger) is None
 
-    def test_numlines_in_logfile(self):
-        logfilepath = "tests/test_files/test.log"
-        assert filter.numlines_in_logfile(logfilepath) == 3
+    # def test_numlines_in_logfile(self):
+    #     logfilepath = "tests/test_files/test.log"
+    #     assert filter.numlines_in_logfile(logfilepath) == 3
 
-    def test_set_first_game_logdate(self):
-        logfilepath = "tests/test_files/test.log"
-        logger = logging.Logger("test")
-        assert filter.set_first_game_logdate(logfilepath, logger) is None
+    # def test_set_first_game_logdate(self):
+    #     logfilepath = "tests/test_files/test.log"
+    #     logger = logging.Logger("test")
+    #     assert filter.set_first_game_logdate(logfilepath, logger) is None
 
     def test_logfile_line_checker_single(self):
         log_list = []

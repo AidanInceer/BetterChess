@@ -1,5 +1,6 @@
 DROP_MOVE_TABLE = """DROP TABLE IF EXISTS move_data"""
 DROP_GAME_TABLE = """DROP TABLE IF EXISTS game_data"""
+DROP_PGN_TABLE = """DROP TABLE IF EXISTS pgn_data"""
 CREATE_MOVE_TABLE = """
     CREATE TABLE move_data (
     Username TEXT,
@@ -64,8 +65,16 @@ CREATE_GAME_TABLE = """
     User_castle_phase INT,
     Opp_castle_phase INT
 )"""
+CREATE_PGN_TABLE = """
+    CREATE TABLE pgn_data (
+    username TEXT,
+    url_date TEXT,
+    game_data TEXT
+)"""
 SELECT_MOVE_DATA = """SELECT * FROM move_data limit 10"""
 SELECT_GAME_DATA = """SELECT * FROM game_data limit 10"""
+SELECT_PGN_DATA = """SELECT * FROM pgn_data limit 1"""
 
 SELECT_MOVE_DATA_ALL = """SELECT * FROM move_data"""
 SELECT_GAME_DATA_ALL = """SELECT * FROM game_data"""
+SELECT_PGN_DATA_ALL = """SELECT * FROM pgn_data"""
