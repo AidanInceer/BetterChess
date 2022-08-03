@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from src.sql_querys import (
+from betterchess.utils.sql_querys import (
     DROP_MOVE_TABLE,
     DROP_GAME_TABLE,
     DROP_PGN_TABLE,
@@ -21,12 +21,11 @@ class FileHandler:
 
     def __init__(self):
         self.dir = os.path.dirname(__file__)
-        self.db_location = "./data/betterchess.db"
-        self.log_path = r"./logs/logs.log"
+        self.path_database = "./data/betterchess.db"
 
 
 def reset_db():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute(DROP_MOVE_TABLE)
     curs.execute(DROP_GAME_TABLE)
@@ -39,7 +38,7 @@ def reset_db():
 
 
 def view_table_column_info():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute("""PRAGMA table_info(move_data)""")
     print(curs.fetchall())
@@ -49,7 +48,7 @@ def view_table_column_info():
 
 
 def view_table_size():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute(SELECT_MOVE_DATA_ALL)
     move_rows = curs.fetchall()
@@ -64,7 +63,7 @@ def view_table_size():
 
 
 def view_db_tables():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute(SELECT_MOVE_DATA)
     rows = curs.fetchall()
@@ -85,7 +84,7 @@ def view_db_tables():
 
 
 def view_move_table():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute(SELECT_MOVE_DATA_ALL)
     move_rows = curs.fetchall()
@@ -94,7 +93,7 @@ def view_move_table():
 
 
 def view_game_table():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute(SELECT_GAME_DATA_ALL)
     move_rows = curs.fetchall()
@@ -103,7 +102,7 @@ def view_game_table():
 
 
 def view_pgn_table():
-    conn = sqlite3.connect(FileHandler().db_location)
+    conn = sqlite3.connect(FileHandler().path_database)
     curs = conn.cursor()
     curs.execute(SELECT_PGN_DATA_ALL)
     move_rows = curs.fetchall()
