@@ -1,7 +1,5 @@
 from betterchess.core.move import Move
 from unittest import TestCase
-import pytest
-
 
 class TestMove(TestCase):
     def test_castling_type_bl(self):
