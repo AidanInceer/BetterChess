@@ -23,14 +23,14 @@ class Game:
     Returns:
         _type_: _description_
     """
+
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
     iter_metadata: dict
 
     def run_game_analysis(self) -> None:
-        """_summary_
-        """
+        """_summary_"""
         log_dt = Prepare.all_games(Prepare, self.file_handler.path_userlogfile)
         self.game_metadata = Prepare.current_game_analysis(
             Prepare,
@@ -620,8 +620,8 @@ class Game:
 
 @dataclass
 class Prepare:
-    """_summary_
-    """
+    """_summary_"""
+
     def current_game_analysis(
         self,
         input_handler: InputHandler,

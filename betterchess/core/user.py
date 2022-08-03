@@ -14,8 +14,8 @@ import sqlite3
 
 @dataclass
 class User:
-    """_summary_
-    """
+    """_summary_"""
+
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
@@ -61,8 +61,8 @@ class User:
 
 @dataclass
 class PrepareUsers:
-    """_summary_
-    """
+    """_summary_"""
+
     def current_run(
         self, path_database: str, username: str, path_userlogfile: str, logger: Logger
     ) -> Tuple[pd.DataFrame, int]:
@@ -174,8 +174,8 @@ class PrepareUsers:
 
 @dataclass
 class Cleandown:
-    """_summary_
-    """
+    """_summary_"""
+
     def previous_run(
         self, path_userlogfile: str, path_database: str, username: str
     ) -> None:

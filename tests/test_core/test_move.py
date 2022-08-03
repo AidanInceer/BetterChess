@@ -1,6 +1,7 @@
 from betterchess.core.move import Move
 from unittest import TestCase
 
+
 class TestMove(TestCase):
     def test_castling_type_bl(self):
         piece = "king"

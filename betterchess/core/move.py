@@ -19,6 +19,7 @@ class Move:
     Returns:
         _type_: _description_
     """
+
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
@@ -27,8 +28,7 @@ class Move:
     move_metadata: dict
 
     def analyse(self) -> None:
-        """_summary_
-        """
+        """_summary_"""
         self.str_bm, self.eval_bm = self.best_move(
             self.game_metadata["board"], self.run_handler.engine
         )
@@ -462,8 +462,7 @@ class Move:
         conn.close
 
     def append_to_game_lists(self) -> None:
-        """_summary_
-        """
+        """_summary_"""
         self.game_metadata["game_lists_dict"]["gm_mv_num"].append(
             self.move_metadata["move_num"]
         )

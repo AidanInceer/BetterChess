@@ -16,6 +16,7 @@ class Extract:
     Returns:
         _type_: _description_
     """
+
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler

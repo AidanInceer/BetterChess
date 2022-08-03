@@ -15,6 +15,7 @@ class Headers:
     Returns:
         _type_: _description_
     """
+
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
@@ -32,8 +33,7 @@ class Headers:
         return header_dict
 
     def calculate_headers(self):
-        """_summary_
-        """
+        """_summary_"""
         self.username = self.input_handler.username
         self.engine = self.run_handler.engine
         self.game_date = self.game_dt(self.chess_game)

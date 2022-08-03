@@ -58,8 +58,8 @@ class FileHandler:
 
 @dataclass
 class RunHandler:
-    """_summary_
-    """
+    """_summary_"""
+
     file_handler: FileHandler
 
     def create_logger(self) -> Logger:
