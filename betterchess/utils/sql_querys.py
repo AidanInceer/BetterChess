@@ -63,7 +63,8 @@ CREATE_GAME_TABLE = """
     User_castled INT,
     Opp_castled INT,
     User_castle_phase INT,
-    Opp_castle_phase INT
+    Opp_castle_phase INT,
+    Game_pgn TEXT
 )"""
 CREATE_PGN_TABLE = """
     CREATE TABLE pgn_data (

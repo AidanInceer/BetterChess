@@ -18,19 +18,15 @@ import sqlite3
 
 @dataclass
 class Game:
-    """_summary_
-
-    Returns:
-        _type_: _description_
+    """Functions and data relating to analysing a chess game.
     """
-
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
     iter_metadata: dict
 
     def run_game_analysis(self) -> None:
-        """_summary_"""
+        """Sets up a game and runs the analysis for a game."""
         log_dt = Prepare.all_games(Prepare, self.file_handler.path_userlogfile)
         self.game_metadata = Prepare.current_game_analysis(
             Prepare,
@@ -78,11 +74,11 @@ class Game:
             )
 
     def analyse_game(self, move_type_list: dict, total_moves: int) -> None:
-        """_summary_
+        """Consolidates game analysis data and exports it to db.
 
         Args:
-            move_type_list (dict): _description_
-            total_moves (int): _description_
+            move_type_list (dict): List of move types e.g. no. blunders.
+            total_moves (int): Total number of moves in a game.
         """
         move_dict = self.sum_move_types(move_type_list)
         game_df = self.user_game_data(
@@ -100,13 +96,14 @@ class Game:
         self.export_game_data(game_df)
 
     def sum_move_types(self, move_type_list: list) -> dict:
-        """_summary_
+        """Calculated the number of a specific type of moves for black and
+        white in a chess game.
 
         Args:
-            move_type_list (list): _description_
+            move_type_list (list): List of move types.
 
         Returns:
-            dict: _description_
+            dict: Dictionary of moves type lists.
         """
         move_dict = {
             "Num_w_best": move_type_list[::2].count(2),
@@ -137,28 +134,29 @@ class Game:
         headers: dict,
         username: str,
         edepth: int,
-        game_num: int,
+        game_num: int
     ) -> pd.DataFrame:
-        """_summary_
+        """Creates the game data dataframe.
 
         Args:
-            move_dict (dict): _description_
-            game_datetime (str): _description_
-            game_move_acc (list): _description_
-            w_castle_num (list): _description_
-            b_castle_num (list): _description_
-            total_moves (int): _description_
-            headers (dict): _description_
-            username (str): _description_
-            edepth (int): _description_
-            game_num (int): _description_
+            move_dict (dict):  Dictionary of moves type lists.
+            game_datetime (str): Datetime of the game.
+            game_move_acc (list): List of move accuracies.
+            w_castle_num (list): Point at which white castles.
+            b_castle_num (list): Point at which black castles.
+            total_moves (int): Total number of moves.
+            headers (dict): Game header dictionary.
+            username (str): Username.
+            edepth (int): Engine depth.
+            game_num (int): Game number of user.
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: dataframe of game data.
         """
 
         self.time_of_day = self.game_time_of_day(game_datetime)
         self.day_of_week = self.game_day_of_week(game_datetime)
+        self.game_pgn = self.get_curr_game_pgn(game_num, username, self.file_handler.path_temp)
 
         if username == headers["White_player"]:
             self.game_acc = self.game_w_acc(game_move_acc)
@@ -252,6 +250,7 @@ class Game:
                 "Opp_castled": self.opp_castled,
                 "User_castle_phase": self.user_castle_phase,
                 "Opp_castle_phase": self.opp_castle_phase,
+                "Game_pgn": self.game_pgn
             },
             index=[0],
         )
@@ -270,13 +269,13 @@ class Game:
 
     @staticmethod
     def game_time_of_day(game_datetime: datetime) -> str:
-        """_summary_
+        """Returns the time segment of the day.
 
         Args:
-            game_datetime (datetime): _description_
+            game_datetime (datetime): Datetime of the game.
 
         Returns:
-            str: _description_
+            str: Game time section e.g. Morning/Evening.
         """
         day_hour = int(date.strftime(game_datetime, "%H"))
         if day_hour <= 6:
@@ -291,13 +290,13 @@ class Game:
 
     @staticmethod
     def game_day_of_week(game_datetime: datetime) -> str:
-        """_summary_
+        """Returns the weekday which the game was played.
 
         Args:
-            game_datetime (datetime): _description_
+            game_datetime (datetime): Datetime of the game.
 
         Returns:
-            str: _description_
+            str: Day of the week.
         """
         week_num_base = int(date.isoweekday(game_datetime))
         weekday_num = week_num_base - 1
@@ -314,13 +313,13 @@ class Game:
 
     @staticmethod
     def game_w_acc(game_move_acc: list) -> float:
-        """_summary_
+        """game accuracy of white player (Out of 100).
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list): Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Game accuracy of white player.
         """
         w_list = game_move_acc[::2]
         list_len = len(game_move_acc[::2])
@@ -332,13 +331,13 @@ class Game:
 
     @staticmethod
     def game_b_acc(game_move_acc: list) -> float:
-        """_summary_
+        """game accuracy of black player (Out of 100).
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list): Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Game accuracy of black player.
         """
         b__list = game_move_acc[1::2]
         list_len = len(game_move_acc[1::2])
@@ -350,13 +349,13 @@ class Game:
 
     @staticmethod
     def op_w_acc(game_move_acc: list) -> float:
-        """_summary_
+        """Opening game accuracy for white.
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list):  Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Opening accuracy of white player.
         """
         list_w = game_move_acc[::2]
         op_list_w = np.array_split(list_w, 3)[0]
@@ -369,13 +368,13 @@ class Game:
 
     @staticmethod
     def mid_w_acc(game_move_acc: list) -> float:
-        """_summary_
+        """Midgame accuracy for white.
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list):  Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Midgame accuracy of white player.
         """
         list_w = game_move_acc[::2]
         mid_list_w = np.array_split(list_w, 3)[1]
@@ -388,13 +387,13 @@ class Game:
 
     @staticmethod
     def end_w_acc(game_move_acc: list) -> float:
-        """_summary_
+        """Endgame accuracy for white.
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list):  Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Endgame accuracy of white player.
         """
         list_w = game_move_acc[::2]
         end_list_w = np.array_split(list_w, 3)[2]
@@ -407,13 +406,13 @@ class Game:
 
     @staticmethod
     def op_b_acc(game_move_acc: list) -> float:
-        """_summary_
+        """Opening accuracy for black.
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list):  Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Opening accuracy of black player.
         """
         list_b = game_move_acc[1::2]
         op_list_b = np.array_split(list_b, 3)[0]
@@ -426,13 +425,13 @@ class Game:
 
     @staticmethod
     def mid_b_acc(game_move_acc: list) -> float:
-        """_summary_
+        """Midgame accuracy for black.
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list):  Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Midgame accuracy of black player.
         """
         list_b = game_move_acc[1::2]
         mid_list_b = np.array_split(list_b, 3)[1]
@@ -445,13 +444,13 @@ class Game:
 
     @staticmethod
     def end_b_acc(game_move_acc: list) -> float:
-        """_summary_
+        """Endgame accuracy for black.
 
         Args:
-            game_move_acc (list): _description_
+            game_move_acc (list):  Game accuracy list.
 
         Returns:
-            float: _description_
+            float: Endgame accuracy of black player.
         """
         list_b = game_move_acc[1::2]
         end_list_b = np.array_split(list_b, 3)[2]
@@ -464,17 +463,17 @@ class Game:
 
     @staticmethod
     def w_sec_imp(ow: float, mw: float, ew: float) -> str:
-        """_summary_
+        """Whites area of lowest accuracy.
 
         Args:
-            ow (float): _description_
-            mw (float): _description_
-            ew (float): _description_
+            ow (float): Opening accuracy.
+            mw (float): Midgame accuracy.
+            ew (float): Endgame accuracy.
 
         Returns:
-            str: _description_
+            str: Game section.
         """
-        if mw and ow < ew:
+        if ow < ew and ow < mw:
             white_sector_improvement = "Opening"
         elif mw < ow and mw < ew:
             white_sector_improvement = "Midgame"
@@ -484,15 +483,15 @@ class Game:
 
     @staticmethod
     def b_sec_imp(ob: float, mb: float, eb: float) -> str:
-        """_summary_
+        """Black area of lowest accuracy
 
         Args:
-            ob (float): _description_
-            mb (float): _description_
-            eb (float): _description_
+            ow (float): Opening accuracy.
+            mw (float): Midgame accuracy.
+            ew (float): Endgame accuracy.
 
         Returns:
-            str: _description_
+            str: Game section.
         """
         if ob < mb and ob < eb:
             black_sector_improvement = "Opening"
@@ -504,37 +503,37 @@ class Game:
 
     @staticmethod
     def white_castle_move_num(white_castle_num: list) -> int:
-        """_summary_
+        """Whites castling move
 
         Args:
-            white_castle_num (int): _description_
+            white_castle_num (int): Castling move.
 
         Returns:
-            int: _description_
+            int: Move number of white that white castled.
         """
         return sum(white_castle_num)
 
     @staticmethod
     def black_castle_move_num(black_castle_num: list) -> int:
-        """_summary_
+        """Black castling move
 
         Args:
-            black_castle_num (list): _description_
+            black_castle_num (int): Castling move.
 
         Returns:
-            int: _description_
+            int: Move number of black that black castled.
         """
         return sum(black_castle_num)
 
     @staticmethod
     def has_white_castled(white_castle_num: list) -> int:
-        """_summary_
+        """Checks to see if white has castled.
 
         Args:
-            white_castle_num (list): _description_
+            white_castle_num (list): Castling move list.
 
         Returns:
-            int: _description_
+            int: 1 if castled 0 if not castled.
         """
         if sum(white_castle_num) > 0:
             return 1
@@ -543,13 +542,13 @@ class Game:
 
     @staticmethod
     def has_black_castled(black_castle_num: list) -> int:
-        """_summary_
+        """Checks to see if black has castled.
 
         Args:
-            black_castle_num (list): _description_
+            black_castle_num (list): Castling move list.
 
         Returns:
-            int: _description_
+            int: 1 if castled 0 if not castled.
         """
         if sum(black_castle_num) > 0:
             return 1
@@ -558,14 +557,14 @@ class Game:
 
     @staticmethod
     def white_castle_phase(white_castle_num: list, total_moves: int) -> str:
-        """_summary_
+        """Game section which white castled.
 
         Args:
-            white_castle_num (list): _description_
-            total_moves (int): _description_
+            white_castle_num (list):  Castling move list.
+            total_moves (int): Total number of moves
 
         Returns:
-            str: _description_
+            str: Game section.
         """
         if total_moves == 0:
             return "None"
@@ -581,14 +580,14 @@ class Game:
 
     @staticmethod
     def black_castle_phase(black_castle_num: list, total_moves: int) -> str:
-        """_summary_
+        """Game section which black castled.
 
         Args:
-            black_castle_num (list): _description_
-            total_moves (int): _description_
+            black_castle_num (list):  Castling move list.
+            total_moves (int): Total number of moves.
 
         Returns:
-            str: _description_
+            str: Game section.
         """
         if total_moves == 0:
             return "None"
@@ -604,23 +603,39 @@ class Game:
 
     @staticmethod
     def get_predicted_win_percentage(player_1: int, player_2: int) -> float:
-        """_summary_
+        """Predicted win percentage of a user before the game has been played.
 
         Args:
-            player_1 (int): _description_
-            player_2 (int): _description_
+            player_1 (int): player 1.
+            player_2 (int): player 2.
 
         Returns:
-            float: _description_
+            float: Predicted win percentage.
         """
         exp_term = (player_2 - player_1) / 400
         pred_win_percent = round((1 / (1 + 10**exp_term)) * 100, 2)
         return pred_win_percent
 
+    @staticmethod
+    def get_curr_game_pgn(game_num: int, username: str, path_temp: str) -> pd.DataFrame:
+        """Gets the current games pgn string for use in webapp.
+
+        Args:
+            game_num (int): Game number of the current game.
+            path_database (str): Path to database.
+            username (str): Username.
+
+        Returns:
+            (pd.DataFrame): Dataframe of the current game
+        """
+        with open(path_temp, "r") as pgn_game_file:
+            pgn_game_file = pgn_game_file.readlines()
+        return str(pgn_game_file)
+
 
 @dataclass
 class Prepare:
-    """_summary_"""
+    """Class to prepare games/data/runs relating to the Game class."""
 
     def current_game_analysis(
         self,
@@ -629,13 +644,13 @@ class Prepare:
         run_handler: RunHandler,
         iter_metadata: dict,
     ) -> dict:
-        """_summary_
+        """Prepares the current game for analysis.
 
         Args:
-            input_handler (InputHandler): _description_
-            file_handler (FileHandler): _description_
-            run_handler (RunHandler): _description_
-            iter_metadata (dict): _description_
+            input_handler (InputHandler): InputHandler info.
+            file_handler (FileHandler): FileHandler info.
+            run_handler (RunHandler): RunHandler info.
+            iter_metadata (dict): iteration metadata.
 
         Returns:
             dict: _description_
@@ -657,33 +672,33 @@ class Prepare:
         return game_metadata
 
     def init_game(self, path_temp: str) -> chess.pgn.Game:
-        """_summary_
+        """Initialzies the current temporary game.
 
         Args:
-            path_temp (str): _description_
+            path_temp (str): Path of the temporary pgn file.
 
         Returns:
-            chess.pgn.Game: _description_
+            chess.pgn.Game: Current chess game.
         """
         chess_game_pgn = open(path_temp)
         return chess.pgn.read_game(chess_game_pgn)
 
     def init_board(self, chess_game: chess.pgn.Game) -> chess.Board:
-        """_summary_
+        """Initialzies the current temporary games board.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            chess.Board: _description_
+            chess.Board: Current chess board.
         """
         return chess_game.board()
 
     def init_game_lists(self) -> dict:
-        """_summary_
+        """Empty Games lists for the current game.
 
         Returns:
-            dict: _description_
+            dict: Dictionary of empty game lists.
         """
         game_lists_dict = {
             "gm_mv_num": [],
@@ -700,24 +715,24 @@ class Prepare:
         return game_lists_dict
 
     def all_games(self, path_userlogfile: str) -> datetime:
-        """_summary_
+        """ Wrapper for get_last_logged_game function to improve code flow.
 
         Args:
-            path_userlogfile (str): _description_
+            path_userlogfile (str): User log file.
 
         Returns:
-            datetime: _description_
+            datetime: Datetime of last logged game.
         """
         return self.get_last_logged_game(self, path_userlogfile)
 
     def get_last_logged_game(self, path_userlogfile: str) -> datetime:
-        """_summary_
+        """Returns the last logged game date.
 
         Args:
-            path_userlogfile (str): _description_
+            path_userlogfile (str): User log file.
 
         Returns:
-            datetime: _description_
+            datetime:  Datetime of last logged game.
         """
         game_log_list = self.get_game_log_list(self, path_userlogfile)
         llog = game_log_list[-1]
@@ -726,13 +741,13 @@ class Prepare:
         return llog_date
 
     def get_game_log_list(self, path_userlogfile: str) -> list:
-        """_summary_
+        """Collects the log list.
 
         Args:
-            path_userlogfile (str): _description_
+            path_userlogfile (str): User log file.
 
         Returns:
-            list: _description_
+            list: List of logged games analysed.
         """
         game_log_list = []
         with open(path_userlogfile, mode="r") as log_file:
@@ -741,11 +756,11 @@ class Prepare:
         return game_log_list
 
     def logfile_line_checker_multi(self, game_log_list: list, lines: list[str]) -> None:
-        """_summary_
+        """Filter for log list to remove lines not relating to the user/game module.
 
         Args:
-            game_log_list (list): _description_
-            lines (list[str]): _description_
+            game_log_list (list): List of log lines
+            lines (list[str]): Lines withing the log file.
         """
         for line in lines:
             if "user" in line:

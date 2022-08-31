@@ -42,7 +42,7 @@ class FileHandler:
     dir: str = os.path.dirname(__file__)
 
     # Relative paths
-    rpath_stockfish: str = "../../lib/stkfsh_14.1/stk_14.1.exe"
+    rpath_stockfish: str = "../../lib/stkfsh_15/stk_15.exe"
     rpath_database: str = "../../data/betterchess.db"
     rpath_temp: str = "../../data/temp.pgn"
 

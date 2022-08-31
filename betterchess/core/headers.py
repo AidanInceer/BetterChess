@@ -10,10 +10,7 @@ import chess.pgn
 
 @dataclass
 class Headers:
-    """_summary_
-
-    Returns:
-        _type_: _description_
+    """Class for parsing and collecting a chess.coms game headers.
     """
 
     input_handler: InputHandler
@@ -23,17 +20,18 @@ class Headers:
     chess_game: chess.pgn.Game
 
     def collect(self):
-        """_summary_
+        """Collects the dictionary of chess game headers.
 
         Returns:
-            _type_: _description_
+            header_dict (dict): Dictionary of header information.
         """
         self.calculate_headers()
         header_dict = self.create_header_dict()
         return header_dict
 
     def calculate_headers(self):
-        """_summary_"""
+        """Main function for creating instance variables and running methods.
+        """
         self.username = self.input_handler.username
         self.engine = self.run_handler.engine
         self.game_date = self.game_dt(self.chess_game)
@@ -58,10 +56,10 @@ class Headers:
         self.user_winner = self.user_winr(self.player, self.end_type)
 
     def create_header_dict(self) -> dict:
-        """_summary_
+        """Creates the dictionary of a games header information.
 
         Returns:
-            dict: _description_
+            header_dict (dict): Dictionary of header information.
         """
         header_dict = {
             "Game_date": self.game_date,
@@ -85,86 +83,86 @@ class Headers:
         return header_dict
 
     def time_control(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Gets the time control header from the chess game pgn.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: Time control.
         """
         time_cont = chess_game.headers["TimeControl"]
         return time_cont
 
     def player_white(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Gets the white players username header from the chess game pgn.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: White player username.
         """
         white = chess_game.headers["White"]
         return white
 
     def player_black(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Gets the black players username header from the chess game pgn.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: Black player username.
         """
         black = chess_game.headers["Black"]
         return black
 
     def user_colour(self, white: str, username: str) -> str:
-        """_summary_
+        """Gets the players colour header from the chess game pgn.
 
         Args:
-            white (str): _description_
-            username (str): _description_
+            white (str): White players username.
+            username (str): Username.
 
         Returns:
-            str: _description_
+            str: Users colour.
         """
         player = "White" if white == username else "Black"
         return player
 
     def rating_white(self, chess_game: chess.pgn.Game) -> int:
-        """_summary_
+        """Gets whites rating header from the chess game pgn.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            int: _description_
+            int: Whites player rating.
         """
         ratingwhite = int(chess_game.headers["WhiteElo"])
         return ratingwhite
 
     def rating_black(self, chess_game: chess.pgn.Game) -> int:
-        """_summary_
+        """Gets blacks rating header from the chess game pgn.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            int: _description_
+            int: Blacks player rating.
         """
         ratingblack = int(chess_game.headers["BlackElo"])
         return ratingblack
 
     def opening_cls(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Gets the opening classification for the current chess game.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game):  Current chess game.
 
         Returns:
-            str: _description_
+            str: Opening classification.
         """
         try:
             opening_class = chess_game.headers["ECO"]
@@ -173,13 +171,13 @@ class Headers:
         return opening_class
 
     def opening_nm(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Gets the opening name for the current chess game.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: Opening name.
         """
         try:
             opening_name_raw = chess_game.headers["ECOUrl"]
@@ -190,14 +188,14 @@ class Headers:
         return opening_name
 
     def game_termination(self, chess_game: chess.pgn.Game, username) -> str:
-        """_summary_
+        """How the current chess game ended e.g. draw by...
 
         Args:
-            chess_game (chess.pgn.Game): _description_
-            username (_type_): _description_
+            chess_game (chess.pgn.Game): Current chess game.
+            username (_type_): Username
 
         Returns:
-            str: _description_
+            termination (str): How the game ended.
         """
         termination_raw = chess_game.headers["Termination"]
         winner_check = termination_raw.split(" ")
@@ -211,41 +209,41 @@ class Headers:
         return termination
 
     def rating_user(self, player: str, rating_w: int, rating_b: int) -> int:
-        """_summary_
+        """Gets the users rating.
 
         Args:
-            player (str): _description_
-            rating_w (int): _description_
-            rating_b (int): _description_
+            player (str): A given players username.
+            rating_w (int): White rating.
+            rating_b (int): Black rating.
 
         Returns:
-            int: _description_
+           user_rating (int): Players rating.
         """
         user_rating = rating_w if player == "White" else rating_b
         return user_rating
 
     def rating_opponent(self, player: str, rating_w: int, rating_b: int) -> int:
-        """_summary_
+        """Gets the opponents rating.
 
         Args:
-            player (str): _description_
-            rating_w (int): _description_
-            rating_b (int): _description_
+            player (str): A given players username.
+            rating_w (int): White rating.
+            rating_b (int): Black rating.
 
         Returns:
-            int: _description_
+           user_rating (int): Opponents rating.
         """
         opp_rating = rating_b if player == "White" else rating_w
         return opp_rating
 
     def win_draw_loss(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Gets the result of the game (Win/Draw/Loss).
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: Win/Draw/Loss
         """
         if chess_game.headers["Result"] == "1-0":
             end_type = "White"
@@ -256,14 +254,14 @@ class Headers:
         return end_type
 
     def user_winr(self, winner: str, player: str) -> str:
-        """_summary_
+        """Returns whether the player won/drew/lost the game.
 
         Args:
             winner (str): _description_
-            player (str): _description_
+            player (str): Players username.
 
         Returns:
-            str: _description_
+            str: Win/Draw/Loss
         """
         pww = winner == "White" and player == "White"
         pbw = winner == "Black" and player == "Black"
@@ -278,38 +276,38 @@ class Headers:
         return user_winner
 
     def game_dt(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Date of the game.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: Game date.
         """
         game_date = chess_game.headers["UTCDate"]
         return game_date
 
     def game_t(self, chess_game: chess.pgn.Game) -> str:
-        """_summary_
+        """Time of the game.
 
         Args:
-            chess_game (chess.pgn.Game): _description_
+            chess_game (chess.pgn.Game): Current chess game.
 
         Returns:
-            str: _description_
+            str: Game Time.
         """
         game_time = chess_game.headers["UTCTime"]
         return game_time
 
     def game_dt_time(self, game_date: str, game_time: str) -> datetime:
-        """_summary_
+        """Returns the game datetime of the current chess game.
 
         Args:
-            game_date (str): _description_
-            game_time (str): _description_
+            game_date (str): Game date.
+            game_time (str): Game Time.
 
         Returns:
-            datetime: _description_
+            datetime: datetime of the current chess game.
         """
         game_date_time = f"{game_date} {game_time}"
         game_datetime = datetime.strptime(game_date_time, "%Y.%m.%d %H:%M:%S")

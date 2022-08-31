@@ -14,10 +14,7 @@ import sqlite3
 
 @dataclass
 class Move:
-    """_summary_
-
-    Returns:
-        _type_: _description_
+    """Class for analysing an players chess move.
     """
 
     input_handler: InputHandler
@@ -28,7 +25,7 @@ class Move:
     move_metadata: dict
 
     def analyse(self) -> None:
-        """_summary_"""
+        """Method for running the move analysis."""
         self.str_bm, self.eval_bm = self.best_move(
             self.game_metadata["board"], self.run_handler.engine
         )
@@ -77,21 +74,21 @@ class Move:
             self.b_castle_mv_num,
             self.move_time,
         )
-        self.export_move_data(self.move_df, self.input_handler.username)
+        self.export_move_data(self.move_df)
         self.append_to_game_lists()
 
     def mainline_move(
-        self, move, board: Board, engine: chess.engine.SimpleEngine
+        self, move: chess.Move, board: Board, engine: chess.engine.SimpleEngine
     ) -> tuple:
-        """_summary_
+        """Analysis of the actual chess move played - returns the evaluation.
 
         Args:
-            move (_type_): _description_
-            board (Board): _description_
-            engine (chess.engine.SimpleEngine): _description_
+            move (chess.Move): Move.
+            board (Board): Current game board.
+            engine (chess.engine.SimpleEngine): Engine for analysis.
 
         Returns:
-            tuple: _description_
+            tuple:Move string and Move evaluation.
         """
         str_ml = str(move)
         board.push_san(san=str_ml)
@@ -104,14 +101,14 @@ class Move:
         return str_ml, eval_ml
 
     def best_move(self, board: Board, engine: chess.engine.SimpleEngine) -> tuple:
-        """_summary_
+        """Analysis of the best chess move played - returns the evaluation.
 
         Args:
-            board (Board): _description_
-            engine (chess.engine.SimpleEngine): _description_
+            board (Board): Current game board.
+            engine (chess.engine.SimpleEngine): Engine for analysis.
 
         Returns:
-            tuple: _description_
+            tuple: Best move string and best move evaluation.
         """
         best_move = engine.play(
             board=board,
@@ -130,14 +127,14 @@ class Move:
         return str_bm, eval_bm
 
     @staticmethod
-    def move_eval(move) -> None:
-        """_summary_
+    def move_eval(move: chess.Move) -> int:
+        """Filters the evaluation to remove checkmate and converts to int.
 
         Args:
-            move (_type_): _description_
+            move (chess.Move): A chess move.
 
         Returns:
-            _type_: _description_
+            get_eval (int): Integer of the move eval.
         """
         get_eval = str(move["score"].white())
         if "#" in get_eval:
@@ -148,16 +145,16 @@ class Move:
         return get_eval
 
     @staticmethod
-    def eval_delta(move_num, eval_bm, eval_ml) -> float:
-        """_summary_
+    def eval_delta(move_num: int, eval_bm: float, eval_ml: float) -> float:
+        """Different between best move and mainline move.
 
         Args:
-            move_num (_type_): _description_
-            eval_bm (_type_): _description_
-            eval_ml (_type_): _description_
+            move_num (int): Move number.
+            eval_bm (float): Best move evaluation.
+            eval_ml (float): Mainline move evaluation.
 
         Returns:
-            float: _description_
+            eval_diff (float): Different between main and best move.
         """
         if move_num % 2 == 0:
             eval_diff = round(abs(eval_bm - eval_ml), 3)
@@ -167,31 +164,31 @@ class Move:
             return eval_diff
 
     @staticmethod
-    def move_accuracy(eval_diff) -> float:
-        """_summary_
+    def move_accuracy(eval_diff: float) -> float:
+        """Move accuracy calulation through inverse sigmoid function.
 
         Args:
-            eval_diff (_type_): _description_
+            eval_diff (float): Different between main and best move.
 
         Returns:
-            float: _description_
+            move_acc (float): Returns an accuracy between 0-100.
         """
         m, v = 0, 1.5
         move_acc = round(math.exp(-0.00003 * ((eval_diff - m) / v) ** 2) * 100, 1)
         return move_acc
 
     @staticmethod
-    def assign_move_type(move_acc) -> int:
-        """_summary_
+    def assign_move_type(move_acc: float) -> int:
+        """Calculate the move type of a move.
 
         Args:
-            move_acc (_type_): _description_
+            move_acc (_type_): Accuracy between 0-100.
 
         Returns:
-            int: _description_
+            int: Type of move (best = 2, excellent = 1,
+            good = 0, inacc = -1, mistake = -2,
+            blunder = -3, missed win = -4).
         """
-        # best = 2, excellent = 1, good = 0,
-        # inacc = -1, mistake = -2, blunder = -3, missed win = -4
         if move_acc == 100:
             move_type = 2
         elif 99.5 <= move_acc < 100:
@@ -210,14 +207,14 @@ class Move:
 
     @staticmethod
     def chess_piece(curr_board, square_int) -> str:
-        """_summary_
+        """Gets the piece type that was just moved.
 
         Args:
-            curr_board (_type_): _description_
-            square_int (_type_): _description_
+            curr_board (_type_): Current board position after move was played.
+            square_int (_type_): Square number (0-63).
 
         Returns:
-            str: _description_
+            str: Chess piece.
         """
         piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square=square_int)
         if piece_type_num == 1:
@@ -237,10 +234,10 @@ class Move:
         return piece_type
 
     def get_curr_board(self) -> chess.BaseBoard:
-        """_summary_
+        """Gets the current board position.
 
         Returns:
-            chess.BaseBoard: _description_
+            chess.BaseBoard: Current board position.
         """
         curr_fen = self.game_metadata["board"].board_fen()
         curr_board = chess.BaseBoard(board_fen=curr_fen)
@@ -248,13 +245,13 @@ class Move:
 
     @staticmethod
     def get_piece_square_int(move) -> int:
-        """_summary_
+        """Returns the square int value that the piece just moved is in.
 
         Args:
-            move (_type_): _description_
+            move (chess.Move): Chess move.
 
         Returns:
-            int: _description_
+            int: 0-63.
         """
         piece_col = str(move)[2:3]
         piece_row = str(move)[3:4]
@@ -264,13 +261,13 @@ class Move:
 
     @staticmethod
     def move_colour(move_num) -> str:
-        """_summary_
+        """Gets the move colour.
 
         Args:
-            move_num (_type_): _description_
+            move_num (int): Move number.
 
         Returns:
-            str: _description_
+            str: black or white.
         """
         if move_num % 2 == 0:
             mv_colour = "white"
@@ -279,16 +276,16 @@ class Move:
         return mv_colour
 
     @staticmethod
-    def castling_type(piece, move_col, str_ml) -> str:
-        """_summary_
+    def castling_type(piece: str, move_col: str, str_ml: str) -> str:
+        """Determines whether a played castled long, short or not at all.
 
         Args:
-            piece (_type_): _description_
-            move_col (_type_): _description_
-            str_ml (_type_): _description_
+            piece (str): Chess Piece.
+            move_col (str): Move colour.
+            str_ml (str): Mainline move string.
 
         Returns:
-            str: _description_
+            str: Castling type by colour.
         """
         if piece == "king" and move_col == "white" and str_ml == "e1g1":
             cas_type = "white_short"
@@ -303,15 +300,15 @@ class Move:
         return cas_type
 
     @staticmethod
-    def white_castle_move_num(castle_type, move_num) -> int:
-        """_summary_
+    def white_castle_move_num(castle_type: str, move_num: int) -> int:
+        """Which move white castle on.
 
         Args:
-            castle_type (_type_): _description_
-            move_num (_type_): _description_
+            castle_type (str): Castle type.
+            move_num (int): Move number.
 
         Returns:
-            int: _description_
+            int: Castling move number.
         """
         if castle_type == "white_short" or castle_type == "white_long":
             white_castle_move = move_num
@@ -320,15 +317,15 @@ class Move:
         return white_castle_move
 
     @staticmethod
-    def black_castle_move_num(castle_type, move_num) -> int:
-        """_summary_
+    def black_castle_move_num(castle_type: str, move_num: int) -> int:
+        """Which move black castle on.
 
         Args:
-            castle_type (_type_): _description_
-            move_num (_type_): _description_
+            castle_type (str): Castle type.
+            move_num (int): Move numbe
 
         Returns:
-            int: _description_
+            int:  Castling move number.
         """
         if castle_type == "black_short" or castle_type == "black_long":
             black_castle_move = move_num
@@ -338,19 +335,19 @@ class Move:
 
     @staticmethod
     def get_time_spent_on_move(
-        tempfilepath: str, move_num: int, timers: tuple
+        path_temp: str, move_num: int, timers: tuple
     ) -> float:
-        """_summary_
+        """Gets the time spent on a given move in seconds.
 
         Args:
-            tempfilepath (str): _description_
-            move_num (int): _description_
-            timers (tuple): _description_
+            path_temp (str): Pgn filepath for current game.
+            move_num (int): Move number.
+            timers (tuple): Time control and time interval of the current game.
 
         Returns:
-            float: _description_
+            float: Seconds to make a move.
         """
-        chess_game_pgn = open(file=tempfilepath)
+        chess_game_pgn = open(file=path_temp)
         game = chess.pgn.read_game(handle=chess_game_pgn)
         timerem_w, timerem_b, time_int = timers[0], timers[1], timers[2]
         time_list = []
@@ -368,16 +365,16 @@ class Move:
         return time_list[int(move_num)]
 
     @staticmethod
-    def filter_timecont_header(tempfilepath: str) -> tuple[float, float, int]:
-        """_summary_
+    def filter_timecont_header(path_temp: str) -> tuple[float, float, int]:
+        """Filters the time control header to determine the starting time of a game.
 
         Args:
-            tempfilepath (str): _description_
+            path_temp (str): Pgn filepath for current game.
 
         Returns:
-            tuple[float, float, int]: _description_
+            tuple[float, float, int]: Time control and time interval of the current game.
         """
-        chess_game_pgn = open(file=tempfilepath)
+        chess_game_pgn = open(file=path_temp)
         game = chess.pgn.read_game(handle=chess_game_pgn)
         tc_white = game.headers["TimeControl"]
         tc_black = game.headers["TimeControl"]
@@ -419,10 +416,10 @@ class Move:
         b_castle_mv_num: int,
         move_time: float,
     ) -> pd.DataFrame:
-        """_summary_
+        """Create the move dataframe.
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: Move dataframe.
         """
         self.move_df = pd.DataFrame(
             {
@@ -449,12 +446,11 @@ class Move:
         )
         return self.move_df
 
-    def export_move_data(self, move_df: pd.DataFrame, username: str) -> None:
-        """_summary_
+    def export_move_data(self, move_df: pd.DataFrame) -> None:
+        """Exports the move dataframe to sql database.
 
         Args:
-            move_df (pd.DataFrame): _description_
-            username (str): _description_
+            move_df (pd.DataFrame): Move dataframe.
         """
         conn = sqlite3.connect(FileHandler(self.input_handler.username).path_database)
         move_df.to_sql("move_data", conn, if_exists="append", index=False)
@@ -462,7 +458,7 @@ class Move:
         conn.close
 
     def append_to_game_lists(self) -> None:
-        """_summary_"""
+        """Appends the move data to the games lists so it can be accessed by the Game class."""
         self.game_metadata["game_lists_dict"]["gm_mv_num"].append(
             self.move_metadata["move_num"]
         )
