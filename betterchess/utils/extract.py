@@ -1,12 +1,14 @@
-from betterchess.utils.handlers import InputHandler, FileHandler, RunHandler
+import json
+import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
 from logging import Logger
+
 import chessdotcom
-import json
 import pandas as pd
-import sqlite3
 import requests
+
+from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
 
 
 @dataclass

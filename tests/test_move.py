@@ -1,5 +1,6 @@
-from betterchess.core.move import Move
 from unittest import TestCase
+
+from betterchess.core.move import Move
 
 
 class TestMove(TestCase):

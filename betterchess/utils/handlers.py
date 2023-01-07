@@ -1,8 +1,9 @@
-from datetime import datetime
-from dataclasses import dataclass
-from logging import Logger
-import os
 import logging
+import os
+from dataclasses import dataclass
+from datetime import datetime
+from logging import Logger
+
 import chess
 import chess.engine
 
