@@ -176,15 +176,16 @@ class Extract:
             path_database (str): _description_
         """
         curr_month = self.get_curr_mth(self)
-        sql_query = """delete from pgn_data where username = %s and url_date = %s"""
-        params = {"username": username, "curr_month": curr_month}
         conn = mysql.connector.connect(
             host="localhost", user="root", database="better_chess"
         )
         mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
 
         curs = conn.cursor()
-        curs.execute(sql_query, params)
+        curs.execute(
+            """delete from pgn_data where username = %s and url_date = %s""",
+            (username, curr_month),
+        )
         conn.commit()
         conn.close()
 
