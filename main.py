@@ -1,8 +1,6 @@
 import os
 
-import mysql.connector
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
 
 from betterchess.core.user import User
 from betterchess.data_manager.base_manager import BaseDataManager

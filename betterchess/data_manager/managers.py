@@ -3,7 +3,6 @@ import shutil
 from dataclasses import dataclass
 
 from mysql.connector import MySQLConnection
-from sqlalchemy import create_engine
 
 from betterchess.utils.config import Config
 

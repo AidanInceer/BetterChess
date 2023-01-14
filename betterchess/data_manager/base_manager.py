@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 import mysql.connector
-from mysql.connector import MySQLConnection
 
 from betterchess.utils.config import Config
 
