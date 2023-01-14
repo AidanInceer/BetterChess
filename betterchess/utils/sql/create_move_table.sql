@@ -4,7 +4,7 @@ CREATE TABLE move_data (
     Engine_depth SMALLINT,
     Game_number SMALLINT,
     Move_number SMALLINT,
-    "Move" TEXT,
+    Move TEXT,
     Move_eval SMALLINT,
     Best_move TEXT,
     Best_move_eval SMALLINT,

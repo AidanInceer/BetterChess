@@ -10,6 +10,7 @@ import chess.pgn
 import mysql.connector
 import pandas as pd
 from chess import Board
+from sqlalchemy import create_engine
 
 from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
 
@@ -411,9 +412,10 @@ class Move:
             move_df (pd.DataFrame): Move dataframe.
         """
         conn = mysql.connector.connect(
-            host="localhost", user="root", database="testdatabase"
+            host="localhost", user="root", database="better_chess"
         )
-        move_df.to_sql("move_data", conn, if_exists="append", index=False)
+        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        move_df.to_sql("move_data", mysql_engine, if_exists="append", index=False)
         conn.commit()
         conn.close()
 

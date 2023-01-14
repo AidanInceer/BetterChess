@@ -1,3 +1,6 @@
+import mysql.connector
+from sqlalchemy import create_engine
+
 from betterchess.core.user import User
 from betterchess.data_manager.managers import DatabaseManager
 from betterchess.utils.config import Config
@@ -8,8 +11,14 @@ if __name__ == "__main__":
         "Do you want to run analysis or manage the database (run, manage): "
     )
     if run_type == "manage":
-        c = Config()
-        dbm = DatabaseManager(c, database_path="./data/betterchess.db")
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="better_chess"
+        )
+        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        config = Config()
+        dbm = DatabaseManager(
+            config=config, database_path="./data/betterchess.db", conn=conn
+        )
         dbm.query_selector()
     else:
         input_handler = InputHandler()

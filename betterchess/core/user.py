@@ -9,6 +9,7 @@ from typing import Tuple
 import chess.pgn
 import mysql.connector
 import pandas as pd
+from sqlalchemy import create_engine
 
 from betterchess.core.game import Game
 from betterchess.utils.extract import Extract
@@ -98,12 +99,12 @@ class PrepareUsers:
         Returns:
             Tuple[pd.DataFrame, int]: _description_
         """
-        sql_query = """select game_data from pgn_data where username =:username"""
-        params = {"username": username}
+        sql_query = """select game_data from pgn_data where username =%s"""
         conn = mysql.connector.connect(
             host="localhost", user="root", database="better_chess"
         )
-        all_games = pd.read_sql(sql=sql_query, con=conn, params=params)
+        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        all_games = pd.read_sql(sql=sql_query, con=mysql_engine, params=[username])
         tot_games = len(all_games["game_data"])
         conn.close()
         return all_games, tot_games
@@ -204,9 +205,10 @@ class Cleandown:
             host="localhost", user="root", database="better_chess"
         )
         curs = conn.cursor()
-        sql_query = "DELETE FROM move_data WHERE Game_number = :game_num and Username = :username"
-        params = {"game_num": game_num, "username": username}
-        curs.execute(sql_query, params)
+        curs.execute(
+            """DELETE FROM move_data WHERE Game_number = %s and Username = %s""",
+            (game_num, username),
+        )
         conn.commit()
         curs.close()
 

@@ -1,6 +1,5 @@
 """_summary_
 """
-import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -11,6 +10,7 @@ import chess.pgn
 import mysql.connector
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine
 
 from betterchess.core.headers import Headers
 from betterchess.core.move import Move
@@ -269,7 +269,8 @@ class Game:
         conn = mysql.connector.connect(
             host="localhost", user="root", database="better_chess"
         )
-        game_df.to_sql("game_data", conn, if_exists="append", index=False)
+        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        game_df.to_sql("game_data", mysql_engine, if_exists="append", index=False)
         conn.commit()
         conn.close()
 

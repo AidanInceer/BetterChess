@@ -37,7 +37,7 @@ CREATE TABLE game_data (
     Opp_castle_num SMALLINT,
     User_castled SMALLINT,
     Opp_castled SMALLINT,
-    User_castle_phase SMALLINT,
-    Opp_castle_phase SMALLINT,
+    User_castle_phase TEXT,
+    Opp_castle_phase TEXT,
     Game_pgn TEXT
 )

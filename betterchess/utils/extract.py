@@ -1,15 +1,17 @@
 import json
 import sqlite3
-import mysql.connector
 from dataclasses import dataclass
 from datetime import datetime
 from logging import Logger
 
 import chessdotcom
+import mysql.connector
 import pandas as pd
 import requests
+from sqlalchemy import create_engine
 
 from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.utils import get_sql_file
 
 
 @dataclass
@@ -127,8 +129,13 @@ class Extract:
             path_database (str): _description_
             pgn_df (pd.DataFrame): _description_
         """
-        conn = mysql.connector.connect(host="localhost", user="root", database="better_chess")
-        pgn_df.to_sql(name="pgn_data", con=conn, if_exists="append", index=False)
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="better_chess"
+        )
+        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        pgn_df.to_sql(
+            name="pgn_data", con=mysql_engine, if_exists="append", index=False
+        )
         conn.commit
         conn.close
 
@@ -169,11 +176,13 @@ class Extract:
             path_database (str): _description_
         """
         curr_month = self.get_curr_mth(self)
-        sql_query = (
-            "delete from pgn_data where username=:username and url_date=:curr_month"
-        )
+        sql_query = """delete from pgn_data where username = %s and url_date = %s"""
         params = {"username": username, "curr_month": curr_month}
-        conn = mysql.connector.connect(host="localhost", user="root", database="better_chess")
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="better_chess"
+        )
+        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+
         curs = conn.cursor()
         curs.execute(sql_query, params)
         conn.commit()

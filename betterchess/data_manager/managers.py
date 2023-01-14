@@ -1,19 +1,18 @@
 import os
 import shutil
-import sqlite3
 from dataclasses import dataclass
 
-import mysql.connector
+from mysql.connector import MySQLConnection
+from sqlalchemy import create_engine
 
 from betterchess.utils.config import Config
-
-conn = mysql.connector.connect(host="localhost", user="root", database="testdatabase")
 
 
 @dataclass
 class DatabaseManager:
     config: Config
     database_path: str
+    conn: MySQLConnection
 
     def query_selector(self):
         selection = input(
@@ -46,8 +45,8 @@ class DatabaseManager:
                 print(f"Failed to delete {file_path}. Reason: {e}")
 
     def reset_database(self):
-        conn = sqlite3.connect(self.database_path)
-        curs = conn.cursor()
+
+        curs = self.conn.cursor()
         queries = [
             self.config.config.drop_game_table.file_path,
             self.config.config.drop_move_table.file_path,
@@ -59,24 +58,22 @@ class DatabaseManager:
         for query in queries:
             sql = self._get_sql_file(query)
             curs.execute(sql)
-            conn.commit()
-        conn.close()
+            self.conn.commit()
+        self.conn.close()
         print("database reset")
 
     def view_table_info(self):
-        conn = sqlite3.connect(self.database_path)
-        curs = conn.cursor()
+        curs = self.conn.cursor()
         curs.execute("""PRAGMA table_info(move_data)""")
         print(curs.fetchall())
         curs.execute("""PRAGMA table_info(game_data)""")
         print(curs.fetchall())
         curs.execute("""PRAGMA table_info(pgn_data)""")
         print(curs.fetchall())
-        conn.close()
+        self.conn.close()
 
     def view_table_size(self):
-        conn = sqlite3.connect(self.database_path)
-        curs = conn.cursor()
+        curs = self.conn.cursor()
         queries = [
             (self.config.config.select_game_data_all.file_path, "game_data rows"),
             (self.config.config.select_move_data_all.file_path, "move_data rows"),
@@ -86,11 +83,10 @@ class DatabaseManager:
             sql = self._get_sql_file(query)
             curs.execute(sql)
             print(f"{name}: {len(curs.fetchall())}")
-        conn.close()
+        self.conn.close()
 
     def select_head_all_tables(self):
-        conn = sqlite3.connect(self.database_path)
-        curs = conn.cursor()
+        curs = self.conn.cursor()
         queries = [
             self.config.config.select_game_data.file_path,
             self.config.config.select_move_data.file_path,
@@ -103,7 +99,7 @@ class DatabaseManager:
             for row in rows:
                 print(row)
             print("-------------------------------------------------")
-        conn.close()
+        self.conn.close()
 
     def _get_sql_file(self, sqlfilepath):
         with open(sqlfilepath) as file:
