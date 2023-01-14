@@ -1,12 +1,17 @@
 import yaml
+from box import Box
 from yaml import SafeLoader
-
-from betterchess.utils.handlers import FileHandler
 
 
 class Config:
-    @staticmethod
-    def create_config(path_handler: FileHandler):
-        with open(path_handler.config_path) as f:
-            config = yaml.load(f, Loader=SafeLoader)
+    def __init__(self) -> None:
+        self.config_path = self.set_config_path()
+        self.config = self.create_config()
+
+    def set_config_path(self):
+        return r"./config/datasets.yaml"
+
+    def create_config(self):
+        with open(self.config_path) as f:
+            config = Box(yaml.load(f, Loader=SafeLoader))
         return config
