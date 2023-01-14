@@ -7,6 +7,7 @@ from logging import Logger
 from typing import Tuple
 
 import chess.pgn
+import mysql.connector
 import pandas as pd
 
 from betterchess.core.game import Game

@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import mysql.connector
 from dataclasses import dataclass
 from datetime import datetime
 from logging import Logger

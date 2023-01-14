@@ -3,11 +3,11 @@
 import math
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime
 
 import chess
 import chess.engine
 import chess.pgn
+import mysql.connector
 import pandas as pd
 from chess import Board
 

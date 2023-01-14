@@ -3,10 +3,11 @@ import shutil
 import sqlite3
 from dataclasses import dataclass
 
+import mysql.connector
+
 from betterchess.utils.config import Config
 
-# import mysql.connector
-# con = mysql.connector.connect(host="localhost", user="root", database="testdatabase")
+con = mysql.connector.connect(host="localhost", user="root", database="testdatabase")
 
 
 @dataclass

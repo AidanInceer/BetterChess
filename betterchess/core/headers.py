@@ -1,17 +1,18 @@
 """_summary_
 """
-from betterchess.utils.handlers import InputHandler, FileHandler, RunHandler
 from dataclasses import dataclass
 from datetime import datetime
+
 import chess
 import chess.engine
 import chess.pgn
 
+from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+
 
 @dataclass
 class Headers:
-    """Class for parsing and collecting a chess.coms game headers.
-    """
+    """Class for parsing and collecting a chess.coms game headers."""
 
     input_handler: InputHandler
     file_handler: FileHandler
@@ -30,8 +31,7 @@ class Headers:
         return header_dict
 
     def calculate_headers(self):
-        """Main function for creating instance variables and running methods.
-        """
+        """Main function for creating instance variables and running methods."""
         self.username = self.input_handler.username
         self.engine = self.run_handler.engine
         self.game_date = self.game_dt(self.chess_game)
