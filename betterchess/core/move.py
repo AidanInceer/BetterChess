@@ -1,21 +1,22 @@
 """_summary_
 """
-from betterchess.utils.handlers import InputHandler, FileHandler, RunHandler
-from chess import Board
+import math
+import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
+
 import chess
 import chess.engine
 import chess.pgn
-import math
 import pandas as pd
-import sqlite3
+from chess import Board
+
+from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
 
 
 @dataclass
 class Move:
-    """Class for analysing an players chess move.
-    """
+    """Class for analysing an players chess move."""
 
     input_handler: InputHandler
     file_handler: FileHandler
@@ -54,28 +55,40 @@ class Move:
         self.move_time = self.get_time_spent_on_move(
             self.file_handler.path_temp, self.move_metadata["move_num"], self.timers
         )
-        self.move_df = self.create_move_df(
-            self.input_handler.username,
-            self.game_metadata["game_datetime"],
-            self.input_handler.edepth,
-            self.iter_metadata["game_num"],
-            self.move_metadata["move_num"],
-            self.str_ml,
-            self.eval_ml,
-            self.str_bm,
-            self.eval_bm,
-            self.evaldiff,
-            self.move_acc,
-            self.move_type,
-            self.piece,
-            self.move_col,
-            self.castle_type,
-            self.w_castle_mv_num,
-            self.b_castle_mv_num,
-            self.move_time,
-        )
+        self.move_df = self.create_move_df()
         self.export_move_data(self.move_df)
         self.append_to_game_lists()
+
+    def create_move_df(self) -> pd.DataFrame:
+        """Create the move dataframe.
+
+        Returns:
+            pd.DataFrame: Move dataframe.
+        """
+        self.move_df = pd.DataFrame(
+            {
+                "Username": self.input_handler.username,
+                "Game_date": self.game_metadata["game_datetime"],
+                "Engine_depth": self.input_handler.edepth,
+                "Game_number": self.iter_metadata["game_num"],
+                "Move_number": self.move_metadata["move_num"],
+                "Move": self.str_ml,
+                "Move_eval": self.eval_ml,
+                "Best_move": self.str_bm,
+                "Best_move_eval": self.eval_bm,
+                "Move_eval_diff": self.evaldiff,
+                "Move_accuracy": self.move_acc,
+                "Move_type": self.move_type,
+                "Piece": self.piece,
+                "Move_colour": self.move_col,
+                "Castling_type": self.castle_type,
+                "White_castle_num": self.w_castle_mv_num,
+                "Black_castle_num": self.b_castle_mv_num,
+                "Move_time": self.move_time,
+            },
+            index=[0],
+        )
+        return self.move_df
 
     def mainline_move(
         self, move: chess.Move, board: Board, engine: chess.engine.SimpleEngine
@@ -139,8 +152,6 @@ class Move:
         get_eval = str(move["score"].white())
         if "#" in get_eval:
             get_eval = get_eval[1:]
-        else:
-            get_eval = get_eval
         get_eval = int(get_eval)
         return get_eval
 
@@ -334,9 +345,7 @@ class Move:
         return black_castle_move
 
     @staticmethod
-    def get_time_spent_on_move(
-        path_temp: str, move_num: int, timers: tuple
-    ) -> float:
+    def get_time_spent_on_move(path_temp: str, move_num: int, timers: tuple) -> float:
         """Gets the time spent on a given move in seconds.
 
         Args:
@@ -395,57 +404,6 @@ class Move:
                 time_interval = 0
                 return (tc_white, tc_black, time_interval)
 
-    def create_move_df(
-        self,
-        username: str,
-        game_datetime: datetime,
-        edepth: int,
-        game_num: int,
-        move_num: int,
-        str_ml: str,
-        eval_ml: int,
-        str_bm: str,
-        eval_bm: int,
-        evaldiff: int,
-        move_acc: float,
-        move_type: int,
-        piece: str,
-        move_col: str,
-        castle_type: str,
-        w_castle_mv_num: int,
-        b_castle_mv_num: int,
-        move_time: float,
-    ) -> pd.DataFrame:
-        """Create the move dataframe.
-
-        Returns:
-            pd.DataFrame: Move dataframe.
-        """
-        self.move_df = pd.DataFrame(
-            {
-                "Username": username,
-                "Game_date": game_datetime,
-                "Engine_depth": edepth,
-                "Game_number": game_num,
-                "Move_number": move_num,
-                "Move": str_ml,
-                "Move_eval": eval_ml,
-                "Best_move": str_bm,
-                "Best_move_eval": eval_bm,
-                "Move_eval_diff": evaldiff,
-                "Move_accuracy": move_acc,
-                "Move_type": move_type,
-                "Piece": piece,
-                "Move_colour": move_col,
-                "Castling_type": castle_type,
-                "White_castle_num": w_castle_mv_num,
-                "Black_castle_num": b_castle_mv_num,
-                "Move_time": move_time,
-            },
-            index=[0],
-        )
-        return self.move_df
-
     def export_move_data(self, move_df: pd.DataFrame) -> None:
         """Exports the move dataframe to sql database.
 
@@ -454,8 +412,8 @@ class Move:
         """
         conn = sqlite3.connect(FileHandler(self.input_handler.username).path_database)
         move_df.to_sql("move_data", conn, if_exists="append", index=False)
-        conn.commit
-        conn.close
+        conn.commit()
+        conn.close()
 
     def append_to_game_lists(self) -> None:
         """Appends the move data to the games lists so it can be accessed by the Game class."""

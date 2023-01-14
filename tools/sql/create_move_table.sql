@@ -1,0 +1,20 @@
+CREATE TABLE move_data (
+    Username TEXT,
+    Game_date TEXT,
+    Engine_depth INTEGER,
+    Game_number INTEGER,
+    Move_number INTEGER,
+    Move TEXT,
+    Move_eval INTEGER,
+    Best_move TEXT,
+    Best_move_eval INTEGER,
+    Move_eval_diff INTEGER,
+    Move_accuracy REAL,
+    Move_type TEXT,
+    Piece TEXT,
+    Move_colour TEXT,
+    Castling_type TEXT,
+    White_castle_num INTEGER,
+    Black_castle_num INTEGER,
+    Move_time REAL
+)

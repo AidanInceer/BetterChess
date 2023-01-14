@@ -1,25 +1,26 @@
 """_summary_
 """
-from betterchess.utils.handlers import InputHandler, FileHandler, RunHandler
-from betterchess.utils.progress import Progress
-from betterchess.core.move import Move
-from betterchess.core.headers import Headers
+import sqlite3
+import time
 from dataclasses import dataclass
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
+
 import chess
 import chess.engine
 import chess.pgn
 import numpy as np
 import pandas as pd
-import time
-import sqlite3
+
+from betterchess.core.headers import Headers
+from betterchess.core.move import Move
+from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.progress import Progress
 
 
 @dataclass
 class Game:
-    """Functions and data relating to analysing a chess game.
-    """
+    """Functions and data relating to analysing a chess game."""
+
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
@@ -134,7 +135,7 @@ class Game:
         headers: dict,
         username: str,
         edepth: int,
-        game_num: int
+        game_num: int,
     ) -> pd.DataFrame:
         """Creates the game data dataframe.
 
@@ -156,7 +157,9 @@ class Game:
 
         self.time_of_day = self.game_time_of_day(game_datetime)
         self.day_of_week = self.game_day_of_week(game_datetime)
-        self.game_pgn = self.get_curr_game_pgn(game_num, username, self.file_handler.path_temp)
+        self.game_pgn = self.get_curr_game_pgn(
+            game_num, username, self.file_handler.path_temp
+        )
 
         if username == headers["White_player"]:
             self.game_acc = self.game_w_acc(game_move_acc)
@@ -250,7 +253,7 @@ class Game:
                 "Opp_castled": self.opp_castled,
                 "User_castle_phase": self.user_castle_phase,
                 "Opp_castle_phase": self.opp_castle_phase,
-                "Game_pgn": self.game_pgn
+                "Game_pgn": self.game_pgn,
             },
             index=[0],
         )
@@ -264,8 +267,8 @@ class Game:
         """
         conn = sqlite3.connect(FileHandler(self.input_handler.username).path_database)
         game_df.to_sql("game_data", conn, if_exists="append", index=False)
-        conn.commit
-        conn.close
+        conn.commit()
+        conn.close()
 
     @staticmethod
     def game_time_of_day(game_datetime: datetime) -> str:
@@ -715,7 +718,7 @@ class Prepare:
         return game_lists_dict
 
     def all_games(self, path_userlogfile: str) -> datetime:
-        """ Wrapper for get_last_logged_game function to improve code flow.
+        """Wrapper for get_last_logged_game function to improve code flow.
 
         Args:
             path_userlogfile (str): User log file.
@@ -763,7 +766,5 @@ class Prepare:
             lines (list[str]): Lines withing the log file.
         """
         for line in lines:
-            if "user" in line:
-                game_log_list.append(line)
-            elif "game" in line:
+            if ("user" in line) or ("game" in line):
                 game_log_list.append(line)

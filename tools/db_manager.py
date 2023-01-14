@@ -1,17 +1,18 @@
-import sqlite3
 import os
+import sqlite3
+
 from betterchess.utils.sql_querys import (
-    DROP_MOVE_TABLE,
-    DROP_GAME_TABLE,
-    DROP_PGN_TABLE,
-    CREATE_MOVE_TABLE,
     CREATE_GAME_TABLE,
+    CREATE_MOVE_TABLE,
     CREATE_PGN_TABLE,
+    DROP_GAME_TABLE,
+    DROP_MOVE_TABLE,
+    DROP_PGN_TABLE,
     SELECT_GAME_DATA,
-    SELECT_MOVE_DATA,
-    SELECT_PGN_DATA,
-    SELECT_MOVE_DATA_ALL,
     SELECT_GAME_DATA_ALL,
+    SELECT_MOVE_DATA,
+    SELECT_MOVE_DATA_ALL,
+    SELECT_PGN_DATA,
     SELECT_PGN_DATA_ALL,
 )
 
@@ -21,7 +22,7 @@ class FileHandler:
 
     def __init__(self):
         self.dir = os.path.dirname(__file__)
-        self.path_database = "./data/betterchess.db"
+        self.path_database = "../data/betterchess.db"
 
 
 def reset_db():

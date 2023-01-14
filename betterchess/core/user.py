@@ -1,15 +1,17 @@
 """_summary_
 """
-from betterchess.utils.handlers import InputHandler, FileHandler, RunHandler
-from betterchess.utils.extract import Extract
-from betterchess.core.game import Game
-from datetime import datetime
+import sqlite3
 from dataclasses import dataclass
+from datetime import datetime
 from logging import Logger
 from typing import Tuple
+
 import chess.pgn
 import pandas as pd
-import sqlite3
+
+from betterchess.core.game import Game
+from betterchess.utils.extract import Extract
+from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
 
 
 @dataclass
@@ -100,7 +102,7 @@ class PrepareUsers:
         conn = sqlite3.connect(path_database)
         all_games = pd.read_sql(sql=sql_query, con=conn, params=params)
         tot_games = len(all_games["game_data"])
-        conn.close
+        conn.close()
         return all_games, tot_games
 
     def init_game_logs(
@@ -156,9 +158,7 @@ class PrepareUsers:
             lines (list[str]): _description_
         """
         for line in lines:
-            if "user" in line:
-                game_log_list.append(line)
-            elif "user_analysis" in line:
+            if ("user" in line) or ("user_analysis" in line):
                 game_log_list.append(line)
 
     def current_game(self, path_temp: str, chess_game: chess.pgn.Game) -> None:
@@ -218,8 +218,6 @@ class Cleandown:
             log_list = self.get_game_log_list(self, path_userlogfile)
             last_logged_game_num = int(log_list[-1].split("|")[3].strip())
             return last_logged_game_num
-        else:
-            pass
 
     def logfile_not_empty(self, path_userlogfile: str) -> bool:
         """Checks to see if the logfile is empty.
@@ -232,7 +230,7 @@ class Cleandown:
         """
         with open(path_userlogfile, mode="r") as log_file:
             lines = log_file.readlines()
-        if not (not lines):
+        if lines:
             return True
         else:
             return False
@@ -260,7 +258,5 @@ class Cleandown:
             lines (list[str]): _description_
         """
         for line in lines:
-            if "user" in line:
-                game_log_list.append(line)
-            elif "game" in line:
+            if ("user" in line) or ("game" in line):
                 game_log_list.append(line)
