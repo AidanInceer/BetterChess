@@ -46,11 +46,13 @@ class FileHandler:
     rpath_stockfish: str = "../../lib/stkfsh_15/stk_15.exe"
     rpath_database: str = "../../data/betterchess.db"
     rpath_temp: str = "../../data/temp.pgn"
+    rpath_config_path: str = "../../config/datasets.yaml"
 
     # Absolute paths
     path_stockfish: str = os.path.join(dir, rpath_stockfish)
     path_database: str = os.path.join(dir, rpath_database)
     path_temp: str = os.path.join(dir, rpath_temp)
+    config_path: str = os.path.join(dir, rpath_config_path)
 
     def __post_init__(self):
         self.rpath_userlogfile: str = f"../../logs/{self.username}.log"

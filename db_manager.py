@@ -22,7 +22,11 @@ class FileHandler:
 
     def __init__(self):
         self.dir = os.path.dirname(__file__)
-        self.path_database = "../data/betterchess.db"
+        self.path_database = "./data/betterchess.db"
+
+
+class DatabaseManager:
+    pass
 
 
 def reset_db():

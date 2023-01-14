@@ -1,0 +1,35 @@
+create_game_table:
+  file_path: betterchess\utils\sql\create_game_table.sql
+
+create_move_table:
+  file_path: betterchess\utils\sql\create_move_table.sql  
+
+create_pgn_table:
+  file_path: betterchess\utils\sql\create_pgn_table.sql 
+
+drop_game_table:
+  file_path: betterchess\utils\sql\drop_game_table.sql 
+
+drop_move_table:
+  file_path: betterchess\utils\sql\drop_move_table.sql
+
+drop_pgn_table:
+  file_path: betterchess\utils\sql\drop_pgn_table.sql
+
+select_game_data_all:
+  file_path: betterchess\utils\sql\select_game_data_all.sql
+
+select_game_data:
+  file_path: betterchess\utils\sql\select_game_data.sql
+
+select_move_data_all:
+  file_path: betterchess\utils\sql\select_move_data_all.sql
+
+select_move_data:
+  file_path: betterchess\utils\sql\select_move_data.sql
+
+select_pgn_data_all:
+  file_path: betterchess\utils\sql\select_pgn_data_all.sql
+  
+select_pgn_data:
+  file_path: betterchess\utils\sql\select_pgn_data.sql
