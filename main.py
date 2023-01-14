@@ -1,25 +1,24 @@
+import os
+
 import mysql.connector
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 from betterchess.core.user import User
-from betterchess.data_manager.managers import DatabaseManager
+from betterchess.data_manager.base_manager import BaseDataManager
 from betterchess.utils.config import Config
 from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
 
 if __name__ == "__main__":
+    load_dotenv()
+    db_type = os.getenv("DB_TYPE")
     run_type = input(
         "Do you want to run analysis or manage the database (run, manage): "
     )
     if run_type == "manage":
-        conn = mysql.connector.connect(
-            host="localhost", user="root", database="better_chess"
-        )
-        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
         config = Config()
-        dbm = DatabaseManager(
-            config=config, database_path="./data/betterchess.db", conn=conn
-        )
-        dbm.query_selector()
+        dbm = BaseDataManager(db_type=db_type, config=config)
+        dbm.select_manager()
     else:
         input_handler = InputHandler()
         user_inputs = input_handler.user_input_dict()
