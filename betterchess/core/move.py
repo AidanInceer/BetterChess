@@ -410,7 +410,9 @@ class Move:
         Args:
             move_df (pd.DataFrame): Move dataframe.
         """
-        conn = sqlite3.connect(FileHandler(self.input_handler.username).path_database)
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="testdatabase"
+        )
         move_df.to_sql("move_data", conn, if_exists="append", index=False)
         conn.commit()
         conn.close()

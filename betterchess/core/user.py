@@ -100,7 +100,9 @@ class PrepareUsers:
         """
         sql_query = """select game_data from pgn_data where username =:username"""
         params = {"username": username}
-        conn = sqlite3.connect(path_database)
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="better_chess"
+        )
         all_games = pd.read_sql(sql=sql_query, con=conn, params=params)
         tot_games = len(all_games["game_data"])
         conn.close()
@@ -198,7 +200,9 @@ class Cleandown:
             game_num (int): _description_
             username (str): _description_
         """
-        conn = sqlite3.connect(path_database)
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="better_chess"
+        )
         curs = conn.cursor()
         sql_query = "DELETE FROM move_data WHERE Game_number = :game_num and Username = :username"
         params = {"game_num": game_num, "username": username}

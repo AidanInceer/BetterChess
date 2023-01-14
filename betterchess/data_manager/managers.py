@@ -7,7 +7,7 @@ import mysql.connector
 
 from betterchess.utils.config import Config
 
-con = mysql.connector.connect(host="localhost", user="root", database="testdatabase")
+conn = mysql.connector.connect(host="localhost", user="root", database="testdatabase")
 
 
 @dataclass

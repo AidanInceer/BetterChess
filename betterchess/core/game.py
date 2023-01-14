@@ -8,6 +8,7 @@ from datetime import date, datetime
 import chess
 import chess.engine
 import chess.pgn
+import mysql.connector
 import numpy as np
 import pandas as pd
 
@@ -265,7 +266,9 @@ class Game:
         Args:
             game_df (pd.Dataframe): dataframe of game data
         """
-        conn = sqlite3.connect(FileHandler(self.input_handler.username).path_database)
+        conn = mysql.connector.connect(
+            host="localhost", user="root", database="better_chess"
+        )
         game_df.to_sql("game_data", conn, if_exists="append", index=False)
         conn.commit()
         conn.close()

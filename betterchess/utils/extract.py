@@ -127,7 +127,7 @@ class Extract:
             path_database (str): _description_
             pgn_df (pd.DataFrame): _description_
         """
-        conn = sqlite3.connect(path_database)
+        conn = mysql.connector.connect(host="localhost", user="root", database="better_chess")
         pgn_df.to_sql(name="pgn_data", con=conn, if_exists="append", index=False)
         conn.commit
         conn.close
@@ -173,11 +173,11 @@ class Extract:
             "delete from pgn_data where username=:username and url_date=:curr_month"
         )
         params = {"username": username, "curr_month": curr_month}
-        conn = sqlite3.connect(database=path_database)
+        conn = mysql.connector.connect(host="localhost", user="root", database="better_chess")
         curs = conn.cursor()
         curs.execute(sql_query, params)
-        conn.commit
-        conn.close
+        conn.commit()
+        conn.close()
 
     def collect_game_data(self, url: str) -> list:
         """_summary_
