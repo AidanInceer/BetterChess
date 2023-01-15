@@ -13,9 +13,9 @@ if __name__ == "__main__":
     run_type = input(
         "Do you want to run analysis or manage the database (run, manage): "
     )
+    config = Config()
+    dbm = BaseDataManager(db_type=db_type, config=config)
     if run_type == "manage":
-        config = Config()
-        dbm = BaseDataManager(db_type=db_type, config=config)
         dbm.select_manager()
     else:
         input_handler = InputHandler()
