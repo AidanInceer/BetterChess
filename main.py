@@ -1,15 +1,12 @@
-import os
-
-from dotenv import load_dotenv
-
 from betterchess.core.user import User
 from betterchess.data_manager.base_manager import BaseDataManager
 from betterchess.utils.config import Config
-from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 
 if __name__ == "__main__":
-    load_dotenv()
-    db_type = os.getenv("DB_TYPE")
+
+    env_handler = EnvHandler()
+    db_type = env_handler.db_type
     run_type = input(
         "Do you want to run analysis or manage the database (run, manage): "
     )
@@ -29,5 +26,5 @@ if __name__ == "__main__":
         engine = run_handler.create_engine()
         logger = run_handler.create_logger()
 
-        user = User(input_handler, file_handler, run_handler)
+        user = User(input_handler, file_handler, run_handler, env_handler)
         user.analyse()

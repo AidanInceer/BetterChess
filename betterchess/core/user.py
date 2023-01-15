@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 
 from betterchess.core.game import Game
 from betterchess.utils.extract import Extract
-from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 
 
 @dataclass
@@ -23,6 +23,7 @@ class User:
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
+    env_handler: EnvHandler
 
     def analyse(self) -> None:
         """Extracts users data and runs the analysis on their games."""
@@ -57,7 +58,11 @@ class User:
             )
             iter_metadata = {"game_num": game_num, "tot_games": tot_games}
             game = Game(
-                self.input_handler, self.file_handler, self.run_handler, iter_metadata
+                self.input_handler,
+                self.file_handler,
+                self.run_handler,
+                self.env_handler,
+                iter_metadata,
             )
             game.run_game_analysis()
             del game

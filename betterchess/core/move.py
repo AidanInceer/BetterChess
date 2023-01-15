@@ -12,7 +12,7 @@ import pandas as pd
 from chess import Board
 from sqlalchemy import create_engine
 
-from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 
 
 @dataclass
@@ -22,6 +22,7 @@ class Move:
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
+    env_handler: EnvHandler
     iter_metadata: dict
     game_metadata: dict
     move_metadata: dict

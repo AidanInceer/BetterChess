@@ -6,6 +6,7 @@ from logging import Logger
 
 import chess
 import chess.engine
+from dotenv import load_dotenv
 
 
 @dataclass
@@ -90,3 +91,13 @@ class RunHandler:
             self.file_handler.path_stockfish
         )
         return self.engine
+
+
+class EnvHandler:
+    def __init__(self) -> None:
+        self.env_variables = self.create_environment()
+
+    def create_environment(self):
+        load_dotenv()
+        self.db_type = os.getenv("DB_TYPE")
+        return self.db_type

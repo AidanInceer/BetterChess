@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 
 from betterchess.core.headers import Headers
 from betterchess.core.move import Move
-from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 from betterchess.utils.progress import Progress
 
 
@@ -25,6 +25,7 @@ class Game:
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
+    env_handler: EnvHandler
     iter_metadata: dict
 
     def run_game_analysis(self) -> None:
@@ -53,6 +54,7 @@ class Game:
                     self.input_handler,
                     self.file_handler,
                     self.run_handler,
+                    self.env_handler,
                     self.iter_metadata,
                     self.game_metadata,
                     move_metadata,
