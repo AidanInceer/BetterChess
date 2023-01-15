@@ -1,10 +1,8 @@
 import unittest
-from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from betterchess.utils.extract import Extract
+import pytest
 
 
-class TestExtract(unittest.TestCase):
-    def test_thing(self):
-        pass
+def test_thing(self):
+    pass
