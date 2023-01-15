@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from betterchess.core.game import Game
+from betterchess.core.game import Game, Prepare
 
 
 def test_game_time_of_day_night():

@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
+
 
 class TestInputHandler:
     def test1(self):

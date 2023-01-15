@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from betterchess.data_manager.managers import MySQLManager, SQLiteManager
+
 
 class TestMySQLManager:
     def test1(self):
