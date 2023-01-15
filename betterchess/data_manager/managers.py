@@ -44,12 +44,12 @@ class MySQLManager:
 
         curs = self.conn.cursor()
         queries = [
-            self.config.config.mysql.drop_game_table.file_path,
-            self.config.config.mysql.drop_move_table.file_path,
-            self.config.config.mysql.drop_pgn_table.file_path,
-            self.config.config.mysql.create_game_table.file_path,
-            self.config.config.mysql.create_move_table.file_path,
-            self.config.config.mysql.create_pgn_table.file_path,
+            self.config.conf.mysql.drop_game_table.file_path,
+            self.config.conf.mysql.drop_move_table.file_path,
+            self.config.conf.mysql.drop_pgn_table.file_path,
+            self.config.conf.mysql.create_game_table.file_path,
+            self.config.conf.mysql.create_move_table.file_path,
+            self.config.conf.mysql.create_pgn_table.file_path,
         ]
         for query in queries:
             sql = self._get_sql_file(query)
@@ -61,9 +61,9 @@ class MySQLManager:
     def view_table_size(self):
         curs = self.conn.cursor()
         queries = [
-            (self.config.config.mysql.select_game_data_all.file_path, "game_data rows"),
-            (self.config.config.mysql.select_move_data_all.file_path, "move_data rows"),
-            (self.config.config.mysql.select_pgn_data_all.file_path, "pgn_data rows"),
+            (self.config.conf.mysql.select_game_data_all.file_path, "game_data rows"),
+            (self.config.conf.mysql.select_move_data_all.file_path, "move_data rows"),
+            (self.config.conf.mysql.select_pgn_data_all.file_path, "pgn_data rows"),
         ]
         for query, name in queries:
             sql = self._get_sql_file(query)
@@ -74,9 +74,9 @@ class MySQLManager:
     def select_head_all_tables(self):
         curs = self.conn.cursor()
         queries = [
-            self.config.config.mysql.select_game_data.file_path,
-            self.config.config.mysql.select_move_data.file_path,
-            self.config.config.mysql.select_pgn_data.file_path,
+            self.config.conf.mysql.select_game_data.file_path,
+            self.config.conf.mysql.select_move_data.file_path,
+            self.config.conf.mysql.select_pgn_data.file_path,
         ]
         for query in queries:
             sql = self._get_sql_file(query)
@@ -129,12 +129,12 @@ class SQLiteManager:
 
         curs = self.conn.cursor()
         queries = [
-            self.config.config.sqlite.drop_game_table.file_path,
-            self.config.config.sqlite.drop_move_table.file_path,
-            self.config.config.sqlite.drop_pgn_table.file_path,
-            self.config.config.sqlite.create_game_table.file_path,
-            self.config.config.sqlite.create_move_table.file_path,
-            self.config.config.sqlite.create_pgn_table.file_path,
+            self.config.conf.sqlite.drop_game_table.file_path,
+            self.config.conf.sqlite.drop_move_table.file_path,
+            self.config.conf.sqlite.drop_pgn_table.file_path,
+            self.config.conf.sqlite.create_game_table.file_path,
+            self.config.conf.sqlite.create_move_table.file_path,
+            self.config.conf.sqlite.create_pgn_table.file_path,
         ]
         for query in queries:
             sql = self._get_sql_file(query)
@@ -147,14 +147,14 @@ class SQLiteManager:
         curs = self.conn.cursor()
         queries = [
             (
-                self.config.config.sqlite.select_game_data_all.file_path,
+                self.config.conf.sqlite.select_game_data_all.file_path,
                 "game_data rows",
             ),
             (
-                self.config.config.sqlite.select_move_data_all.file_path,
+                self.config.conf.sqlite.select_move_data_all.file_path,
                 "move_data rows",
             ),
-            (self.config.config.sqlite.select_pgn_data_all.file_path, "pgn_data rows"),
+            (self.config.conf.sqlite.select_pgn_data_all.file_path, "pgn_data rows"),
         ]
         for query, name in queries:
             sql = self._get_sql_file(query)
@@ -165,9 +165,9 @@ class SQLiteManager:
     def select_head_all_tables(self):
         curs = self.conn.cursor()
         queries = [
-            self.config.config.sqlite.select_game_data.file_path,
-            self.config.config.sqlite.select_move_data.file_path,
-            self.config.config.sqlite.select_pgn_data.file_path,
+            self.config.conf.sqlite.select_game_data.file_path,
+            self.config.conf.sqlite.select_move_data.file_path,
+            self.config.conf.sqlite.select_pgn_data.file_path,
         ]
         for query in queries:
             sql = self._get_sql_file(query)

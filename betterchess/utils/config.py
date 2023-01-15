@@ -6,7 +6,7 @@ from yaml import SafeLoader
 class Config:
     def __init__(self) -> None:
         self.config_path = self.set_config_path()
-        self.config = self.create_config()
+        self.conf = self.create_config()
 
     def set_config_path(self):
         return r"./config/datasets.yaml"
