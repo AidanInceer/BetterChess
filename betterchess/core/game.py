@@ -1,5 +1,6 @@
 """_summary_
 """
+import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -66,7 +67,9 @@ class Game:
             except UnboundLocalError:
                 total_moves = 0
             self.analyse_game(
-                self.game_metadata["game_lists_dict"]["move_type_list"], total_moves
+                self.game_metadata["game_lists_dict"]["move_type_list"],
+                total_moves,
+                self.env_handler,
             )
             end_time = time.perf_counter()
             Progress.bar(
@@ -77,7 +80,9 @@ class Game:
                 end_time,
             )
 
-    def analyse_game(self, move_type_list: dict, total_moves: int) -> None:
+    def analyse_game(
+        self, move_type_list: dict, total_moves: int, env_handler: EnvHandler
+    ) -> None:
         """Consolidates game analysis data and exports it to db.
 
         Args:
@@ -97,7 +102,7 @@ class Game:
             self.input_handler.edepth,
             self.iter_metadata["game_num"],
         )
-        self.export_game_data(game_df)
+        self.export_game_data(game_df, env_handler)
 
     def sum_move_types(self, move_type_list: list) -> dict:
         """Calculated the number of a specific type of moves for black and
@@ -262,19 +267,27 @@ class Game:
         )
         return game_df
 
-    def export_game_data(self, game_df: pd.DataFrame):
+    def export_game_data(self, game_df: pd.DataFrame, env_handler: EnvHandler):
         """Exports game data to sql.
 
         Args:
             game_df (pd.Dataframe): dataframe of game data
         """
-        conn = mysql.connector.connect(
-            host="localhost", user="root", database="better_chess"
-        )
-        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
-        game_df.to_sql("game_data", mysql_engine, if_exists="append", index=False)
-        conn.commit()
-        conn.close()
+        if env_handler.db_type == "mysql":
+            conn = mysql.connector.connect(
+                host="localhost", user="root", database="better_chess"
+            )
+            mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+            game_df.to_sql("game_data", mysql_engine, if_exists="append", index=False)
+            conn.commit()
+            conn.close()
+        elif env_handler.db_type == "sqlite":
+            conn = sqlite3.connect(
+                FileHandler(self.input_handler.username).path_database
+            )
+            game_df.to_sql("game_data", conn, if_exists="append", index=False)
+            conn.commit()
+            conn.close()
 
     @staticmethod
     def game_time_of_day(game_datetime: datetime) -> str:

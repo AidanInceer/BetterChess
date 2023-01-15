@@ -58,7 +58,7 @@ class Move:
             self.file_handler.path_temp, self.move_metadata["move_num"], self.timers
         )
         self.move_df = self.create_move_df()
-        self.export_move_data(self.move_df)
+        self.export_move_data(self.move_df, self.env_handler)
         self.append_to_game_lists()
 
     def create_move_df(self) -> pd.DataFrame:
@@ -406,19 +406,27 @@ class Move:
                 time_interval = 0
                 return (tc_white, tc_black, time_interval)
 
-    def export_move_data(self, move_df: pd.DataFrame) -> None:
+    def export_move_data(self, move_df: pd.DataFrame, env_hander: EnvHandler) -> None:
         """Exports the move dataframe to sql database.
 
         Args:
             move_df (pd.DataFrame): Move dataframe.
         """
-        conn = mysql.connector.connect(
-            host="localhost", user="root", database="better_chess"
-        )
-        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
-        move_df.to_sql("move_data", mysql_engine, if_exists="append", index=False)
-        conn.commit()
-        conn.close()
+        if env_hander.db_type == "mysql":
+            conn = mysql.connector.connect(
+                host="localhost", user="root", database="better_chess"
+            )
+            mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+            move_df.to_sql("move_data", mysql_engine, if_exists="append", index=False)
+            conn.commit()
+            conn.close()
+        elif env_hander.db_type == "sqlite":
+            conn = sqlite3.connect(
+                FileHandler(self.input_handler.username).path_database
+            )
+            move_df.to_sql("move_data", conn, if_exists="append", index=False)
+            conn.commit()
+            conn.close()
 
     def append_to_game_lists(self) -> None:
         """Appends the move data to the games lists so it can be accessed by the Game class."""
