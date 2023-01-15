@@ -16,13 +16,10 @@ if __name__ == "__main__":
         dbm.select_manager()
     else:
         input_handler = InputHandler()
-        user_inputs = input_handler.user_input_dict()
+        input_handler.collect_user_inputs()
         file_handler = FileHandler(input_handler.username)
         run_handler = RunHandler(file_handler=file_handler)
 
-        username = user_inputs["username"]
-        edepth = user_inputs["edepth"]
-        start_date = user_inputs["start_date"]
         engine = run_handler.create_engine()
         logger = run_handler.create_logger()
 

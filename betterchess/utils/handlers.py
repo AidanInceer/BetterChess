@@ -13,13 +13,11 @@ from dotenv import load_dotenv
 class InputHandler:
     """Creates and stores user inputs"""
 
-    username: str = input("Please enter your username: ")
-    edepth: int = int(input("Please enter the engine depth: "))
-    start_year: str = input("Please enter the starting year: ")
-    start_month: str = input("Please enter the starting month: ")
-
-    def __post_init__(self):
-        """Initializes the start date from the inputted start year and month"""
+    def collect_user_inputs(self):
+        self.username = input("Please enter your username: ")
+        self.edepth = int(input("Please enter the engine depth: "))
+        self.start_year = input("Please enter the starting year: ")
+        self.start_month = input("Please enter the starting month: ")
         self.start_date = datetime(int(self.start_year), int(self.start_month), 1)
 
     def user_input_dict(self) -> dict:
