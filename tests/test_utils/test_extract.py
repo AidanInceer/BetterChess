@@ -4,5 +4,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 
-def test_thing(self):
-    pass
+class TestExtract:
+    def test1(self):
+        assert 1 == 1

@@ -11,7 +11,6 @@ import requests
 from sqlalchemy import create_engine
 
 from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
-from betterchess.utils.utils import get_sql_file
 
 
 @dataclass
