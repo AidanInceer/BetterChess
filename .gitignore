@@ -8,3 +8,4 @@ logs/*
 *.pyc
 *.pbix
 venv/
+*.env

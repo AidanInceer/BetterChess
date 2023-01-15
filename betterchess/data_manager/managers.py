@@ -1,6 +1,7 @@
 import os
 import shutil
 from dataclasses import dataclass
+from sqlite3 import Connection
 
 from mysql.connector import MySQLConnection
 
@@ -93,9 +94,10 @@ class MySQLManager:
         return sql
 
 
+@dataclass
 class SQLiteManager:
     config: Config
-    database_path: str
+    conn: Connection
 
     def query_selector(self):
         selection = input(

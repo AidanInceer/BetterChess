@@ -1,3 +1,4 @@
+import sqlite3
 from dataclasses import dataclass
 
 import mysql.connector
@@ -26,6 +27,6 @@ class BaseDataManager:
         mysql_manager.query_selector()
 
     def sqlite_manager(self):
-        database_path = "./data/betterchess.db"
-        sqlite_manager = SQLiteManager(self.config, database_path)
+        conn = sqlite3.connect(r"./data/betterchess.db")
+        sqlite_manager = SQLiteManager(self.config, conn)
         sqlite_manager.query_selector()
