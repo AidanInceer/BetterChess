@@ -5,15 +5,13 @@ from betterchess.data_manager.base_manager import BaseDataManager
 from betterchess.utils.config import Config
 from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 
-app = Flask(__name__)
-
-
-@app.route("/")
-def hello_world():
-    return "Test Docker"
-
-
 if __name__ == "__main__":
+
+    app = Flask(__name__)
+
+    @app.route("/")
+    def hello_world():
+        return "Test Docker"
 
     env_handler = EnvHandler()
     db_type = env_handler.db_type
