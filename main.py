@@ -1,7 +1,17 @@
+from flask import Flask
+
 from betterchess.core.user import User
 from betterchess.data_manager.base_manager import BaseDataManager
 from betterchess.utils.config import Config
 from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def hello_world():
+    return "Test Docker"
+
 
 if __name__ == "__main__":
 
