@@ -143,12 +143,7 @@ class Extract:
         conn.close
 
     def extract_filter(
-        self,
-        username: str,
-        in_log: bool,
-        in_curr: bool,
-        url: str,
-        path_database: str,
+        self, username: str, in_log: bool, in_curr: bool, url: str
     ) -> list:
         """_summary_
 
@@ -185,10 +180,6 @@ class Extract:
             database=self.env_handler.mysql_db,
             password=self.env_handler.mysql_password,
         )
-        mysql_engine = create_engine(
-            f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"
-        )
-
         curs = conn.cursor()
         curs.execute(
             """delete from pgn_data where username = %s and url_date = %s""",
