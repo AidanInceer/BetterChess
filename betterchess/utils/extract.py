@@ -103,7 +103,6 @@ class Extract:
                 in_log=in_log,
                 in_curr=in_curr,
                 url=url,
-                path_database=path_database,
             )
             try:
                 for game in url_games_list:
