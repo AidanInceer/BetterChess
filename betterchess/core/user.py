@@ -27,8 +27,10 @@ class User:
 
     def analyse(self) -> None:
         """Extracts users data and runs the analysis on their games."""
-        Extract.run_data_extract(
-            Extract,
+        extract = Extract(
+            self.input_handler, self.file_handler, self.run_handler, self.env_handler
+        )
+        extract.run_data_extract(
             self.input_handler.username,
             self.file_handler.path_database,
             self.file_handler.path_userlogfile,
@@ -38,16 +40,16 @@ class User:
 
     def run_analysis(self) -> None:
         """Analyses all of the given users games."""
-        all_games, tot_games = PrepareUsers.current_run(
-            PrepareUsers,
+        prepare_users = PrepareUsers()
+        all_games, tot_games = prepare_users.current_run(
             self.file_handler.path_database,
             self.input_handler.username,
             self.file_handler.path_userlogfile,
             self.run_handler.logger,
             self.env_handler,
         )
-        Cleandown.previous_run(
-            Cleandown,
+        cleandown = Cleandown()
+        cleandown.previous_run(
             self.file_handler.path_userlogfile,
             self.file_handler.path_database,
             self.input_handler.username,
@@ -94,9 +96,9 @@ class PrepareUsers:
             Tuple[pd.DataFrame, int]: _description_
         """
         all_games, tot_games = self.initialise_users_games(
-            self, path_database, username, env_handler
+            path_database, username, env_handler
         )
-        self.init_game_logs(self, username, path_userlogfile, logger)
+        self.init_game_logs(username, path_userlogfile, logger)
         return (all_games, tot_games)
 
     def initialise_users_games(
@@ -114,9 +116,14 @@ class PrepareUsers:
         if env_handler.db_type == "mysql":
             sql_query = """select game_data from pgn_data where username =%s"""
             conn = mysql.connector.connect(
-                host="localhost", user="root", database="better_chess"
+                host=env_handler.mysql_host,
+                user=env_handler.mysql_user,
+                database=env_handler.mysql_db,
+                password=env_handler.mysql_password,
             )
-            mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+            mysql_engine = create_engine(
+                f"{env_handler.mysql_driver}://{env_handler.mysql_user}:{env_handler.mysql_password}@{env_handler.mysql_host}/{env_handler.mysql_db}"
+            )
             all_games = pd.read_sql(sql=sql_query, con=mysql_engine, params=[username])
             tot_games = len(all_games["game_data"])
             conn.close()
@@ -140,10 +147,10 @@ class PrepareUsers:
             path_userlogfile (str): _description_
             logger (Logger): _description_
         """
-        if self.numlines_in_logfile(self, path_userlogfile) != 0:
+        if self.numlines_in_logfile(path_userlogfile) != 0:
             pass
         else:
-            self.set_first_game_logdate(self, username, path_userlogfile, logger)
+            self.set_first_game_logdate(username, path_userlogfile, logger)
 
     def numlines_in_logfile(self, path_userlogfile: str) -> int:
         """Returns the number of lines in the logfile = "filter".
@@ -157,7 +164,7 @@ class PrepareUsers:
         game_log_list = []
         with open(path_userlogfile, "r") as log_file:
             lines = log_file.readlines()
-            self.check_logfile(self, game_log_list, lines)
+            self.check_logfile(game_log_list, lines)
         return len(game_log_list)
 
     def set_first_game_logdate(
@@ -215,8 +222,8 @@ class Cleandown:
             path_database (str): _description_
             username (str): _description_
         """
-        game_num = self.get_last_logged_game_num(self, path_userlogfile)
-        self.clean_sql_table(self, path_database, game_num, username, env_handler)
+        game_num = self.get_last_logged_game_num(path_userlogfile)
+        self.clean_sql_table(path_database, game_num, username, env_handler)
 
     def clean_sql_table(
         self, path_database: str, game_num: int, username: str, env_handler: EnvHandler
@@ -230,7 +237,10 @@ class Cleandown:
         """
         if env_handler.db_type == "mysql":
             conn = mysql.connector.connect(
-                host="localhost", user="root", database="better_chess"
+                host=env_handler.mysql_host,
+                user=env_handler.mysql_user,
+                database=env_handler.mysql_db,
+                password=env_handler.mysql_password,
             )
             curs = conn.cursor()
             curs.execute(
@@ -239,7 +249,7 @@ class Cleandown:
             )
             conn.commit()
             curs.close()
-        elif env_handler.db_type == "mysql":
+        elif env_handler.db_type == "sqlite":
             conn = sqlite3.connect(path_database)
             curs = conn.cursor()
             sql_query = "DELETE FROM move_data WHERE Game_number = :game_num and Username = :username"
@@ -257,8 +267,8 @@ class Cleandown:
         Returns:
             int: last logged game number.
         """
-        if self.logfile_not_empty(self, path_userlogfile):
-            log_list = self.get_game_log_list(self, path_userlogfile)
+        if self.logfile_not_empty(path_userlogfile):
+            log_list = self.get_game_log_list(path_userlogfile)
             last_logged_game_num = int(log_list[-1].split("|")[3].strip())
             return last_logged_game_num
 
@@ -290,7 +300,7 @@ class Cleandown:
         game_log_list = []
         with open(path_userlogfile, mode="r") as log_file:
             lines = log_file.readlines()
-            self.logfile_line_checker_multi(self, game_log_list, lines)
+            self.logfile_line_checker_multi(game_log_list, lines)
         return game_log_list
 
     def logfile_line_checker_multi(self, game_log_list: list, lines: list[str]) -> None:

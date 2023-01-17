@@ -6,12 +6,12 @@ from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, Ru
 if __name__ == "__main__":
 
     env_handler = EnvHandler()
-    db_type = env_handler.db_type
     run_type = input(
         "Do you want to run analysis or manage the database (run, manage): "
     )
     config = Config()
-    dbm = BaseDataManager(db_type=db_type, config=config)
+    config.create_config()
+    dbm = BaseDataManager(db_type=env_handler.db_type, config=config)
     if run_type == "manage":
         dbm.select_manager()
     else:

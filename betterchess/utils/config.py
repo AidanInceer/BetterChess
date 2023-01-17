@@ -14,5 +14,5 @@ class Config:
 
     def create_config(self):
         with open(self.path) as f:
-            self.config = Box(yaml.load(f, Loader=SafeLoader))
-        return self.config
+            self.conf = Box(yaml.load(f, Loader=SafeLoader))
+        return self.conf
