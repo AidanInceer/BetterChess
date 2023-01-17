@@ -1,16 +1,16 @@
 import unittest
-from unittest.mock import mock_open, patch
+
+from box import Box
 
 from betterchess.utils.config import Config
 
 
 class TestConfig(unittest.TestCase):
-    def setUp(self):
-        self.path = r"./config/datasets.yaml"
-
     def test_set_config_path(self):
+        self.path = r"./config/datasets.yaml"
         assert Config.set_config_path(self) == self.path
 
-    @patch("builtins.open", new_callable=mock_open, read_data="data")
-    def test_create_config(self, mock_file):
-        assert open(self.path).read() == "data"
+    def test_create_config(self):
+        path = r"./tests/test_utils/fixtures/test_config.yaml"
+        test_config = Config(path)
+        assert test_config.create_config() == {"data": Box({"a": 1, "b": 2})}
