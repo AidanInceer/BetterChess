@@ -416,7 +416,9 @@ class Move:
             conn = mysql.connector.connect(
                 host="localhost", user="root", database="better_chess"
             )
-            mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+            mysql_engine = create_engine(
+                f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"
+            )
             move_df.to_sql("move_data", mysql_engine, if_exists="append", index=False)
             conn.commit()
             conn.close()

@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 from sqlalchemy import create_engine
 
-from betterchess.utils.handlers import FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 
 
 @dataclass
@@ -24,6 +24,7 @@ class Extract:
     input_handler: InputHandler
     file_handler: FileHandler
     run_handler: RunHandler
+    env_handler: EnvHandler
 
     def run_data_extract(
         self, username: str, path_database: str, path_userlogfile: str, logger: Logger
@@ -37,11 +38,10 @@ class Extract:
             logger (Logger): _description_
         """
         username_list, url_date_list, games_list = [], [], []
-        self.init_user_logfile(self, username, logger)
+        self.init_user_logfile(username, logger)
         urls = chessdotcom.get_player_game_archives(username).json
         num_urls = len(urls["archives"])
         pgn_df = self.get_data_from_urls(
-            self,
             urls,
             num_urls,
             logger,
@@ -52,7 +52,7 @@ class Extract:
             url_date_list,
             games_list,
         )
-        self.export_pgn_data(self, path_database, pgn_df)
+        self.export_pgn_data(pgn_df)
 
     def init_user_logfile(self, username: str, logger: Logger) -> None:
         """_summary_
@@ -93,13 +93,12 @@ class Extract:
             pd.DataFrame: _description_
         """
         for url_num, url in enumerate(urls["archives"]):
-            self.simple_progress_bar(self, url_num, num_urls)
-            in_curr = self.in_curr_month(self, url)
-            in_log = self.url_in_log(self, url, path_userlogfile)
-            url_date = self.get_url_date(self, url)
+            self.simple_progress_bar(url_num, num_urls)
+            in_curr = self.in_curr_month(url)
+            in_log = self.url_in_log(url, path_userlogfile)
+            url_date = self.get_url_date(url)
             logger.info(f"| {username} | {url_date}")
             url_games_list = self.extract_filter(
-                self,
                 username=username,
                 in_log=in_log,
                 in_curr=in_curr,
@@ -121,7 +120,7 @@ class Extract:
         pgn_df = pd.DataFrame(game_dict)
         return pgn_df
 
-    def export_pgn_data(self, path_database: str, pgn_df: pd.DataFrame) -> None:
+    def export_pgn_data(self, pgn_df: pd.DataFrame) -> None:
         """_summary_
 
         Args:
@@ -131,7 +130,9 @@ class Extract:
         conn = mysql.connector.connect(
             host="localhost", user="root", database="better_chess"
         )
-        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        mysql_engine = create_engine(
+            f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"
+        )
         pgn_df.to_sql(
             name="pgn_data", con=mysql_engine, if_exists="append", index=False
         )
@@ -160,25 +161,27 @@ class Extract:
         """
         empty_list = []
         if not in_log:
-            return self.collect_game_data(self, url)
+            return self.collect_game_data(url)
         elif in_log and not in_curr:
             return empty_list
         elif in_log and in_curr:
-            self.filter_pgn_table(self, username, path_database)
-            return self.collect_game_data(self, url)
+            self.filter_pgn_table(username)
+            return self.collect_game_data(url)
 
-    def filter_pgn_table(self, username: str, path_database: str) -> None:
+    def filter_pgn_table(self, username: str) -> None:
         """_summary_
 
         Args:
             username (str): _description_
             path_database (str): _description_
         """
-        curr_month = self.get_curr_mth(self)
+        curr_month = self.get_curr_mth()
         conn = mysql.connector.connect(
             host="localhost", user="root", database="better_chess"
         )
-        mysql_engine = create_engine("mysql://root@localhost:3306/better_chess")
+        mysql_engine = create_engine(
+            f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"
+        )
 
         curs = conn.cursor()
         curs.execute(
@@ -215,7 +218,7 @@ class Extract:
         Returns:
             bool: _description_
         """
-        url_date = self.get_url_date(self, url)
+        url_date = self.get_url_date(url)
         with open(path_userlogfile, "r") as log_file:
             lines = log_file.readlines()
         url_date_list = []
@@ -238,8 +241,8 @@ class Extract:
         Returns:
             bool: _description_
         """
-        url_date = self.get_url_date(self, url)
-        curr_mth = self.get_curr_mth(self)
+        url_date = self.get_url_date(url)
+        curr_mth = self.get_curr_mth()
         if curr_mth == url_date:
             return True
         else:

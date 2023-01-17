@@ -98,4 +98,8 @@ class EnvHandler:
     def create_environment(self):
         load_dotenv()
         self.db_type = os.getenv("DB_TYPE")
-        return self.db_type
+        self.mysql_driver = os.getenv("mysql_driver")
+        self.mysql_user = os.getenv("mysql_user")
+        self.mysql_password = os.getenv("mysql_password")
+        self.mysql_host = os.getenv("mysql_host")
+        self.mysql_db = os.getenv("mysql_db")
