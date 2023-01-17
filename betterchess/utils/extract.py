@@ -128,7 +128,10 @@ class Extract:
             pgn_df (pd.DataFrame): _description_
         """
         conn = mysql.connector.connect(
-            host="localhost", user="root", database="better_chess"
+            host=self.env_handler.mysql_host,
+            user=self.env_handler.mysql_user,
+            database=self.env_handler.mysql_db,
+            password=self.env_handler.mysql_password,
         )
         mysql_engine = create_engine(
             f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"
@@ -177,7 +180,10 @@ class Extract:
         """
         curr_month = self.get_curr_mth()
         conn = mysql.connector.connect(
-            host="localhost", user="root", database="better_chess"
+            host=self.env_handler.mysql_host,
+            user=self.env_handler.mysql_user,
+            database=self.env_handler.mysql_db,
+            password=self.env_handler.mysql_password,
         )
         mysql_engine = create_engine(
             f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"

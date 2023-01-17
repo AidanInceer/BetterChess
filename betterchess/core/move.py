@@ -406,15 +406,18 @@ class Move:
                 time_interval = 0
                 return (tc_white, tc_black, time_interval)
 
-    def export_move_data(self, move_df: pd.DataFrame, env_hander: EnvHandler) -> None:
+    def export_move_data(self, move_df: pd.DataFrame, env_handler: EnvHandler) -> None:
         """Exports the move dataframe to sql database.
 
         Args:
             move_df (pd.DataFrame): Move dataframe.
         """
-        if env_hander.db_type == "mysql":
+        if env_handler.db_type == "mysql":
             conn = mysql.connector.connect(
-                host="localhost", user="root", database="better_chess"
+                host=env_handler.mysql_host,
+                user=env_handler.mysql_user,
+                database=env_handler.mysql_db,
+                password=env_handler.mysql_password,
             )
             mysql_engine = create_engine(
                 f"{self.env_handler.mysql_driver}://{self.env_handler.mysql_user}:{self.env_handler.mysql_password}@{self.env_handler.mysql_host}/{self.env_handler.mysql_db}"
@@ -422,7 +425,7 @@ class Move:
             move_df.to_sql("move_data", mysql_engine, if_exists="append", index=False)
             conn.commit()
             conn.close()
-        elif env_hander.db_type == "sqlite":
+        elif env_handler.db_type == "sqlite":
             conn = sqlite3.connect(
                 FileHandler(self.input_handler.username).path_database
             )

@@ -116,7 +116,10 @@ class PrepareUsers:
         if env_handler.db_type == "mysql":
             sql_query = """select game_data from pgn_data where username =%s"""
             conn = mysql.connector.connect(
-                host="localhost", user="root", database="better_chess"
+                host=env_handler.mysql_host,
+                user=env_handler.mysql_user,
+                database=env_handler.mysql_db,
+                password=env_handler.mysql_password,
             )
             mysql_engine = create_engine(
                 f"{env_handler.mysql_driver}://{env_handler.mysql_user}:{env_handler.mysql_password}@{env_handler.mysql_host}/{env_handler.mysql_db}"
@@ -234,7 +237,10 @@ class Cleandown:
         """
         if env_handler.db_type == "mysql":
             conn = mysql.connector.connect(
-                host="localhost", user="root", database="better_chess"
+                host=env_handler.mysql_host,
+                user=env_handler.mysql_user,
+                database=env_handler.mysql_db,
+                password=env_handler.mysql_password,
             )
             curs = conn.cursor()
             curs.execute(
