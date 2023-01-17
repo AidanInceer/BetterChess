@@ -10,6 +10,7 @@ if __name__ == "__main__":
         "Do you want to run analysis or manage the database (run, manage): "
     )
     config = Config()
+    config.create_config()
     dbm = BaseDataManager(db_type=env_handler.db_type, config=config)
     if run_type == "manage":
         dbm.select_manager()
