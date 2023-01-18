@@ -1,5 +1,4 @@
 import json
-import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
 from logging import Logger
@@ -27,7 +26,7 @@ class Extract:
     env_handler: EnvHandler
 
     def run_data_extract(
-        self, username: str, path_database: str, path_userlogfile: str, logger: Logger
+        self, username: str, path_userlogfile: str, logger: Logger
     ) -> None:
         """_summary_
 
