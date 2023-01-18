@@ -32,7 +32,6 @@ class User:
         )
         extract.run_data_extract(
             self.input_handler.username,
-            self.file_handler.path_database,
             self.file_handler.path_userlogfile,
             self.run_handler.logger,
         )
