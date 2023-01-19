@@ -31,8 +31,6 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run Pytest
         run: python -m pytest --cov=. --cov-report=xml --doctest-modules
-      - name: Override Coverage Source Path for Sonar
-        run: sed -i '<source>C:/Users/Aidan/Desktop/Personal/Hobbies/Coding/python/BetterChess<\/source>' C:/Users/Aidan/Desktop/Personal/Hobbies/Coding/python/BetterChess/coverage.xml
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
