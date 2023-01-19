@@ -32,7 +32,7 @@ jobs:
       - name: Run Pytest
         run: python -m pytest --cov=. --cov-report=xml --doctest-modules
       - name: Override Coverage Source Path for Sonar
-        run: sed -i 's/<source>C:/Users/Aidan/Desktop/Personal/Hobbies/Coding/python/BetterChess<\/source>/g' C:/Users/Aidan/Desktop/Personal/Hobbies/Coding/python/BetterChess/coverage.xml
+        run: sed -i '<source>C:/Users/Aidan/Desktop/Personal/Hobbies/Coding/python/BetterChess<\/source>' C:/Users/Aidan/Desktop/Personal/Hobbies/Coding/python/BetterChess/coverage.xml
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
