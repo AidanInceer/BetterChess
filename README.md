@@ -7,6 +7,7 @@ pull out insights and eventually have access to an interactive webapp to help th
 
 Download the required packages from `requirements.txt`.
 create a `.env` file.
+update
 ## Overview
 
 Run `main.py` and input your username, desired engine analysis depth (depth > 10 takes quite a long time),
