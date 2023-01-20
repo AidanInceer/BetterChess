@@ -1,12 +1,11 @@
 import unittest
-from unittest.mock import MagicMock, patch
-
-import pytest
 
 from betterchess.utils.extract import Extract
 
 
-class TestExtract:
-    def test1(self):
-        one = 1
-        assert one == 1
+class TestExtract(unittest.TestCase):
+    def test_simple_progress_bar_t1(self):
+        test_type = 1
+        num = 1
+        total = 100
+        assert Extract.simple_progress_bar(num, total, test_type) is None
