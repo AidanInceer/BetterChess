@@ -8,4 +8,5 @@ from betterchess.utils.progress import Progress
 
 class TestProgress:
     def test1(self):
-        assert 1 == 1
+        one = 1
+        assert one == 1
