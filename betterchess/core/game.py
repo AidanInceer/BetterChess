@@ -31,9 +31,9 @@ class Game:
 
     def run_game_analysis(self) -> None:
         """Sets up a game and runs the analysis for a game."""
-        log_dt = Prepare.all_games(Prepare, self.file_handler.path_userlogfile)
-        self.game_metadata = Prepare.current_game_analysis(
-            Prepare,
+        prepare = Prepare()
+        log_dt = prepare.all_games(self.file_handler.path_userlogfile)
+        self.game_metadata = prepare.current_game_analysis(
             self.input_handler,
             self.file_handler,
             self.run_handler,
@@ -682,9 +682,9 @@ class Prepare:
         Returns:
             dict: _description_
         """
-        chess_game = self.init_game(self, file_handler.path_temp)
-        board = self.init_board(self, chess_game)
-        game_lists_dict = self.init_game_lists(self)
+        chess_game = self.init_game(file_handler.path_temp)
+        board = self.init_board(chess_game)
+        game_lists_dict = self.init_game_lists()
         game_headers = Headers(
             input_handler, file_handler, run_handler, iter_metadata, chess_game
         )
@@ -750,7 +750,7 @@ class Prepare:
         Returns:
             datetime: Datetime of last logged game.
         """
-        return self.get_last_logged_game(self, path_userlogfile)
+        return self.get_last_logged_game(path_userlogfile)
 
     def get_last_logged_game(self, path_userlogfile: str) -> datetime:
         """Returns the last logged game date.
@@ -761,7 +761,7 @@ class Prepare:
         Returns:
             datetime:  Datetime of last logged game.
         """
-        game_log_list = self.get_game_log_list(self, path_userlogfile)
+        game_log_list = self.get_game_log_list(path_userlogfile)
         llog = game_log_list[-1]
         llog_date_str = llog.split("|")[2].strip()
         llog_date = datetime.strptime(llog_date_str, "%Y-%m-%d %H:%M:%S")
@@ -779,7 +779,7 @@ class Prepare:
         game_log_list = []
         with open(path_userlogfile, mode="r") as log_file:
             lines = log_file.readlines()
-            self.logfile_line_checker_multi(self, game_log_list, lines)
+            self.logfile_line_checker_multi(game_log_list, lines)
         return game_log_list
 
     def logfile_line_checker_multi(self, game_log_list: list, lines: list[str]) -> None:

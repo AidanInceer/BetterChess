@@ -56,9 +56,8 @@ class User:
         )
         print("Analysing users data: ")
         for game_num, chess_game in enumerate(all_games["game_data"]):
-            PrepareUsers.current_game(
-                PrepareUsers, self.file_handler.path_temp, chess_game
-            )
+            preppare_users = PrepareUsers()
+            preppare_users.current_game(self.file_handler.path_temp, chess_game)
             iter_metadata = {"game_num": game_num, "tot_games": tot_games}
             game = Game(
                 self.input_handler,
