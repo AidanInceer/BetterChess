@@ -32,6 +32,8 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run Pytest
       run: python -m pytest --cov=betterchess/  --cov-report=term 
+    - name: Create Coverage Badge
+      run:  coverage-badge -o coverage.svg
 
   sonarcloud:
     name: SonarCloud
