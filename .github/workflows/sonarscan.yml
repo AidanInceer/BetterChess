@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:       
-  sonarcloud:
+  SonarScan:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
