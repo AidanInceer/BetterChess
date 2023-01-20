@@ -1,6 +1,6 @@
 # Better Chess
 
-[example workflow](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+- image:: ./coverage.svg
 
 This is a project which enables a user to peform bulk analysis on their **chess.com** games for free,
 pull out insights and eventually have access to an interactive webapp to help them develop further.
