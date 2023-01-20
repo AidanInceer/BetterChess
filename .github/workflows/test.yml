@@ -1,3 +1,5 @@
+name: Test
+
 on:
   push:
     branches: [ "master" ]
@@ -9,7 +11,7 @@ permissions:
   contents: read
 
 jobs:       
-  build:
+  Test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -23,3 +25,6 @@ jobs:
         pip install -r requirements.txt
     - name: Run Pytest
       run: python -m pytest --cov=betterchess/  --cov-report=term 
+    - name: Test code
+      run: |
+        make Test   
