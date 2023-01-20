@@ -25,5 +25,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Pytest
       run: python -m pytest --cov=betterchess/  --cov-report=term 
+    - name: Collect coverage 
+      run: coverage-badge -o coverage.svg -f
     - name: Mark as a success
       run: exit 0
