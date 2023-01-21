@@ -30,12 +30,15 @@ class Move:
     def analyse(self) -> None:
         """Method for running the move analysis."""
         self.str_bm, self.eval_bm = self.best_move(
-            self.game_metadata["board"], self.run_handler.engine
+            self.game_metadata["board"],
+            self.run_handler.engine,
+            self.input_handler.edepth,
         )
         self.str_ml, self.eval_ml = self.mainline_move(
             self.move_metadata["move"],
             self.game_metadata["board"],
             self.run_handler.engine,
+            self.input_handler.edepth,
         )
         self.evaldiff = self.eval_delta(
             self.move_metadata["move_num"], self.eval_bm, self.eval_ml
@@ -93,7 +96,11 @@ class Move:
         return self.move_df
 
     def mainline_move(
-        self, move: chess.Move, board: Board, engine: chess.engine.SimpleEngine
+        self,
+        move: chess.Move,
+        board: Board,
+        engine: chess.engine.SimpleEngine,
+        edepth: int,
     ) -> tuple:
         """Analysis of the actual chess move played - returns the evaluation.
 
@@ -109,13 +116,15 @@ class Move:
         board.push_san(san=str_ml)
         eval_ml_init = engine.analyse(
             board=board,
-            limit=chess.engine.Limit(depth=self.input_handler.edepth),
+            limit=chess.engine.Limit(depth=edepth),
             game=object(),
         )
         eval_ml = self.move_eval(move=eval_ml_init)
         return str_ml, eval_ml
 
-    def best_move(self, board: Board, engine: chess.engine.SimpleEngine) -> tuple:
+    def best_move(
+        self, board: Board, engine: chess.engine.SimpleEngine, edepth: int
+    ) -> tuple:
         """Analysis of the best chess move played - returns the evaluation.
 
         Args:
@@ -127,14 +136,14 @@ class Move:
         """
         best_move = engine.play(
             board=board,
-            limit=chess.engine.Limit(depth=self.input_handler.edepth),
+            limit=chess.engine.Limit(depth=edepth),
             game=object(),
         )
         str_bm = str(best_move.move)
         board.push_san(san=str_bm)
         eval_bm_init = engine.analyse(
             board=board,
-            limit=chess.engine.Limit(depth=self.input_handler.edepth),
+            limit=chess.engine.Limit(depth=edepth),
             game=object(),
         )
         eval_bm = self.move_eval(move=eval_bm_init)

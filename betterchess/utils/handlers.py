@@ -20,18 +20,15 @@ class InputHandler:
         self.start_month = input("Please enter the starting month: ")
         self.start_date = datetime(int(self.start_year), int(self.start_month), 1)
 
-    def user_input_dict(self) -> dict:
+    def user_input_dict(self, username, edepth, startdate) -> dict:
         """Generates a dictionary object of the users inputs.
 
         Returns:
             user_inputs (dict): dictionary of user inputs
         """
-        user_inputs = {
-            "username": self.username,
-            "edepth": self.edepth,
-            "start_date": self.start_date,
-        }
-        return user_inputs
+        self.username = username
+        self.edepth = edepth
+        self.start_date = startdate
 
 
 @dataclass
