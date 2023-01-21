@@ -27,7 +27,7 @@ class MySQLManager:
         elif selection.lower() == "pass":
             pass
         else:
-            print("Please choose a valid option")
+            raise AssertionError("Invalid option")
 
     def reset_logs(self):
         folder = "./logs"
