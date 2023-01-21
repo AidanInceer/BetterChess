@@ -8,7 +8,94 @@ from chess import WHITE
 from chess.engine import Cp, Mate, PovScore
 
 from betterchess.core.move import Move
-from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import EnvHandler, FileHandler, RunHandler
+
+
+class TestMoveAnalyse(unittest.TestCase):
+    def setUp(self):
+        env_handler = EnvHandler()
+        input_handler = MagicMock()
+        input_handler.collect_user_inputs.return_value = ("Ainceer", 1, "2020", "11")
+        file_handler = FileHandler("Ainceer")
+        run_handler = MagicMock()
+        run_handler.create_engine.return_value = "engine"
+        iter_metadata = {"game_num": 1, "tot_games": 2}
+        move_metadata = {"move": 1, "move_num": 1}
+        game_metadata = {
+            "headers": "a",
+            "game_datetime": "b",
+            "board": "c",
+            "chess_game": "d",
+            "game_lists_dict": "e",
+        }
+        self.move_class = Move(
+            input_handler,
+            file_handler,
+            run_handler,
+            env_handler,
+            iter_metadata,
+            game_metadata,
+            move_metadata,
+        )
+        self.move_class.best_move = MagicMock()
+        self.move_class.mainline_move = MagicMock()
+        self.move_class.eval_delta = MagicMock()
+        self.move_class.move_accuracy = MagicMock()
+        self.move_class.assign_move_type = MagicMock()
+        self.move_class.get_piece_square_int = MagicMock()
+        self.move_class.get_curr_board = MagicMock()
+        self.move_class.chess_piece = MagicMock()
+        self.move_class.move_colour = MagicMock()
+        self.move_class.castling_type = MagicMock()
+        self.move_class.white_castle_move_num = MagicMock()
+        self.move_class.black_castle_move_num = MagicMock()
+        self.move_class.filter_timecont_header = MagicMock()
+        self.move_class.get_time_spent_on_move = MagicMock()
+        self.move_class.create_move_df = MagicMock()
+        self.move_class.export_move_data = MagicMock()
+        self.move_class.append_to_game_lists = MagicMock()
+
+        self.move_class.best_move.return_value = ("a2a4", 10)
+        self.move_class.mainline_move.return_value = ("a2a4", 10)
+        self.move_class.eval_delta.return_value = 0
+        self.move_class.move_accuracy.return_value = 100
+        self.move_class.assign_move_type.return_value = 2
+        self.move_class.get_piece_square_int.return_value = 1
+        self.move_class.get_curr_board.return_value = "board"
+        self.move_class.chess_piece.return_value = "pawn"
+        self.move_class.move_colour.return_value = "white"
+        self.move_class.castling_type.return_value = "short"
+        self.move_class.white_castle_move_num.return_value = 10
+        self.move_class.black_castle_move_num.return_value = 10
+        self.move_class.filter_timecont_header.return_value = 10
+        self.move_class.get_time_spent_on_move.return_value = 10
+        self.move_class.create_move_df.return_value = 10
+
+    def test_analyse(self):
+        self.move_class.analyse()
+        self.assertIsNotNone(self.move_class.str_bm)
+        self.assertIsNotNone(self.move_class.eval_bm)
+        self.assertIsNotNone(self.move_class.str_ml)
+        self.assertIsNotNone(self.move_class.eval_ml)
+        self.assertIsNotNone(self.move_class.evaldiff)
+        self.assertIsNotNone(self.move_class.move_acc)
+        self.assertIsNotNone(self.move_class.move_type)
+        self.assertIsNotNone(self.move_class.square_int)
+        self.assertIsNotNone(self.move_class.curr_board)
+        self.assertIsNotNone(self.move_class.piece)
+        self.assertIsNotNone(self.move_class.move_col)
+        self.assertIsNotNone(self.move_class.castle_type)
+        self.assertIsNotNone(self.move_class.w_castle_mv_num)
+        self.assertIsNotNone(self.move_class.b_castle_mv_num)
+        self.assertIsNotNone(self.move_class.timers)
+        self.assertIsNotNone(self.move_class.move_time)
+        self.assertIsNotNone(self.move_class.move_df)
+        self.assertIsNotNone(self.move_class.game_metadata)
+        self.assertIsNotNone(self.move_class.run_handler)
+        self.assertIsNotNone(self.move_class.input_handler)
+        self.assertIsNotNone(self.move_class.move_metadata)
+        self.assertIsNotNone(self.move_class.file_handler)
+        self.assertIsNotNone(self.move_class.env_handler)
 
 
 class TestMove(unittest.TestCase):
@@ -42,7 +129,6 @@ class TestMove(unittest.TestCase):
         self.move.uci = "e2e4"
 
         self.move_class.str_ml = "e2e4"
-        self.input_handler = MagicMock()
         self.move_class.input_handler.username = "Ainceer"
         self.move_class.input_handler.edepth = 5
         self.move_class.game_metadata = {"game_datetime": "2022-01-01 12:00:00"}
