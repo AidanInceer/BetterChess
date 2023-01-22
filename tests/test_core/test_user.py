@@ -120,8 +120,92 @@ class TestPrepareUsers(unittest.TestCase):
         mock_open.assert_called_once_with(self.path_userlogfile, mode="a")
         self.logger.info.assert_called_once_with("| Ainceer | 2020-01-01 00:00:00 | 0")
 
+    def test_check_logfile(self):
+        game_log_list = []
+        lines = ["user", "user_analysis", "false"]
+        self.prepare_user.check_logfile(game_log_list, lines)
 
-class TestCleandown:
-    def test1(self):
-        one = 1
-        assert one == 1
+        assert game_log_list == ["user", "user_analysis"]
+
+    @patch("builtins.open")
+    def test_current_game(self, mock_open):
+        path_temp = "./temp.pgn"
+        chess_game = MagicMock(return_value=";")
+        self.prepare_user.current_game(path_temp, chess_game)
+        mock_open.assert_called_once_with(path_temp, mode="w")
+
+
+class TestCleandown(unittest.TestCase):
+    def setUp(self):
+        self.cleandown = Cleandown()
+        self.path_userlogfile = "test_path"
+        self.path_database = "/database.db"
+        self.username = "test_user"
+        self.env_handler = MagicMock()
+
+    @patch("betterchess.core.user.Cleandown.clean_sql_table")
+    @patch("betterchess.core.user.Cleandown.get_last_logged_game_num", return_value=3)
+    def test_previous_run(self, mock_log, mock_clean):
+        self.cleandown.previous_run(
+            self.path_userlogfile, self.path_database, self.username, self.env_handler
+        )
+        mock_log.assert_called_once()
+        mock_clean.assert_called_once()
+
+    @patch(
+        "betterchess.core.user.Cleandown.get_game_log_list",
+        return_value=[
+            "[INFO game] | Ainceer | 2020-11-09 16:02:24 | 5",
+            "[INFO game] | Ainceer | 2020-11-09 16:27:24 | 6",
+        ],
+    )
+    @patch("betterchess.core.user.Cleandown.logfile_not_empty", return_value=True)
+    def test_get_last_logged_game_num(self, mock_logfile, mock_loglist):
+        self.cleandown.get_last_logged_game_num(self.path_userlogfile)
+        mock_logfile.assert_called_once()
+        mock_loglist.assert_called_once()
+        assert self.cleandown.get_last_logged_game_num(self.path_userlogfile) == 6
+
+    @patch("builtins.open")
+    def test_logfile_not_empty(self, mock_open):
+        # arrange
+        path_userlogfile = "userlogfile.txt"
+        file_contents = "example file contents"
+        mock_open.return_value.__enter__.return_value.readlines.return_value = (
+            file_contents.splitlines()
+        )
+
+        result = self.cleandown.logfile_not_empty(path_userlogfile)
+
+        # assert
+        mock_open.assert_called_once_with(path_userlogfile, mode="r")
+        self.assertTrue(result)
+
+    @patch("builtins.open")
+    def test_logfile_empty(self, mock_open):
+        # arrange
+        path_userlogfile = "userlogfile.txt"
+        file_contents = ""
+        mock_open.return_value.__enter__.return_value.readlines.return_value = (
+            file_contents.splitlines()
+        )
+        # act
+        result = self.cleandown.logfile_not_empty(path_userlogfile)
+        # assert
+        mock_open.assert_called_once_with(path_userlogfile, mode="r")
+        self.assertFalse(result)
+
+    def test_get_game_log_list(self):
+        path_userlogfile = r"./tests/test_core/fixtures/test_log_list.log"
+
+        assert self.cleandown.get_game_log_list(path_userlogfile) == [
+            "[INFO user] | Ainceer | 2020-01-01 00:00:00 | 0\n",
+            "[INFO game] | Ainceer | 2020-11-08 22:00:49 | 0\n",
+            "[INFO game] | Ainceer | 2020-11-08 23:10:17 | 1",
+        ]
+
+    def test_logfile_line_checker_multi(self):
+        game_log_list = []
+        lines = ["user", "user_analysis", "false"]
+        self.cleandown.logfile_line_checker_multi(game_log_list, lines)
+        assert game_log_list == ["user", "user_analysis"]
