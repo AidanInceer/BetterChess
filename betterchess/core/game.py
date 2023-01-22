@@ -72,8 +72,8 @@ class Game:
                 self.env_handler,
             )
             end_time = time.perf_counter()
-            Progress.bar(
-                Progress,
+            progress = Progress()
+            progress.bar(
                 self.iter_metadata["game_num"],
                 self.iter_metadata["tot_games"],
                 start_time,
@@ -165,9 +165,7 @@ class Game:
 
         self.time_of_day = self.game_time_of_day(game_datetime)
         self.day_of_week = self.game_day_of_week(game_datetime)
-        self.game_pgn = self.get_curr_game_pgn(
-            game_num, username, self.file_handler.path_temp
-        )
+        self.game_pgn = self.get_curr_game_pgn(self.file_handler.path_temp)
 
         if username == headers["White_player"]:
             self.game_acc = self.game_w_acc(game_move_acc)
@@ -644,7 +642,7 @@ class Game:
         return pred_win_percent
 
     @staticmethod
-    def get_curr_game_pgn(game_num: int, username: str, path_temp: str) -> pd.DataFrame:
+    def get_curr_game_pgn(path_temp: str) -> pd.DataFrame:
         """Gets the current games pgn string for use in webapp.
 
         Args:

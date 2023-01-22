@@ -20,7 +20,7 @@ class Progress:
             start_time (datetime): _description_
             end_time (datetime): _description_
         """
-        avg_game_time = self.timers(self, start_time, end_time)
+        avg_game_time = self.timers(start_time, end_time)
         time_r = ((total - (game + 1)) * (avg_game_time)) / 3600
         hours_r = int(time_r)
         if hours_r < 10:
