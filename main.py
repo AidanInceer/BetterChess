@@ -25,3 +25,4 @@ if __name__ == "__main__":
 
         user = User(input_handler, file_handler, run_handler, env_handler)
         user.analyse()
+        print("Finished user analysis")
