@@ -196,7 +196,7 @@ class TestCleandown(unittest.TestCase):
         self.assertFalse(result)
 
     def test_get_game_log_list(self):
-        path_userlogfile = r"./tests/test_core/fixtures/test_log_list.log"
+        path_userlogfile = r"./tests/test_core/fixtures/test_log_list.txt"
 
         assert self.cleandown.get_game_log_list(path_userlogfile) == [
             "[INFO user] | Ainceer | 2020-01-01 00:00:00 | 0\n",

@@ -1,0 +1,4 @@
+[INFO extract] | Ainceer | 2023-01-01 00:00:00
+[INFO user] | Ainceer | 2020-01-01 00:00:00 | 0
+[INFO game] | Ainceer | 2020-11-08 22:00:49 | 0
+[INFO game] | Ainceer | 2020-11-08 23:10:17 | 1
