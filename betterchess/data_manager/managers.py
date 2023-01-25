@@ -6,40 +6,30 @@ from sqlite3 import Connection
 from mysql.connector import MySQLConnection
 
 from betterchess.utils.config import Config
+from betterchess.utils.handlers import InputHandler
 
 
 @dataclass
 class MySQLManager:
     config: Config
     conn: MySQLConnection
+    input_handler: InputHandler
 
     def query_selector(self):
         selection = input(
-            "Choose from the following list of options (reset, size, head, pass): "
+            "Choose from the following list of options (reset, size, head): "
         )
         if selection.lower() == "reset":
             self.reset_database()
-            self.reset_logs()
+            self.reset_logs(folder="./logs", user=self.input_handler.username)
         elif selection.lower() == "size":
             self.view_table_size()
         elif selection.lower() == "head":
             self.select_head_all_tables()
-        elif selection.lower() == "pass":
-            pass
-        else:
-            raise AssertionError("Invalid option")
 
-    def reset_logs(self):
-        folder = "./logs"
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print(f"Failed to delete {file_path}. Reason: {e}")
+    def reset_logs(self, folder: str, user: str):
+        filename = rf"{user}.log"
+        os.remove(f"{folder}/{filename}")
 
     def reset_database(self):
 
@@ -98,34 +88,23 @@ class MySQLManager:
 class SQLiteManager:
     config: Config
     conn: Connection
+    input_handler: InputHandler
 
     def query_selector(self):
         selection = input(
-            "Choose from the following list of options (reset, size, head, pass): "
+            "Choose from the following list of options (reset, size, head): "
         )
         if selection.lower() == "reset":
             self.reset_database()
-            self.reset_logs()
+            self.reset_logs(folder="./logs", user=self.input_handler.username)
         elif selection.lower() == "size":
             self.view_table_size()
         elif selection.lower() == "head":
             self.select_head_all_tables()
-        elif selection.lower() == "pass":
-            pass
-        else:
-            print("Please choose a valid option")
 
-    def reset_logs(self):
-        folder = "./logs"
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print(f"Failed to delete {file_path}. Reason: {e}")
+    def reset_logs(self, folder: str, user: str):
+        filename = rf"{user}.log"
+        os.remove(f"{folder}/{filename}")
 
     def reset_database(self):
 
