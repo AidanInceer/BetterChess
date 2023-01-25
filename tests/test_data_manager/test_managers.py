@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -8,7 +9,8 @@ class TestMySQLManager(unittest.TestCase):
     def setUp(self):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = MySQLManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = MySQLManager(config, conn, input_handler)
         self.manager.view_table_size = MagicMock()
         self.manager.select_head_all_tables = MagicMock()
         self.manager.reset_database = MagicMock()
@@ -32,20 +34,24 @@ class TestMySQLManager(unittest.TestCase):
         self.manager.query_selector()
         self.manager.select_head_all_tables.assert_called_once()
 
-    @patch("os.listdir")
-    @patch("os.path")
-    @patch("shutil.rmtree")
-    def test_reset_logs(self, mock_rmtree, mock_path, mock_listdir):
-        mock_path.isfile.return_value = True
-        mock_path.join.return_value = "./logs/test.log"
-        mock_listdir.return_value = ["test.log"]
-        self.manager.reset_logs()
+    def test_reset_logs(self):
+        # Create a mock folder with a file and a directory
+        conn = MagicMock()
+        config = MagicMock()
+        input_handler = MagicMock()
+        manager = MySQLManager(config, conn, input_handler)
+        folder = "./tests/test_data_manager/fixtures"
+        test_file = "testuser"
+        with patch("os.remove") as mock_remove:
+            manager.reset_logs(folder, test_file)
+            mock_remove.assert_called()
 
     @patch("builtins.print")
     def test_reset_database(self, mock_print):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = MySQLManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = MySQLManager(config, conn, input_handler)
         self.manager.conn.cursor = MagicMock()
         self.manager._get_sql_file = MagicMock(return_value="SQL")
 
@@ -60,7 +66,8 @@ class TestMySQLManager(unittest.TestCase):
     def test_view_table_size(self, mock_print):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = MySQLManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = MySQLManager(config, conn, input_handler)
         self.manager.conn.cursor = MagicMock()
         self.manager._get_sql_file = MagicMock(return_value="SQL")
         self.manager.conn.cursor().fetchall.return_value = [1, 2, 3]
@@ -77,7 +84,8 @@ class TestMySQLManager(unittest.TestCase):
     def test_select_head_all_tables(self, mock_print):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = MySQLManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = MySQLManager(config, conn, input_handler)
         self.manager.conn.cursor = MagicMock()
         self.manager._get_sql_file = MagicMock(return_value="SQL")
         self.manager.conn.cursor().fetchall.return_value = [
@@ -95,22 +103,20 @@ class TestMySQLManager(unittest.TestCase):
         mock_print.assert_any_call([7, 8, 9])
         mock_print.assert_any_call("-------------------------------------------------")
 
-    @patch("builtins.open", mock_open(read_data="SQL"))
     def test_get_sql_file(self):
-        conn = MagicMock()
-        config = MagicMock()
-        self.manager = MySQLManager(config, conn)
-        self.manager.conn.cursor = MagicMock()
-        self.manager._get_sql_file = MagicMock(return_value="SQL")
-        result = self.manager._get_sql_file("file.sql")
-        self.assertEqual(result, "SQL")
+        filepath = "./tests/test_data_manager/fixtures/test.sql"
+        expected = "SQL"
+        actual = self.manager._get_sql_file(filepath)
+        print(actual)
+        assert actual == expected
 
 
 class TestSQLiteManager(unittest.TestCase):
     def setUp(self):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = SQLiteManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = SQLiteManager(config, conn, input_handler)
         self.manager.view_table_size = MagicMock()
         self.manager.select_head_all_tables = MagicMock()
         self.manager.reset_database = MagicMock()
@@ -132,30 +138,27 @@ class TestSQLiteManager(unittest.TestCase):
 
     @patch("builtins.input", return_value="head")
     def test_query_selector_head(self, mock_input):
-
         self.manager.query_selector()
         self.manager.select_head_all_tables.assert_called_once()
 
-    @patch("os.listdir")
-    @patch("os.path")
-    @patch("shutil.rmtree")
-    def test_reset_logs(self, mock_rmtree, mock_path, mock_listdir):
+    def test_reset_logs(self):
+        # Create a mock folder with a file and a directory
         conn = MagicMock()
         config = MagicMock()
-        manager = SQLiteManager(config, conn)
-
-        mock_path.isfile.return_value = True
-        mock_path.join.return_value = "./logs/test.log"
-        mock_listdir.return_value = ["test.log"]
-
-        # Call the reset_logs method
-        manager.reset_logs()
+        input_handler = MagicMock()
+        manager = SQLiteManager(config, conn, input_handler)
+        folder = "./tests/test_data_manager/fixtures"
+        test_file = "testuser"
+        with patch("os.remove") as mock_remove:
+            manager.reset_logs(folder, test_file)
+            mock_remove.assert_called()
 
     @patch("builtins.print")
     def test_reset_database(self, mock_print):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = SQLiteManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = SQLiteManager(config, conn, input_handler)
         self.manager.conn.cursor = MagicMock()
         self.manager._get_sql_file = MagicMock(return_value="SQL")
 
@@ -171,7 +174,8 @@ class TestSQLiteManager(unittest.TestCase):
 
         conn = MagicMock()
         config = MagicMock()
-        self.manager = SQLiteManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = SQLiteManager(config, conn, input_handler)
         self.manager.conn.cursor = MagicMock()
         self.manager._get_sql_file = MagicMock(return_value="SQL")
 
@@ -188,7 +192,8 @@ class TestSQLiteManager(unittest.TestCase):
     def test_select_head_all_tables(self, mock_print):
         conn = MagicMock()
         config = MagicMock()
-        self.manager = SQLiteManager(config, conn)
+        input_handler = MagicMock()
+        self.manager = SQLiteManager(config, conn, input_handler)
         self.manager.conn.cursor = MagicMock()
         self.manager._get_sql_file = MagicMock(return_value="SQL")
         self.manager.conn.cursor().fetchall.return_value = [
@@ -204,3 +209,9 @@ class TestSQLiteManager(unittest.TestCase):
         mock_print.assert_any_call([4, 5, 6])
         mock_print.assert_any_call([7, 8, 9])
         mock_print.assert_any_call("-------------------------------------------------")
+
+    def test_get_sql_file(self):
+        filepath = "./tests/test_data-manager/fixtures/test.sql"
+        expected = "SQL"
+        actual = self.manager._get_sql_file(filepath)
+        assert actual == expected
