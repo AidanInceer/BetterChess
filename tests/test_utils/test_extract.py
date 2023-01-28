@@ -3,9 +3,7 @@ import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
-import mysql.connector
 import pandas as pd
-from sqlalchemy import create_engine
 
 from betterchess.utils.extract import Extract
 
@@ -184,3 +182,46 @@ class TestExtract(unittest.TestCase):
             url="chess.com/testgame/date", path_userlogfile=test_file_path
         )
         assert actual is True
+
+    @patch("betterchess.utils.extract.Extract.get_curr_mth", return_value="2020-10-01")
+    @patch("betterchess.utils.extract.Extract.get_url_date", return_value="2020-10-01")
+    def test_in_curr_month_true(self, mock_gud, mock_gcm):
+        url = r"url/2020-10-01"
+        expected = True
+        actual = self.extract.in_curr_month(url)
+        mock_gud.assert_called()
+        mock_gcm.assert_called()
+        assert actual == expected
+
+    @patch("betterchess.utils.extract.Extract.get_curr_mth", return_value="2020-11-01")
+    @patch("betterchess.utils.extract.Extract.get_url_date", return_value="2020-10-01")
+    def test_in_curr_month_false(self, mock_gud, mock_gcm):
+        url = r"url/2020-10-01"
+        expected = False
+        actual = self.extract.in_curr_month(url)
+        mock_gud.assert_called()
+        mock_gcm.assert_called()
+        assert actual == expected
+
+    def test_get_curr_mth(self):
+        yr = datetime.now().year
+        mth = datetime.now().month
+        day = 1
+        expected = datetime(yr, mth, day)
+        actual = self.extract.get_curr_mth()
+        assert expected == actual
+
+    def test_get_url_date(self):
+        url = "https://api.chess.com/pub/player/ainceer/games/2020/11"
+        url_date = datetime.strptime("2020-11-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+        assert url_date == self.extract.get_url_date(url)
+
+    def test_simple_progress_bar_t0(self):
+        num = 1
+        total = 100
+        assert self.extract.simple_progress_bar(num, total) is None
+
+    def test_simple_progress_bar_t1(self):
+        num = 1
+        total = 100
+        assert self.extract.simple_progress_bar(num, total) is None
