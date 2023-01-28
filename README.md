@@ -27,7 +27,10 @@ venv/scripts/activate
 pip install requirements.txt
 ```
 
-Add a `.env` you the root of your project.
+Add a `.env` you the root of your project. This will be used to add your database type, information and stockfish filepaths.
+
+Stockfish will need to be downloaded from: (https://stockfishchess.org/download/) and added to your `./lib/` folder, the version may vary and therefore you need to add the folder name and file name to your `.env` - see below.
+
 If using an external database you will have to configure and set this up - then add these variables into the `.env` file.
 
 ```conf
@@ -42,9 +45,13 @@ mysql_user = ...
 mysql_password = ...
 mysql_host = ...
 mysql_db = ...
+
+# Fill in stockfish file and details
+stockfish_folder = ...
+stockfish_exe_file = ...
+
 ```
 
-Stockfish will need to be downloaded from: (https://stockfishchess.org/download/) and added to your `./lib/` folder. Currently the folders from the stockfish library will need renaming so the directory looks likes the following: `./lib/stkfsh_15/stockfish_15_src/...`, however a fix will be implemented soon.
 
 ## Running
 

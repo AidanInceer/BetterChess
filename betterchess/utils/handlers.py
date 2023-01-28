@@ -9,6 +9,22 @@ import chess.engine
 from dotenv import load_dotenv
 
 
+class EnvHandler:
+    def __init__(self) -> None:
+        self.env_variables = self.create_environment()
+
+    def create_environment(self):
+        load_dotenv()
+        self.db_type = os.getenv("DB_TYPE")
+        self.mysql_driver = os.getenv("mysql_driver")
+        self.mysql_user = os.getenv("mysql_user")
+        self.mysql_password = os.getenv("mysql_password")
+        self.mysql_host = os.getenv("mysql_host")
+        self.mysql_db = os.getenv("mysql_db")
+        self.stk_folder = str(os.getenv("stockfish_folder"))
+        self.stk_file = str(os.getenv("stockfish_exe_file"))
+
+
 @dataclass
 class InputHandler:
     """Creates and stores user inputs"""
@@ -36,16 +52,15 @@ class FileHandler:
     """Stores absolute and relative filepaths"""
 
     username: str
+    env_handler: EnvHandler
     dir: str = os.path.dirname(__file__)
 
     # Relative paths
-    rpath_stockfish: str = "../../lib/stkfsh_15/stk_15.exe"
     rpath_database: str = "../../data/betterchess.db"
     rpath_temp: str = "../../data/temp.pgn"
     rpath_config_path: str = "../../config/datasets.yaml"
 
     # Absolute paths
-    path_stockfish: str = os.path.join(dir, rpath_stockfish)
     path_database: str = os.path.join(dir, rpath_database)
     path_temp: str = os.path.join(dir, rpath_temp)
     config_path: str = os.path.join(dir, rpath_config_path)
@@ -53,6 +68,10 @@ class FileHandler:
     def __post_init__(self):
         self.rpath_userlogfile: str = f"../../logs/{self.username}.log"
         self.path_userlogfile: str = os.path.join(self.dir, self.rpath_userlogfile)
+        self.rpath_stockfish: str = (
+            f"../../lib/{self.env_handler.stk_folder}/{self.env_handler.stk_file}"
+        )
+        self.path_stockfish: str = os.path.join(self.dir, self.rpath_stockfish)
 
 
 @dataclass
@@ -86,17 +105,3 @@ class RunHandler:
             self.file_handler.path_stockfish
         )
         return self.engine
-
-
-class EnvHandler:
-    def __init__(self) -> None:
-        self.env_variables = self.create_environment()
-
-    def create_environment(self):
-        load_dotenv()
-        self.db_type = os.getenv("DB_TYPE")
-        self.mysql_driver = os.getenv("mysql_driver")
-        self.mysql_user = os.getenv("mysql_user")
-        self.mysql_password = os.getenv("mysql_password")
-        self.mysql_host = os.getenv("mysql_host")
-        self.mysql_db = os.getenv("mysql_db")

@@ -18,7 +18,7 @@ if __name__ == "__main__":
     if run_type == "manage":
         dbm.select_manager()
     else:
-        file_handler = FileHandler(input_handler.username)
+        file_handler = FileHandler(input_handler.username, env_handler)
         run_handler = RunHandler(file_handler=file_handler)
         engine = run_handler.create_engine()
         logger = run_handler.create_logger()

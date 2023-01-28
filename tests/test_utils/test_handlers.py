@@ -43,22 +43,21 @@ class TestInputHandler(unittest.TestCase):
 class TestFileHandler(unittest.TestCase):
     def test_file_paths(self):
         # Create an instance of the FileHandler class
-        file_handler = FileHandler("test_user")
+        env_handler = MagicMock()
+        file_handler = FileHandler("test_user", env_handler)
 
         # Assert that the correct values are stored in the instance variables
         self.assertEqual(file_handler.username, "test_user")
-        self.assertEqual(file_handler.rpath_stockfish, "../../lib/stkfsh_15/stk_15.exe")
         self.assertEqual(file_handler.rpath_database, "../../data/betterchess.db")
         self.assertEqual(file_handler.rpath_temp, "../../data/temp.pgn")
         self.assertEqual(file_handler.rpath_config_path, "../../config/datasets.yaml")
-
-        # Use the patch decorator to mock the os.path.join function
 
 
 class TestRunHandler(unittest.TestCase):
     def test_create_logger(self):
         # Create an instance of the FileHandler class
-        file_handler = FileHandler("test_user")
+        env_handler = MagicMock()
+        file_handler = FileHandler("test_user", env_handler)
 
         # Create an instance of the RunHandler class
         run_handler = RunHandler(file_handler)
@@ -77,7 +76,8 @@ class TestRunHandler(unittest.TestCase):
 
     def test_create_engine(self):
         # Create an instance of the FileHandler class
-        file_handler = FileHandler("test_user")
+        env_handler = MagicMock()
+        file_handler = FileHandler("test_user", env_handler)
 
         # Create an instance of the RunHandler class
         run_handler = RunHandler(file_handler)
@@ -97,7 +97,8 @@ class TestEnvHandler(unittest.TestCase):
 
         # Use the patch decorator to mock the os.getenv function
         with patch(
-            "os.getenv", side_effect=["sqlite", "sqlite3", None, None, None, None]
+            "os.getenv",
+            side_effect=["sqlite", "sqlite3", None, None, None, None, "folder", "file"],
         ):
             env_handler.create_environment()
 
@@ -108,3 +109,5 @@ class TestEnvHandler(unittest.TestCase):
             self.assertIsNone(env_handler.mysql_password)
             self.assertIsNone(env_handler.mysql_host)
             self.assertIsNone(env_handler.mysql_db)
+            self.assertEqual(env_handler.stk_folder, "folder")
+            self.assertEqual(env_handler.stk_file, "file")
