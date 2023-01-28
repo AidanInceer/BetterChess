@@ -25,11 +25,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run Pytest
-        run: python -m pytest --cov=./  --cov-report=xml --cov-report=html 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: code-coverage
-          path: htmlcov
+        run: |
+          coverage run -m pytest -rap  --junitxml coverage.xml
+          coverage xml -i 
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
