@@ -145,9 +145,7 @@ class PrepareUsers:
             path_userlogfile (str): _description_
             logger (Logger): _description_
         """
-        if self.numlines_in_logfile(path_userlogfile) != 0:
-            pass
-        else:
+        if self.numlines_in_logfile(path_userlogfile) == 0:
             self.set_first_game_logdate(username, path_userlogfile, logger)
 
     def numlines_in_logfile(self, path_userlogfile: str) -> int:

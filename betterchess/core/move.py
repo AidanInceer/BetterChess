@@ -3,6 +3,7 @@
 import math
 import sqlite3
 from dataclasses import dataclass
+from typing import Union
 
 import chess
 import chess.engine
@@ -322,7 +323,7 @@ class Move:
         return cas_type
 
     @staticmethod
-    def white_castle_move_num(castle_type: str, move_num: int) -> int:
+    def white_castle_move_num(castle_type: Union[str, None], move_num: int) -> int:
         """Which move white castle on.
 
         Args:
@@ -339,7 +340,7 @@ class Move:
         return white_castle_move
 
     @staticmethod
-    def black_castle_move_num(castle_type: str, move_num: int) -> int:
+    def black_castle_move_num(castle_type: Union[str, None], move_num: int) -> int:
         """Which move black castle on.
 
         Args:

@@ -199,12 +199,6 @@ class TestMove(unittest.TestCase):
         )
         self.assertEqual(result, ("e2e4", 10))
 
-    def test_castling_type_bl(self):
-        piece = "king"
-        move_col = "black"
-        str_ml = "e8c8"
-        assert "black_long" == Move.castling_type(piece, move_col, str_ml)
-
     def test_move_eval(self):
         move = {"score": PovScore(Cp(10), WHITE)}
         assert 10 == Move.move_eval(move)

@@ -220,8 +220,3 @@ class TestExtract(unittest.TestCase):
         num = 1
         total = 100
         assert self.extract.simple_progress_bar(num, total) is None
-
-    def test_simple_progress_bar_t1(self):
-        num = 1
-        total = 100
-        assert self.extract.simple_progress_bar(num, total) is None

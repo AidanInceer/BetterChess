@@ -9,9 +9,7 @@ from datetime import datetime
 
 @dataclass
 class Progress:
-    def bar(
-        self, game: int, total: int, start_time: datetime, end_time: datetime
-    ) -> None:
+    def bar(self, game: int, total: int, start_time: float, end_time: float) -> None:
         """_summary_
 
         Args:

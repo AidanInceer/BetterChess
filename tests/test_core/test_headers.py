@@ -44,6 +44,10 @@ class TestGameHeaders(unittest.TestCase):
         self.headers.termination = "win"
         self.headers.end_type = "win"
 
+        self.tempfilepath1 = r"./tests/test_core/fixtures/testpgnfile.pgn"
+        self.tempfilepath2 = r"./tests/test_core/fixtures/testpgnfile2.pgn"
+        self.tempfilepath3 = r"./tests/test_core/fixtures/testpgnfiledraw.pgn"
+
     @patch(
         "betterchess.core.headers.Headers.create_header_dict",
         return_value={"headers": [1, 2, 3, 4, 5]},
@@ -127,26 +131,21 @@ class TestGameHeaders(unittest.TestCase):
             "Termination": "win",
             "Win_draw_loss": "win",
         }
-
         output = self.headers.create_header_dict()
-
         assert expected == output
 
     def test_time_control(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.time_control(self, chess_game) == "600"
 
     def test_player_white(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.player_white(self, chess_game) == "JezzaShaw"
 
     def test_player_black(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.player_black(self, chess_game) == "LucidKoala"
 
@@ -161,32 +160,27 @@ class TestGameHeaders(unittest.TestCase):
         assert Headers.user_colour(self, white, username) == "Black"
 
     def test_rating_white(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.rating_white(self, chess_game) == 1011
 
     def test_test_rating_black(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.rating_black(self, chess_game) == 1009
 
     def test_opening_cls_no_err(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.opening_cls(self, chess_game) == "A40"
 
     def test_opening_cls_key_err(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile2.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath2)
         chess_game = read_game(chess_game_pgn)
         assert Headers.opening_cls(self, chess_game) == "000"
 
     def test_opening_nm(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert (
             Headers.opening_nm(self, chess_game)
@@ -194,14 +188,12 @@ class TestGameHeaders(unittest.TestCase):
         )
 
     def test_opening_nm_keyerror(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile2.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath2)
         chess_game = read_game(chess_game_pgn)
         assert Headers.opening_nm(self, chess_game) == "NA"
 
     def test_game_termination_loss(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile2.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath2)
         chess_game = read_game(chess_game_pgn)
         username = "LucidKoala"
         assert (
@@ -210,8 +202,7 @@ class TestGameHeaders(unittest.TestCase):
         )
 
     def test_game_termination_win(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile2.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath2)
         chess_game = read_game(chess_game_pgn)
         username = "JezzaShaw"
         assert (
@@ -219,8 +210,7 @@ class TestGameHeaders(unittest.TestCase):
         )
 
     def test_game_termination_draw(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfiledraw.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath3)
         chess_game = read_game(chess_game_pgn)
         username = "LucidKoala"
         assert (
@@ -240,20 +230,17 @@ class TestGameHeaders(unittest.TestCase):
         assert Headers.rating_opponent(self, player, rating_w, rating_b) == 1011
 
     def test_win_draw_loss_white(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.win_draw_loss(self, chess_game) == "White"
 
     def test_win_draw_loss_black(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile2.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath2)
         chess_game = read_game(chess_game_pgn)
         assert Headers.win_draw_loss(self, chess_game) == "Black"
 
     def test_win_draw_loss_draw(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfiledraw.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath3)
         chess_game = read_game(chess_game_pgn)
         assert Headers.win_draw_loss(self, chess_game) == "Draw"
 
@@ -273,14 +260,12 @@ class TestGameHeaders(unittest.TestCase):
         assert Headers.user_winr(self, winner, player) == "Draw"
 
     def test_game_dt(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.game_dt(self, chess_game) == "2021.02.22"
 
     def test_game_t(self):
-        tempfilepath = r"./tests/test_core/fixtures/testpgnfile.pgn"
-        chess_game_pgn = open(tempfilepath)
+        chess_game_pgn = open(self.tempfilepath1)
         chess_game = read_game(chess_game_pgn)
         assert Headers.game_t(self, chess_game) == "19:35:47"
 
