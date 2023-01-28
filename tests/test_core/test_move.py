@@ -13,10 +13,10 @@ from betterchess.utils.handlers import EnvHandler, FileHandler, RunHandler
 
 class TestMoveAnalyse(unittest.TestCase):
     def setUp(self):
-        env_handler = EnvHandler()
+        env_handler = MagicMock()
         input_handler = MagicMock()
         input_handler.collect_user_inputs.return_value = ("Ainceer", 1, "2020", "11")
-        file_handler = FileHandler("Ainceer")
+        file_handler = FileHandler("Ainceer", env_handler)
         run_handler = MagicMock()
         run_handler.create_engine.return_value = "engine"
         iter_metadata = {"game_num": 1, "tot_games": 2}
@@ -100,10 +100,10 @@ class TestMoveAnalyse(unittest.TestCase):
 
 class TestMove(unittest.TestCase):
     def setUp(self):
-        env_handler = EnvHandler()
+        env_handler = MagicMock()
         input_handler = MagicMock()
         input_handler.collect_user_inputs.return_value = ("Ainceer", 1, "2020", "11")
-        file_handler = FileHandler("Ainceer")
+        file_handler = FileHandler("Ainceer", env_handler)
         run_handler = RunHandler(file_handler=file_handler)
         iter_metadata = {"game_num": 1, "tot_games": 2}
         move_metadata = {"move": 1, "move_num": 1}
