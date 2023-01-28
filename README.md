@@ -72,4 +72,4 @@ e.g.
 
 ## Authors
 
-Aidan Inceer - Data Engineer -  Kubrick Group
+Aidan Inceer
