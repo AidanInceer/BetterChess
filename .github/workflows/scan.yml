@@ -26,8 +26,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Pytest
         run: |
-          python -m pytest --cov=betterchess/  --cov-report=xml
-
+          python -m pytest --cov=.  --cov-report=xml
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
@@ -37,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: ./
+          projectBaseDir: .
 
       - name: Mark as a success
         run: exit 0
