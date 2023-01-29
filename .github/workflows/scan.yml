@@ -26,8 +26,12 @@ jobs:
           pip install -r requirements.txt
       - name: Run Pytest
         run: |
-          coverage run -m pytest -rap  --junitxml reports/coverage.xml
-          coverage xml -i 
+          python -m pytest --cov=betterchess/  --cov-report=xml
+      - uses: sonarsource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.python.coverage.reportPaths=coverage.xml
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
