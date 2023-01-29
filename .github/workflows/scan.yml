@@ -26,7 +26,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Pytest
         run: |
-          coverage run -m pytest -rap  --junitxml coverage.xml
+          coverage run -m pytest -rap  --junitxml reports/coverage.xml
           coverage xml -i 
       - uses: actions/checkout@v2
         with:
