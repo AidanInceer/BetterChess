@@ -3,6 +3,7 @@
 ![coverage](https://github.com/AidanInceer/BetterChess/blob/master/coverage.svg)
 [![lint](https://github.com/AidanInceer/BetterChess/actions/workflows/lint.yml/badge.svg)](https://github.com/AidanInceer/BetterChess/actions/workflows/lint.yml)
 [![test](https://github.com/AidanInceer/BetterChess/actions/workflows/test.yml/badge.svg)](https://github.com/AidanInceer/BetterChess/actions/workflows/test.yml)
+[![scan](https://github.com/AidanInceer/BetterChess/actions/workflows/scan.yml/badge.svg)](https://github.com/AidanInceer/BetterChess/actions/workflows/scan.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=AidanInceer_BetterChess&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=AidanInceer_BetterChess)
 [![build](https://github.com/AidanInceer/BetterChess/actions/workflows/build.yml/badge.svg)](https://github.com/AidanInceer/BetterChess/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
