@@ -18,7 +18,7 @@ from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, Ru
 
 @dataclass
 class User:
-    """_summary_"""
+    """Sets up and runs the analysis for all games for a specified user."""
 
     input_handler: InputHandler
     file_handler: FileHandler
@@ -72,7 +72,7 @@ class User:
 
 @dataclass
 class PrepareUsers:
-    """_summary_"""
+    """Prepares the current run for analysis e.g. initalises logs, database"""
 
     def current_run(
         self,
@@ -102,14 +102,16 @@ class PrepareUsers:
     def initialise_users_games(
         self, path_database: str, username: str, env_handler: EnvHandler
     ) -> Tuple[pd.DataFrame, int]:
-        """_summary_
+        """Initialise a users games, connects to specified database type and return
+        all their games.
+
 
         Args:
-            path_database (str): _description_
-            username (str): _description_
+            path_database (str): Database file path.
+            username (str): Username of current run.
 
         Returns:
-            Tuple[pd.DataFrame, int]: _description_
+            Tuple[pd.DataFrame, int]: all games and the total number of games played
         """
         if env_handler.db_type == "mysql":
             sql_query = """select game_data from pgn_data where username =%s"""
@@ -138,24 +140,24 @@ class PrepareUsers:
     def init_game_logs(
         self, username: str, path_userlogfile: str, logger: Logger
     ) -> None:
-        """_summary_
+        """Initialises the log file and sets the first games log date.
 
         Args:
-            username (str): _description_
-            path_userlogfile (str): _description_
-            logger (Logger): _description_
+            username (str): Username of current run.
+            path_userlogfile (str): Logfile for the current user.
+            logger (Logger): Logger object.
         """
         if self.numlines_in_logfile(path_userlogfile) == 0:
             self.set_first_game_logdate(username, path_userlogfile, logger)
 
     def numlines_in_logfile(self, path_userlogfile: str) -> int:
-        """Returns the number of lines in the logfile = "filter".
+        """Returns the number of lines in the logfile.
 
         Args:
-            path_userlogfile (str): _description_
+            path_userlogfile (str): Logfile for the current user.
 
         Returns:
-            int: _description_
+            int: Number of games in logfile.
         """
         game_log_list = []
         with open(path_userlogfile, "r") as log_file:
@@ -169,9 +171,9 @@ class PrepareUsers:
         """Creates the default date in the logfile.
 
         Args:
-            username (str): _description_
-            path_userlogfile (str): _description_
-            logger (Logger): _description_
+            username (str): Username of current run.
+            path_userlogfile (str): Logfile for the current user.
+            logger (Logger): Logger object.
         """
         with open(path_userlogfile, mode="a") as _:
             game_num = 0
@@ -179,11 +181,12 @@ class PrepareUsers:
             logger.info(f"| {username} | {init_dt} | {game_num}")
 
     def check_logfile(self, game_log_list: list, lines: list[str]) -> None:
-        """_summary_
+        """Appends a given logged line to `game_log_list` if it is part of the module
+        "user" or "user_analysis"
 
         Args:
-            game_log_list (list): _description_
-            lines (list[str]): _description_
+            game_log_list (list): List of logged games in logfile
+            lines (list[str]): Lines in the logfile
         """
         for line in lines:
             if ("user" in line) or ("user_analysis" in line):
@@ -202,7 +205,7 @@ class PrepareUsers:
 
 @dataclass
 class Cleandown:
-    """_summary_"""
+    """Cleans down the previous run e.g. remove unfinished analysis for a game, reset logs."""
 
     def previous_run(
         self,
@@ -211,12 +214,12 @@ class Cleandown:
         username: str,
         env_handler: EnvHandler,
     ) -> None:
-        """_summary_
+        """Runs the cleandown of the previous run
 
         Args:
-            path_userlogfile (str): _description_
-            path_database (str): _description_
-            username (str): _description_
+            path_userlogfile (str):  Logfile for the current user.
+            path_database (str): Database file path.
+            username (str): Username of current run.
         """
         game_num = self.get_last_logged_game_num(path_userlogfile)
         self.clean_sql_table(path_database, game_num, username, env_handler)
@@ -227,9 +230,9 @@ class Cleandown:
         """_summary_
 
         Args:
-            path_database (str): _description_
-            game_num (int): _description_
-            username (str): _description_
+            path_database (str): Database file path.
+            game_num (int): Latest unfinished game number of the current user.
+            username (str): Username of current run.
         """
         if env_handler.db_type == "mysql":
             conn = mysql.connector.connect(
@@ -272,10 +275,10 @@ class Cleandown:
         """Checks to see if the logfile is empty.
 
         Args:
-            path_userlogfile (str): _description_
+            path_userlogfile (str): path to logfile.
 
         Returns:
-            bool: _description_
+            bool: Whether the log file is empty
         """
         with open(path_userlogfile, mode="r") as log_file:
             lines = log_file.readlines()
@@ -285,13 +288,13 @@ class Cleandown:
             return False
 
     def get_game_log_list(self, path_userlogfile: str) -> list:
-        """Returns the number of lines in the logfile = "filter".
+        """Returns the number of lines in the logfile = "user" or "analysis".
 
         Args:
-            path_userlogfile (str): _description_
+            path_userlogfile (str): path to logfile.
 
         Returns:
-            list: _description_
+            list: List of logged games.
         """
         game_log_list = []
         with open(path_userlogfile, mode="r") as log_file:
@@ -303,8 +306,8 @@ class Cleandown:
         """_summary_
 
         Args:
-            game_log_list (list): _description_
-            lines (list[str]): _description_
+            game_log_list (list):  List of logged games.
+            lines (list[str]): Lines in the log file.
         """
         for line in lines:
             if ("user" in line) or ("game" in line):

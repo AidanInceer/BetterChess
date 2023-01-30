@@ -10,13 +10,13 @@ from datetime import datetime
 @dataclass
 class Progress:
     def bar(self, game: int, total: int, start_time: float, end_time: float) -> None:
-        """_summary_
+        """Progress bar for estimated the time it takes to complete all games analysis.
 
         Args:
-            game (int): _description_
-            total (int): _description_
-            start_time (datetime): _description_
-            end_time (datetime): _description_
+            game (int): Current game number.
+            total (int): Total number of games.
+            start_time (datetime): Start time of the game analysis.
+            end_time (datetime): End time of the game analysis.
         """
         avg_game_time = self.timers(start_time, end_time)
         time_r = ((total - (game + 1)) * (avg_game_time)) / 3600
@@ -46,12 +46,14 @@ class Progress:
     def timers(
         self, start_time: datetime, end_time: datetime, time_list: list = []
     ) -> float:
-        """Time taken to analyse a chess game - used to calculate the time remaining for analysis.
+        """Time taken to analyse a chess game - used to calculate the time remaining
+        for analysis.
 
         Args:
-            start_time (datetime): _description_
-            end_time (datetime): _description_
-            time_list (list, optional): _description_. Defaults to [].
+            start_time (datetime): Start time of the game analysis.
+            end_time (datetime): End time of the game analysis.
+            time_list (list, optional): List of times taken to analyse previous games in
+             current run. Defaults to [].
 
         Returns:
             float: _description_

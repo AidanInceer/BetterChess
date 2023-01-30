@@ -266,7 +266,7 @@ class Game:
         return game_df
 
     def export_game_data(self, game_df: pd.DataFrame, env_handler: EnvHandler):
-        """Exports game data to sql.
+        """Exports game data to database depending on `.env` parameter `DB_TYPE`.
 
         Args:
             game_df (pd.Dataframe): dataframe of game data
