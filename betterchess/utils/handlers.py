@@ -10,10 +10,13 @@ from dotenv import load_dotenv
 
 
 class EnvHandler:
+    """Creates the current environment"""
+
     def __init__(self) -> None:
         self.env_variables = self.create_environment()
 
     def create_environment(self):
+        """Loads the `.env` variables and creates the environment variables`"""
         load_dotenv()
         self.db_type = os.getenv("DB_TYPE")
         self.mysql_driver = os.getenv("mysql_driver")
@@ -66,6 +69,9 @@ class FileHandler:
     config_path: str = os.path.join(dir, rpath_config_path)
 
     def __post_init__(self):
+        """Creates the user log file and stockfish file path based on the initalised
+        inputs.
+        """
         self.rpath_userlogfile: str = f"../../logs/{self.username}.log"
         self.path_userlogfile: str = os.path.join(self.dir, self.rpath_userlogfile)
         self.rpath_stockfish: str = (
@@ -76,7 +82,7 @@ class FileHandler:
 
 @dataclass
 class RunHandler:
-    """_summary_"""
+    """Handler for creating the logger and engine objects"""
 
     file_handler: FileHandler
 
