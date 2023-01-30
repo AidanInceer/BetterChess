@@ -1,4 +1,4 @@
-"""_summary_
+"""Module for analysing a given move of a chess game.
 """
 import math
 import sqlite3
@@ -18,7 +18,7 @@ from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, Ru
 
 @dataclass
 class Move:
-    """Class for analysing an players chess move."""
+    """Class for analysing a given chess move."""
 
     input_handler: InputHandler
     file_handler: FileHandler
@@ -102,7 +102,7 @@ class Move:
         board: Board,
         engine: chess.engine.SimpleEngine,
         edepth: int,
-    ) -> tuple:
+    ) -> tuple(str, int):
         """Analysis of the actual chess move played - returns the evaluation.
 
         Args:
@@ -111,7 +111,7 @@ class Move:
             engine (chess.engine.SimpleEngine): Engine for analysis.
 
         Returns:
-            tuple:Move string and Move evaluation.
+            tuple(str, int): Move string and Move evaluation.
         """
         str_ml = str(move)
         board.push_san(san=str_ml)
@@ -125,7 +125,7 @@ class Move:
 
     def best_move(
         self, board: Board, engine: chess.engine.SimpleEngine, edepth: int
-    ) -> tuple:
+    ) -> tuple(str, int):
         """Analysis of the best chess move played - returns the evaluation.
 
         Args:
@@ -133,7 +133,7 @@ class Move:
             engine (chess.engine.SimpleEngine): Engine for analysis.
 
         Returns:
-            tuple: Best move string and best move evaluation.
+            tuple(str, int): Best move string and best move evaluation.
         """
         best_move = engine.play(
             board=board,
@@ -208,9 +208,14 @@ class Move:
             move_acc (_type_): Accuracy between 0-100.
 
         Returns:
-            int: Type of move (best = 2, excellent = 1,
-            good = 0, inacc = -1, mistake = -2,
-            blunder = -3, missed win = -4).
+            int: Type of move
+                - best = 2,
+                - excellent = 1,
+                - good = 0,
+                - inacc = -1,
+                - mistake = -2,
+                - blunder = -3,
+                - missed win = -4
         """
         if move_acc == 100:
             move_type = 2
@@ -229,12 +234,12 @@ class Move:
         return move_type
 
     @staticmethod
-    def chess_piece(curr_board, square_int) -> str:
+    def chess_piece(curr_board: chess.BaseBoard, square_int: int) -> str:
         """Gets the piece type that was just moved.
 
         Args:
-            curr_board (_type_): Current board position after move was played.
-            square_int (_type_): Square number (0-63).
+            curr_board (chess.BaseBoard): Current board position after move was played.
+            square_int (int): Square number (0-63).
 
         Returns:
             str: Chess piece.

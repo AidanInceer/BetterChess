@@ -1,4 +1,4 @@
-"""_summary_
+"""Module for creating/parsing the headers within a given pgn chess game file.
 """
 from dataclasses import dataclass
 from datetime import datetime
@@ -187,12 +187,12 @@ class Headers:
         opening_name = str(opening_string.replace("-", " ").strip())
         return opening_name
 
-    def game_termination(self, chess_game: chess.pgn.Game, username) -> str:
+    def game_termination(self, chess_game: chess.pgn.Game, username: str) -> str:
         """How the current chess game ended e.g. draw by...
 
         Args:
             chess_game (chess.pgn.Game): Current chess game.
-            username (_type_): Username
+            username (str): Username
 
         Returns:
             termination (str): How the game ended.
@@ -209,7 +209,7 @@ class Headers:
         return termination
 
     def rating_user(self, player: str, rating_w: int, rating_b: int) -> int:
-        """Gets the users rating.
+        """Gets the users chess rating for the current game type.
 
         Args:
             player (str): A given players username.
@@ -223,7 +223,7 @@ class Headers:
         return user_rating
 
     def rating_opponent(self, player: str, rating_w: int, rating_b: int) -> int:
-        """Gets the opponents rating.
+        """Gets the opponents chess rating for the current game type.
 
         Args:
             player (str): A given players username.
@@ -257,7 +257,7 @@ class Headers:
         """Returns whether the player won/drew/lost the game.
 
         Args:
-            winner (str): _description_
+            winner (str): Either `White` or `Black`.
             player (str): Players username.
 
         Returns:
