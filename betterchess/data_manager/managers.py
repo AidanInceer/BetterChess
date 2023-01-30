@@ -56,7 +56,7 @@ class MySQLManager:
             curs.execute(sql)
             self.conn.commit()
         self.conn.close()
-        print("atabase reset")
+        print("database reset")
 
     def view_table_size(self):
         """Views all the tables and return the number of rows in each."""

@@ -102,7 +102,7 @@ class Move:
         board: Board,
         engine: chess.engine.SimpleEngine,
         edepth: int,
-    ) -> tuple(str, int):
+    ) -> tuple:
         """Analysis of the actual chess move played - returns the evaluation.
 
         Args:
@@ -111,7 +111,7 @@ class Move:
             engine (chess.engine.SimpleEngine): Engine for analysis.
 
         Returns:
-            tuple(str, int): Move string and Move evaluation.
+            tuple: Move string and Move evaluation.
         """
         str_ml = str(move)
         board.push_san(san=str_ml)
@@ -125,7 +125,7 @@ class Move:
 
     def best_move(
         self, board: Board, engine: chess.engine.SimpleEngine, edepth: int
-    ) -> tuple(str, int):
+    ) -> tuple:
         """Analysis of the best chess move played - returns the evaluation.
 
         Args:
@@ -133,7 +133,7 @@ class Move:
             engine (chess.engine.SimpleEngine): Engine for analysis.
 
         Returns:
-            tuple(str, int): Best move string and best move evaluation.
+            tuple: Best move string and best move evaluation.
         """
         best_move = engine.play(
             board=board,
