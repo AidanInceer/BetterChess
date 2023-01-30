@@ -14,11 +14,7 @@ from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, Ru
 
 @dataclass
 class Extract:
-    """_summary_
-
-    Returns:
-        _type_: _description_
-    """
+    """Class for extracting the current users game data from chess.com"""
 
     input_handler: InputHandler
     file_handler: FileHandler
@@ -28,13 +24,12 @@ class Extract:
     def run_data_extract(
         self, username: str, path_userlogfile: str, logger: Logger
     ) -> None:
-        """_summary_
+        """Runs the current data extract.
 
         Args:
-            username (str): _description_
-            dbfilepath (str): _description_
-            logfilepath (str): _description_
-            logger (Logger): _description_
+            username (str): Current users username.
+            logfilepath (str): Logfile path.
+            logger (Logger): Logger object.
         """
         username_list, url_date_list, games_list = [], [], []
         self.init_user_logfile(username, logger)
@@ -53,11 +48,11 @@ class Extract:
         self.export_pgn_data(pgn_df)
 
     def init_user_logfile(self, username: str, logger: Logger) -> None:
-        """_summary_
+        """Initalises the current users logfile.
 
         Args:
-            logger (Logger): _description_
-            username (str): _description_
+            logger (Logger): Logger object.
+            username (str): Current users username.
         """
         init_extlogger = datetime(2000, 1, 1)
         logger.info(f"| {username} | {init_extlogger}")
@@ -73,21 +68,20 @@ class Extract:
         url_date_list: list,
         games_list: list,
     ) -> pd.DataFrame:
-        """_summary_
+        """Extracts the filtered user game data and creates a dataframe.
 
         Args:
-            urls (json): _description_
-            num_urls (int): _description_
-            logger (Logger): _description_
-            path_userlogfile (str): _description_
-            username (str): _description_
-            path_database (str): _description_
-            username_list (list): _description_
-            url_date_list (list): _description_
-            games_list (list): _description_
+            urls (json): All the monthly urls extracted for chess.com for a given user.
+            num_urls (int): Number of urls extracted.
+            logger (Logger): Logger object.
+            path_userlogfile (str): Logfile path.
+            username (str): Current users username.
+            username_list (list): list of repeated username.
+            url_date_list (list): list of repeated url dates.
+            games_list (list): list of chess games data.
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: pgn game data table.
         """
         for url_num, url in enumerate(urls["archives"]):
             self.simple_progress_bar(url_num, num_urls)
@@ -117,11 +111,10 @@ class Extract:
         return pgn_df
 
     def export_pgn_data(self, pgn_df: pd.DataFrame) -> None:
-        """_summary_
+        """Extracts teh pgn game data from a given database type.
 
         Args:
-            path_database (str): _description_
-            pgn_df (pd.DataFrame): _description_
+            pgn_df (pd.DataFrame): pgn data table.
         """
         conn = mysql.connector.connect(
             host=self.env_handler.mysql_host,
@@ -141,17 +134,16 @@ class Extract:
     def extract_filter(
         self, username: str, in_log: bool, in_curr: bool, url: str
     ) -> list:
-        """_summary_
+        """Filters the data extract to only pull new games.
 
         Args:
-            username (str): _description_
-            in_log (bool): _description_
-            in_curr (bool): _description_
-            url (str): _description_
-            path_database (str): _description_
+            username (str): Current users username.
+            in_log (bool): Is the current months extract in the logfile.
+            in_curr (bool): Is the current months extract also the current month.
+            url (str): Extract url.
 
         Returns:
-            list: _description_
+            list: game data.
         """
         empty_list = []
         if not in_log:
@@ -163,11 +155,11 @@ class Extract:
             return self.collect_game_data(url)
 
     def filter_pgn_table(self, username: str) -> None:
-        """_summary_
+        """Filters the pgn table by removing games which have been extracted allready
+        and it is still the same month.
 
         Args:
-            username (str): _description_
-            path_database (str): _description_
+            username (str): Current users username.
         """
         curr_month = self.get_curr_mth()
         conn = mysql.connector.connect(
@@ -185,13 +177,13 @@ class Extract:
         conn.close()
 
     def collect_game_data(self, url: str) -> list:
-        """_summary_
+        """Collects the game data from chess.com.
 
         Args:
-            url (str): _description_
+            url (str): A given chess.com api url.
 
         Returns:
-            list: _description_
+            list: list of game data for that url month.
         """
         response = requests.get(url)
         data = response.json()
@@ -202,14 +194,14 @@ class Extract:
         return url_games_list
 
     def url_in_log(self, url: str, path_userlogfile: str) -> bool:
-        """_summary_
+        """Checks if the current url has allready been added to the logfile.
 
         Args:
-            url (str): _description_
-            path_userlogfile (str): _description_
+            url (str): A given chess.com api url.
+            path_userlogfile (str): path_userlogfile (str): Logfile path.
 
         Returns:
-            bool: _description_
+            bool: True if url is in the logfile.
         """
         url_date = self.get_url_date(url)
         with open(path_userlogfile, "r") as log_file:
@@ -226,13 +218,13 @@ class Extract:
             return False
 
     def in_curr_month(self, url: str) -> bool:
-        """_summary_
+        """Checks if the url month date is the current month date.
 
         Args:
-            url (str): _description_
+            url (str): A given chess.com api url.
 
         Returns:
-            bool: _description_
+            bool: True if url in the current month.
         """
         url_date = self.get_url_date(url)
         curr_mth = self.get_curr_mth()
@@ -242,10 +234,10 @@ class Extract:
             return False
 
     def get_curr_mth(self) -> datetime:
-        """_summary_
+        """Gets the current month.
 
         Returns:
-            datetime: _description_
+            curr_mth (datetime): Current month.
         """
         yr = datetime.now().year
         mth = datetime.now().month
@@ -254,13 +246,13 @@ class Extract:
         return curr_mth
 
     def get_url_date(self, url: str) -> datetime:
-        """_summary_
+        """Gets the urls urls date.
 
         Args:
-            url (str): _description_
+            url (str): A given chess.com api url.
 
         Returns:
-            datetime: _description_
+            datetime: url date.
         """
         x = url.split("/")[7:]
         yr, mth = x[0], x[1]
@@ -268,11 +260,11 @@ class Extract:
         return url_date
 
     def simple_progress_bar(self, num: int, num_urls: int) -> None:
-        """_summary_
+        """Simple visual progress bar to track the extract progress.
 
         Args:
-            num (int): _description_
-            total (int): _description_
+            num (int): Current url being extracted.
+            total (int): Total number of urls to be extracted.
         """
         x = "of User's data extracted"
         percent = 100 * ((num + 1) / float(num_urls))
