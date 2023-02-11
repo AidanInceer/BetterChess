@@ -7,6 +7,5 @@ csrf.init_app(app)
 
 
 @app.route("/example/", methods=["POST"])
-@csrf.exempt  # Sensitive
 def example():
     return "example "
