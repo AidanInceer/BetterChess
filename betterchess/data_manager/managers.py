@@ -1,5 +1,4 @@
 import os
-import shutil
 from dataclasses import dataclass
 from sqlite3 import Connection
 
