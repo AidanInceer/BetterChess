@@ -3,6 +3,7 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import chess.pgn
+import pandas as pd
 
 from betterchess.core.game import Game, Prepare
 from betterchess.utils.progress import Progress
@@ -145,18 +146,11 @@ class TestGame(unittest.TestCase):
         }
         assert Game.sum_move_types(self, move_type_list) == move_dict
 
-    @patch("betterchess.core.game.Game.get_predicted_win_percentage", return_value=1)
-    @patch("betterchess.core.game.Game.black_castle_phase", return_value=1)
-    @patch("betterchess.core.game.Game.white_castle_phase", return_value=1)
-    @patch("betterchess.core.game.Game.has_black_castled", return_value=1)
-    @patch("betterchess.core.game.Game.has_white_castled", return_value=1)
-    @patch("betterchess.core.game.Game.black_castle_move_num", return_value=1)
-    @patch("betterchess.core.game.Game.white_castle_move_num", return_value=1)
-    @patch("betterchess.core.game.Game.w_sec_imp", return_value=1)
-    @patch("betterchess.core.game.Game.end_w_acc", return_value=1)
-    @patch("betterchess.core.game.Game.mid_w_acc", return_value=1)
-    @patch("betterchess.core.game.Game.op_w_acc", return_value=1)
-    @patch("betterchess.core.game.Game.game_w_acc", return_value=1)
+    @patch(
+        "betterchess.core.game.Game.create_game_data_df",
+        return_value=pd.DataFrame({"a": [1, 2], "b": [1, 2]}),
+    )
+    @patch("betterchess.core.game.Game.collect_white_player_data", return_value=1)
     @patch("betterchess.core.game.Game.get_curr_game_pgn", return_value=1)
     @patch("betterchess.core.game.Game.game_day_of_week", return_value=1)
     @patch("betterchess.core.game.Game.game_time_of_day", return_value=1)
@@ -165,19 +159,10 @@ class TestGame(unittest.TestCase):
         gtod,
         gdow,
         gcgp,
-        gwa,
-        goa,
-        gmd,
-        ewa,
-        wsi,
-        wcmn,
-        bcmn,
-        hwc,
-        hbc,
-        wcp,
-        bcp,
-        gpwp,
+        cwpd,
+        cgdd,
     ):
+        cwpd.return_value = MagicMock()
         self.game.user_game_data(
             self.move_dict,
             self.game_datetime,
@@ -193,31 +178,14 @@ class TestGame(unittest.TestCase):
         gtod.assert_called()
         gdow.assert_called()
         gcgp.assert_called()
-        gwa.assert_called()
-        goa.assert_called()
-        gmd.assert_called()
-        ewa.assert_called()
-        wsi.assert_called()
-        wcmn.assert_called()
-        bcmn.assert_called()
-        hwc.assert_called()
-        hbc.assert_called()
-        wcp.assert_called()
-        bcp.assert_called()
-        gpwp.assert_called()
+        cwpd.assert_called()
+        cgdd.assert_called()
 
-    @patch("betterchess.core.game.Game.get_predicted_win_percentage", return_value=1)
-    @patch("betterchess.core.game.Game.black_castle_phase", return_value=1)
-    @patch("betterchess.core.game.Game.white_castle_phase", return_value=1)
-    @patch("betterchess.core.game.Game.has_black_castled", return_value=1)
-    @patch("betterchess.core.game.Game.has_white_castled", return_value=1)
-    @patch("betterchess.core.game.Game.black_castle_move_num", return_value=1)
-    @patch("betterchess.core.game.Game.white_castle_move_num", return_value=1)
-    @patch("betterchess.core.game.Game.b_sec_imp", return_value=1)
-    @patch("betterchess.core.game.Game.end_b_acc", return_value=1)
-    @patch("betterchess.core.game.Game.mid_b_acc", return_value=1)
-    @patch("betterchess.core.game.Game.op_b_acc", return_value=1)
-    @patch("betterchess.core.game.Game.game_b_acc", return_value=1)
+    @patch(
+        "betterchess.core.game.Game.create_game_data_df",
+        return_value=pd.DataFrame({"a": [1, 2], "b": [1, 2]}),
+    )
+    @patch("betterchess.core.game.Game.collect_black_player_data", return_value=1)
     @patch("betterchess.core.game.Game.get_curr_game_pgn", return_value=1)
     @patch("betterchess.core.game.Game.game_day_of_week", return_value=1)
     @patch("betterchess.core.game.Game.game_time_of_day", return_value=1)
@@ -226,18 +194,8 @@ class TestGame(unittest.TestCase):
         gtod,
         gdow,
         gcgp,
-        gwa,
-        goa,
-        gmd,
-        ewa,
-        wsi,
-        wcmn,
-        bcmn,
-        hwc,
-        hbc,
-        wcp,
-        bcp,
-        gpwp,
+        cbpd,
+        cgdd,
     ):
         self.game.user_game_data(
             self.move_dict,
@@ -254,18 +212,8 @@ class TestGame(unittest.TestCase):
         gtod.assert_called()
         gdow.assert_called()
         gcgp.assert_called()
-        gwa.assert_called()
-        goa.assert_called()
-        gmd.assert_called()
-        ewa.assert_called()
-        wsi.assert_called()
-        wcmn.assert_called()
-        bcmn.assert_called()
-        hwc.assert_called()
-        hbc.assert_called()
-        wcp.assert_called()
-        bcp.assert_called()
-        gpwp.assert_called()
+        cbpd.assert_called()
+        cgdd.assert_called()
 
     def test_game_time_of_day_night(self):
         game_datetime = datetime(2022, 5, 29, 4, 35, 47)
