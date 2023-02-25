@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import chess.pgn
 import pandas as pd
+from pandas.testing import assert_frame_equal
 
 from betterchess.core.game import Game, Prepare
 from betterchess.utils.progress import Progress
@@ -27,6 +28,7 @@ class TestGame(unittest.TestCase):
             self.env_handler,
             self.iter_metadata,
         )
+
         self.prepare = Prepare()
         self.progress = Progress()
         self.chess_game = MagicMock()
@@ -214,6 +216,89 @@ class TestGame(unittest.TestCase):
         gcgp.assert_called()
         cbpd.assert_called()
         cgdd.assert_called()
+
+    def test_create_game_data_df(self):
+        self.game.time_of_day = "11"
+        self.game.day_of_week = "Monday"
+        self.game.user_win_percent = 0.9
+        self.game.opp_win_percent = 0.1
+        self.game.game_acc = 90
+        self.game.opn_acc = 100
+        self.game.mid_acc = 90
+        self.game.end_acc = 80
+        self.game.num_best_mv = 3
+        self.game.num_excl_mv = 2
+        self.game.num_good_mv = 1
+        self.game.num_inac_mv = 4
+        self.game.num_mist_mv = 3
+        self.game.num_blun_mv = 2
+        self.game.num_misw_mv = 1
+        self.game.sec_improve = "opening"
+        self.game.user_castle_mv = 12
+        self.game.opp_castle_mv = 13
+        self.game.user_castled = 1
+        self.game.opp_castled = 1
+        self.game.user_castle_phase = "opening"
+        self.game.opp_castle_phase = "opening"
+        self.game.game_pgn = "pgn"
+
+        actual = self.game.create_game_data_df(
+            self.game_datetime,
+            self.total_moves,
+            self.header1,
+            self.input_handler.username,
+            self.input_handler.edepth,
+            self.game_num,
+        )
+
+        expected = pd.DataFrame(
+            {
+                "Username": self.input_handler.username,
+                "Game_date": self.game_datetime,
+                "Game_time_of_day": self.game.time_of_day,
+                "Game_weekday": self.game.day_of_week,
+                "Engine_depth": self.input_handler.edepth,
+                "Game_number": self.game_num,
+                "Game_type": self.header1["Time_control"],
+                "White_player": self.header1["White_player"],
+                "White_rating": self.header1["White_rating"],
+                "Black_player": self.header1["Black_player"],
+                "Black_rating": self.header1["Black_rating"],
+                "User_colour": self.header1["User_Colour"],
+                "User_rating": self.header1["User_rating"],
+                "Opponent_rating": self.header1["Opponent_rating"],
+                "User_win_percent": self.game.user_win_percent,
+                "Opp_win_percent": self.game.opp_win_percent,
+                "User_winner": self.header1["User_winner"],
+                "Opening_name": self.header1["Opening_name"],
+                "Opening_class": self.header1["Opening_class"],
+                "Termination": self.header1["Termination"],
+                "End_type": self.header1["Win_draw_loss"],
+                "Number_of_moves": self.total_moves,
+                "Accuracy": self.game.game_acc,
+                "Opening_accuracy": self.game.opn_acc,
+                "Mid_accuracy": self.game.mid_acc,
+                "End_accuracy": self.game.end_acc,
+                "No_best": self.game.num_best_mv,
+                "No_excellent": self.game.num_excl_mv,
+                "No_good": self.game.num_good_mv,
+                "No_inaccuracy": self.game.num_inac_mv,
+                "No_mistake": self.game.num_mist_mv,
+                "No_blunder": self.game.num_blun_mv,
+                "No_missed_win": self.game.num_misw_mv,
+                "Improvement": self.game.sec_improve,
+                "User_castle_num": self.game.user_castle_mv,
+                "Opp_castle_num": self.game.opp_castle_mv,
+                "User_castled": self.game.user_castled,
+                "Opp_castled": self.game.opp_castled,
+                "User_castle_phase": self.game.user_castle_phase,
+                "Opp_castle_phase": self.game.opp_castle_phase,
+                "Game_pgn": self.game.game_pgn,
+            },
+            index=[0],
+        )
+
+        assert_frame_equal(actual, expected)
 
     def test_game_time_of_day_night(self):
         game_datetime = datetime(2022, 5, 29, 4, 35, 47)
