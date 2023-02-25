@@ -168,55 +168,38 @@ class Game:
         self.game_pgn = self.get_curr_game_pgn(self.file_handler.path_temp)
 
         if username == headers["White_player"]:
-            self.game_acc = self.game_w_acc(game_move_acc)
-            self.opn_acc = self.op_w_acc(game_move_acc)
-            self.mid_acc = self.mid_w_acc(game_move_acc)
-            self.end_acc = self.end_w_acc(game_move_acc)
-            self.num_best_mv = move_dict["Num_w_best"]
-            self.num_excl_mv = move_dict["Num_w_excl"]
-            self.num_good_mv = move_dict["Num_w_good"]
-            self.num_inac_mv = move_dict["Num_w_inac"]
-            self.num_mist_mv = move_dict["Num_w_mist"]
-            self.num_blun_mv = move_dict["Num_w_blun"]
-            self.num_misw_mv = move_dict["Num_w_misw"]
-            self.sec_improve = self.w_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
-            self.user_castle_mv = self.white_castle_move_num(w_castle_num)
-            self.opp_castle_mv = self.black_castle_move_num(b_castle_num)
-            self.user_castled = self.has_white_castled(w_castle_num)
-            self.opp_castled = self.has_black_castled(b_castle_num)
-            self.user_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
-            self.opp_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
-            self.user_win_percent = self.get_predicted_win_percentage(
-                headers["White_rating"], headers["Black_rating"]
+            self.collect_white_player_data(
+                move_dict,
+                game_move_acc,
+                w_castle_num,
+                b_castle_num,
+                total_moves,
+                headers,
             )
-            self.opp_win_percent = self.get_predicted_win_percentage(
-                headers["Black_rating"], headers["White_rating"]
+        elif username == headers["Black_player"]:
+            self.collect_black_player_data(
+                move_dict,
+                game_move_acc,
+                w_castle_num,
+                b_castle_num,
+                total_moves,
+                headers,
             )
-        else:
-            self.game_acc = self.game_b_acc(game_move_acc)
-            self.opn_acc = self.op_b_acc(game_move_acc)
-            self.mid_acc = self.mid_b_acc(game_move_acc)
-            self.end_acc = self.end_b_acc(game_move_acc)
-            self.num_best_mv = move_dict["Num_b_best"]
-            self.num_excl_mv = move_dict["Num_b_excl"]
-            self.num_good_mv = move_dict["Num_b_good"]
-            self.num_inac_mv = move_dict["Num_b_inac"]
-            self.num_mist_mv = move_dict["Num_b_mist"]
-            self.num_blun_mv = move_dict["Num_b_blun"]
-            self.num_misw_mv = move_dict["Num_b_misw"]
-            self.sec_improve = self.b_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
-            self.user_castle_mv = self.black_castle_move_num(b_castle_num)
-            self.opp_castle_mv = self.white_castle_move_num(w_castle_num)
-            self.user_castled = self.has_black_castled(b_castle_num)
-            self.opp_castled = self.has_white_castled(w_castle_num)
-            self.user_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
-            self.opp_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
-            self.user_win_percent = self.get_predicted_win_percentage(
-                headers["Black_rating"], headers["White_rating"]
-            )
-            self.opp_win_percent = self.get_predicted_win_percentage(
-                headers["White_rating"], headers["Black_rating"]
-            )
+
+        game_df = self.create_game_data_df(
+            game_datetime, total_moves, headers, username, edepth, game_num
+        )
+        return game_df
+
+    def create_game_data_df(
+        self,
+        game_datetime: str,
+        total_moves: int,
+        headers: dict,
+        username: str,
+        edepth: int,
+        game_num: int,
+    ):
         game_df = pd.DataFrame(
             {
                 "Username": username,
@@ -264,6 +247,74 @@ class Game:
             index=[0],
         )
         return game_df
+
+    def collect_white_player_data(
+        self,
+        move_dict: dict,
+        game_move_acc: list,
+        w_castle_num: list,
+        b_castle_num: list,
+        total_moves: int,
+        headers: dict,
+    ):
+        self.game_acc = self.game_w_acc(game_move_acc)
+        self.opn_acc = self.op_w_acc(game_move_acc)
+        self.mid_acc = self.mid_w_acc(game_move_acc)
+        self.end_acc = self.end_w_acc(game_move_acc)
+        self.num_best_mv = move_dict["Num_w_best"]
+        self.num_excl_mv = move_dict["Num_w_excl"]
+        self.num_good_mv = move_dict["Num_w_good"]
+        self.num_inac_mv = move_dict["Num_w_inac"]
+        self.num_mist_mv = move_dict["Num_w_mist"]
+        self.num_blun_mv = move_dict["Num_w_blun"]
+        self.num_misw_mv = move_dict["Num_w_misw"]
+        self.sec_improve = self.w_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
+        self.user_castle_mv = self.white_castle_move_num(w_castle_num)
+        self.opp_castle_mv = self.black_castle_move_num(b_castle_num)
+        self.user_castled = self.has_white_castled(w_castle_num)
+        self.opp_castled = self.has_black_castled(b_castle_num)
+        self.user_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
+        self.opp_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
+        self.user_win_percent = self.get_predicted_win_percentage(
+            headers["White_rating"], headers["Black_rating"]
+        )
+        self.opp_win_percent = self.get_predicted_win_percentage(
+            headers["Black_rating"], headers["White_rating"]
+        )
+
+    def collect_black_player_data(
+        self,
+        move_dict: dict,
+        game_move_acc: list,
+        w_castle_num: list,
+        b_castle_num: list,
+        total_moves: int,
+        headers: dict,
+    ):
+        self.game_acc = self.game_b_acc(game_move_acc)
+        self.opn_acc = self.op_b_acc(game_move_acc)
+        self.mid_acc = self.mid_b_acc(game_move_acc)
+        self.end_acc = self.end_b_acc(game_move_acc)
+        self.num_best_mv = move_dict["Num_b_best"]
+        self.num_excl_mv = move_dict["Num_b_excl"]
+        self.num_good_mv = move_dict["Num_b_good"]
+        self.num_inac_mv = move_dict["Num_b_inac"]
+        self.num_mist_mv = move_dict["Num_b_mist"]
+        self.num_blun_mv = move_dict["Num_b_blun"]
+        self.num_misw_mv = move_dict["Num_b_misw"]
+        self.sec_improve = self.b_sec_imp(self.opn_acc, self.mid_acc, self.end_acc)
+        self.user_castle_mv = self.black_castle_move_num(b_castle_num)
+        self.opp_castle_mv = self.white_castle_move_num(w_castle_num)
+        self.user_castled = self.has_black_castled(b_castle_num)
+        self.opp_castled = self.has_white_castled(w_castle_num)
+        self.user_castle_phase = self.black_castle_phase(b_castle_num, total_moves)
+        self.opp_castle_phase = self.white_castle_phase(w_castle_num, total_moves)
+        self.user_win_percent = self.get_predicted_win_percentage(
+            headers["Black_rating"], headers["White_rating"]
+        )
+        self.opp_win_percent = self.get_predicted_win_percentage(
+            headers["White_rating"], headers["Black_rating"]
+        )
 
     def export_game_data(self, game_df: pd.DataFrame, env_handler: EnvHandler):
         """Exports game data to database depending on `.env` parameter `DB_TYPE`.
