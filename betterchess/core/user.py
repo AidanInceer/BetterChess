@@ -13,7 +13,8 @@ from sqlalchemy import create_engine
 
 from betterchess.core.game import Game
 from betterchess.utils.extract import Extract
-from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import (EnvHandler, FileHandler, InputHandler,
+                                        RunHandler)
 
 
 @dataclass
@@ -144,7 +145,7 @@ class PrepareUsers:
                 "b": [1, 2, 3, 4, 5, 6],
             }
         )
-        df = df.iloc[0:3]
+        df = df.iloc[0 : 3]
         return df
 
     def init_game_logs(
