@@ -15,8 +15,7 @@ from sqlalchemy import create_engine
 
 from betterchess.core.headers import Headers
 from betterchess.core.move import Move
-from betterchess.utils.handlers import (EnvHandler, FileHandler, InputHandler,
-                                        RunHandler)
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 from betterchess.utils.progress import Progress
 
 
@@ -80,20 +79,6 @@ class Game:
                 start_time,
                 end_time,
             )
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
 
     def analyse_game(
         self, move_type_list: dict, total_moves: int, env_handler: EnvHandler
