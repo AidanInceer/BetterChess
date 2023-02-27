@@ -21,4 +21,4 @@ repos:
     rev: 1.5.7
     hooks:
     -   id: autopep8
-        args: ["--in-place", "ignore=E203,W503,W504"]
+        args: [--in-place, ignore=E203,W503,W504]
