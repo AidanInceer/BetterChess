@@ -13,8 +13,7 @@ from sqlalchemy import create_engine
 
 from betterchess.core.game import Game
 from betterchess.utils.extract import Extract
-from betterchess.utils.handlers import (EnvHandler, FileHandler, InputHandler,
-                                        RunHandler)
+from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
 
 
 @dataclass
@@ -137,23 +136,6 @@ class PrepareUsers:
             tot_games = len(all_games["game_data"])
             conn.close()
             return all_games, tot_games
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
 
     def init_game_logs(
         self, username: str, path_userlogfile: str, logger: Logger
