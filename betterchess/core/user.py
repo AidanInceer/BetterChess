@@ -137,6 +137,15 @@ class PrepareUsers:
             conn.close()
             return all_games, tot_games
 
+    def things(self):
+        df = pd.DataFrame(
+            {
+                "a": [1, 2,3,4,5,6],
+                "b": [1, 2,3,4,5,6],
+            }
+        )
+        df = df.iloc[:3]
+
     def init_game_logs(
         self, username: str, path_userlogfile: str, logger: Logger
     ) -> None:
