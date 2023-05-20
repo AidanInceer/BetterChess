@@ -107,8 +107,7 @@ class Extract:
             "url_date": url_date_list,
             "game_data": games_list,
         }
-        pgn_df = pd.DataFrame(game_dict)
-        return pgn_df
+        return pd.DataFrame(game_dict)
 
     def export_pgn_data(self, pgn_df: pd.DataFrame) -> None:
         """Extracts teh pgn game data from a given database type.
@@ -148,9 +147,9 @@ class Extract:
         empty_list = []
         if not in_log:
             return self.collect_game_data(url)
-        elif in_log and not in_curr:
+        elif not in_curr:
             return empty_list
-        elif in_log and in_curr:
+        else:
             self.filter_pgn_table(username)
             return self.collect_game_data(url)
 
@@ -212,10 +211,7 @@ class Extract:
                 line.split("|")[2].strip(), "%Y-%m-%d %H:%M:%S"
             )
             url_date_list.append(log_url_date)
-        if url_date in url_date_list:
-            return True
-        else:
-            return False
+        return url_date in url_date_list
 
     def in_curr_month(self, url: str) -> bool:
         """Checks if the url month date is the current month date.
@@ -228,10 +224,7 @@ class Extract:
         """
         url_date = self.get_url_date(url)
         curr_mth = self.get_curr_mth()
-        if curr_mth == url_date:
-            return True
-        else:
-            return False
+        return curr_mth == url_date
 
     def get_curr_mth(self) -> datetime:
         """Gets the current month.
@@ -242,8 +235,7 @@ class Extract:
         yr = datetime.now().year
         mth = datetime.now().month
         day = 1
-        curr_mth = datetime(yr, mth, day)
-        return curr_mth
+        return datetime(yr, mth, day)
 
     def get_url_date(self, url: str) -> datetime:
         """Gets the urls urls date.
@@ -256,8 +248,7 @@ class Extract:
         """
         x = url.split("/")[7:]
         yr, mth = x[0], x[1]
-        url_date = datetime(int(yr), int(mth), 1)
-        return url_date
+        return datetime(int(yr), int(mth), 1)
 
     def simple_progress_bar(self, num: int, num_urls: int) -> None:
         """Simple visual progress bar to track the extract progress.

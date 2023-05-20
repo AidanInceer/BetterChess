@@ -164,8 +164,7 @@ class Move:
         get_eval = str(move["score"].white())
         if "#" in get_eval:
             get_eval = get_eval[1:]
-        get_eval = int(get_eval)
-        return get_eval
+        return int(get_eval)
 
     @staticmethod
     def eval_delta(move_num: int, eval_bm: float, eval_ml: float) -> float:
@@ -180,11 +179,8 @@ class Move:
             eval_diff (float): Different between main and best move.
         """
         if move_num % 2 == 0:
-            eval_diff = round(abs(eval_bm - eval_ml), 3)
-            return eval_diff
-        else:
-            eval_diff = round(abs(eval_ml - eval_bm), 3)
-            return eval_diff
+            return round(abs(eval_bm - eval_ml), 3)
+        return round(abs(eval_ml - eval_bm), 3)
 
     @staticmethod
     def move_accuracy(eval_diff: float) -> float:
@@ -197,8 +193,7 @@ class Move:
             move_acc (float): Returns an accuracy between 0-100.
         """
         m, v = 0, 1.5
-        move_acc = round(math.exp(-0.00003 * ((eval_diff - m) / v) ** 2) * 100, 1)
-        return move_acc
+        return round(math.exp(-0.00003 * ((eval_diff - m) / v) ** 2) * 100, 1)
 
     @staticmethod
     def assign_move_type(move_acc: float) -> int:
@@ -218,20 +213,19 @@ class Move:
                 - missed win = -4
         """
         if move_acc == 100:
-            move_type = 2
+            return 2
         elif 99.5 <= move_acc < 100:
-            move_type = 1
+            return 1
         elif 87.5 <= move_acc < 99.5:
-            move_type = 0
+            return 0
         elif 58.6 <= move_acc < 87.5:
-            move_type = -1
+            return -1
         elif 30 <= move_acc < 58.6:
-            move_type = -2
+            return -2
         elif 2 <= move_acc < 30:
-            move_type = -3
+            return -3
         else:
-            move_type = -4
-        return move_type
+            return -4
 
     @staticmethod
     def chess_piece(curr_board: chess.BaseBoard, square_int: int) -> str:
@@ -246,20 +240,19 @@ class Move:
         """
         piece_type_num = chess.BaseBoard.piece_type_at(curr_board, square=square_int)
         if piece_type_num == 1:
-            piece_type = "pawn"
+            return "pawn"
         elif piece_type_num == 2:
-            piece_type = "knight"
+            return "knight"
         elif piece_type_num == 3:
-            piece_type = "bishop"
+            return "bishop"
         elif piece_type_num == 4:
-            piece_type = "rook"
+            return "rook"
         elif piece_type_num == 5:
-            piece_type = "queen"
+            return "queen"
         elif piece_type_num == 6:
-            piece_type = "king"
+            return "king"
         else:
-            piece_type = " "
-        return piece_type
+            return " "
 
     def get_curr_board(self) -> chess.BaseBoard:
         """Gets the current board position.
@@ -268,8 +261,7 @@ class Move:
             chess.BaseBoard: Current board position.
         """
         curr_fen = self.game_metadata["board"].board_fen()
-        curr_board = chess.BaseBoard(board_fen=curr_fen)
-        return curr_board
+        return chess.BaseBoard(board_fen=curr_fen)
 
     @staticmethod
     def get_piece_square_int(move) -> int:
@@ -284,8 +276,7 @@ class Move:
         piece_col = str(move)[2:3]
         piece_row = str(move)[3:4]
         piece_square = str(piece_col + piece_row)
-        square_int = chess.parse_square(name=piece_square)
-        return square_int
+        return chess.parse_square(name=piece_square)
 
     @staticmethod
     def move_colour(move_num) -> str:
@@ -297,11 +288,7 @@ class Move:
         Returns:
             str: black or white.
         """
-        if move_num % 2 == 0:
-            mv_colour = "white"
-        else:
-            mv_colour = "black"
-        return mv_colour
+        return "white" if move_num % 2 == 0 else "black"
 
     @staticmethod
     def castling_type(piece: str, move_col: str, str_ml: str) -> str:
@@ -316,16 +303,15 @@ class Move:
             str: Castling type by colour.
         """
         if piece == "king" and move_col == "white" and str_ml == "e1g1":
-            cas_type = "white_short"
+            return "white_short"
         elif piece == "king" and move_col == "white" and str_ml == "e1c1":
-            cas_type = "white_long"
+            return "white_long"
         elif piece == "king" and move_col == "black" and str_ml == "e8g8":
-            cas_type = "black_short"
+            return "black_short"
         elif piece == "king" and move_col == "black" and str_ml == "e8c8":
-            cas_type = "black_long"
+            return "black_long"
         else:
-            cas_type = None
-        return cas_type
+            return None
 
     @staticmethod
     def white_castle_move_num(castle_type: Union[str, None], move_num: int) -> int:
@@ -388,7 +374,7 @@ class Move:
                 time_spent = round(timerem_b - move_time_b + time_int, 3)
                 time_list.append(time_spent)
                 timerem_b = move_time_b
-        return time_list[int(move_num)]
+        return time_list[move_num]
 
     @staticmethod
     def filter_timecont_header(path_temp: str) -> tuple[float, float, int]:

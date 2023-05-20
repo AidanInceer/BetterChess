@@ -114,7 +114,7 @@ class Game:
         Returns:
             dict: Dictionary of moves type lists.
         """
-        move_dict = {
+        return {
             "Num_w_best": move_type_list[::2].count(2),
             "Num_b_best": move_type_list[1::2].count(2),
             "Num_w_excl": move_type_list[::2].count(1),
@@ -130,7 +130,6 @@ class Game:
             "Num_w_misw": move_type_list[::2].count(-4),
             "Num_b_misw": move_type_list[1::2].count(-4),
         }
-        return move_dict
 
     def user_game_data(
         self,
@@ -186,10 +185,9 @@ class Game:
                 headers,
             )
 
-        game_df = self.create_game_data_df(
+        return self.create_game_data_df(
             game_datetime, total_moves, headers, username, edepth, game_num
         )
-        return game_df
 
     def create_game_data_df(
         self,
@@ -200,7 +198,7 @@ class Game:
         edepth: int,
         game_num: int,
     ):
-        game_df = pd.DataFrame(
+        return pd.DataFrame(
             {
                 "Username": username,
                 "Game_date": game_datetime,
@@ -246,7 +244,6 @@ class Game:
             },
             index=[0],
         )
-        return game_df
 
     def collect_white_player_data(
         self,
@@ -399,11 +396,7 @@ class Game:
         """
         w_list = game_move_acc[::2]
         list_len = len(game_move_acc[::2])
-        if list_len == 0:
-            wg_acc = 0
-        else:
-            wg_acc = round(sum(w_list) / list_len, 2)
-        return wg_acc
+        return 0 if list_len == 0 else round(sum(w_list) / list_len, 2)
 
     @staticmethod
     def game_b_acc(game_move_acc: list) -> float:
@@ -417,11 +410,7 @@ class Game:
         """
         b__list = game_move_acc[1::2]
         list_len = len(game_move_acc[1::2])
-        if list_len == 0:
-            bg_acc = 0
-        else:
-            bg_acc = round(sum(b__list) / list_len, 2)
-        return bg_acc
+        return 0 if list_len == 0 else round(sum(b__list) / list_len, 2)
 
     @staticmethod
     def op_w_acc(game_move_acc: list) -> float:
@@ -436,11 +425,7 @@ class Game:
         list_w = game_move_acc[::2]
         op_list_w = np.array_split(list_w, 3)[0]
         sep_len = len(op_list_w)
-        if sep_len == 0:
-            white_opening_acc = 0
-        else:
-            white_opening_acc = round(sum(op_list_w) / (sep_len), 2)
-        return white_opening_acc
+        return 0 if sep_len == 0 else round(sum(op_list_w) / (sep_len), 2)
 
     @staticmethod
     def mid_w_acc(game_move_acc: list) -> float:
@@ -455,14 +440,11 @@ class Game:
         list_w = game_move_acc[::2]
         mid_list_w = np.array_split(list_w, 3)[1]
         sep_len = len(mid_list_w)
-        if sep_len == 0:
-            white_midgame_acc = 0
-        else:
-            white_midgame_acc = round(sum(mid_list_w) / (sep_len), 2)
-        return white_midgame_acc
+        return 0 if sep_len == 0 else round(sum(mid_list_w) / (sep_len), 2)
 
     @staticmethod
     def end_w_acc(game_move_acc: list) -> float:
+        # sourcery skip: assign-if-exp, inline-immediately-returned-variable
         """Endgame accuracy for white.
 
         Args:
@@ -475,10 +457,9 @@ class Game:
         end_list_w = np.array_split(list_w, 3)[2]
         sep_len = len(end_list_w)
         if sep_len == 0:
-            white_endgame_acc = 0
+            return 0
         else:
-            white_endgame_acc = round(sum(end_list_w) / (sep_len), 2)
-        return white_endgame_acc
+            return round(sum(end_list_w) / (sep_len), 2)
 
     @staticmethod
     def op_b_acc(game_move_acc: list) -> float:
@@ -493,11 +474,7 @@ class Game:
         list_b = game_move_acc[1::2]
         op_list_b = np.array_split(list_b, 3)[0]
         sep_len = len(op_list_b)
-        if sep_len == 0:
-            black_opening_acc = 0
-        else:
-            black_opening_acc = round(sum(op_list_b) / (sep_len), 2)
-        return black_opening_acc
+        return 0 if sep_len == 0 else round(sum(op_list_b) / (sep_len), 2)
 
     @staticmethod
     def mid_b_acc(game_move_acc: list) -> float:
@@ -512,11 +489,7 @@ class Game:
         list_b = game_move_acc[1::2]
         mid_list_b = np.array_split(list_b, 3)[1]
         sep_len = len(mid_list_b)
-        if sep_len == 0:
-            black_midgame_acc = 0
-        else:
-            black_midgame_acc = round(sum(mid_list_b) / (sep_len), 2)
-        return black_midgame_acc
+        return 0 if sep_len == 0 else round(sum(mid_list_b) / (sep_len), 2)
 
     @staticmethod
     def end_b_acc(game_move_acc: list) -> float:
@@ -531,11 +504,7 @@ class Game:
         list_b = game_move_acc[1::2]
         end_list_b = np.array_split(list_b, 3)[2]
         sep_len = len(end_list_b)
-        if sep_len == 0:
-            black_endgame_acc = 0
-        else:
-            black_endgame_acc = round(sum(end_list_b) / (sep_len), 2)
-        return black_endgame_acc
+        return 0 if sep_len == 0 else round(sum(end_list_b) / (sep_len), 2)
 
     @staticmethod
     def w_sec_imp(ow: float, mw: float, ew: float) -> str:
@@ -550,12 +519,11 @@ class Game:
             str: Game section.
         """
         if ow < ew and ow < mw:
-            white_sector_improvement = "Opening"
+            return "Opening"
         elif mw < ow and mw < ew:
-            white_sector_improvement = "Midgame"
+            return "Midgame"
         else:
-            white_sector_improvement = "Endgame"
-        return white_sector_improvement
+            return "Endgame"
 
     @staticmethod
     def b_sec_imp(ob: float, mb: float, eb: float) -> str:
@@ -570,12 +538,11 @@ class Game:
             str: Game section.
         """
         if ob < mb and ob < eb:
-            black_sector_improvement = "Opening"
+            return "Opening"
         elif mb < ob and mb < eb:
-            black_sector_improvement = "Midgame"
+            return "Midgame"
         else:
-            black_sector_improvement = "Endgame"
-        return black_sector_improvement
+            return "Endgame"
 
     @staticmethod
     def white_castle_move_num(white_castle_num: list) -> int:
@@ -611,10 +578,7 @@ class Game:
         Returns:
             int: 1 if castled 0 if not castled.
         """
-        if sum(white_castle_num) > 0:
-            return 1
-        else:
-            return 0
+        return 1 if sum(white_castle_num) > 0 else 0
 
     @staticmethod
     def has_black_castled(black_castle_num: list) -> int:
@@ -626,10 +590,7 @@ class Game:
         Returns:
             int: 1 if castled 0 if not castled.
         """
-        if sum(black_castle_num) > 0:
-            return 1
-        else:
-            return 0
+        return 1 if sum(black_castle_num) > 0 else 0
 
     @staticmethod
     def white_castle_phase(white_castle_num: list, total_moves: int) -> str:
@@ -644,15 +605,14 @@ class Game:
         """
         if total_moves == 0:
             return "None"
-        else:
-            if sum(white_castle_num) == 0:
-                return "None"
-            elif sum(white_castle_num) / (total_moves) < (1 / 3):
-                return "Opening"
-            elif sum(white_castle_num) / (total_moves) <= (2 / 3):
-                return "Midgame"
-            elif sum(white_castle_num) / (total_moves) <= 1:
-                return "Endgame"
+        if sum(white_castle_num) == 0:
+            return "None"
+        elif sum(white_castle_num) / (total_moves) < (1 / 3):
+            return "Opening"
+        elif sum(white_castle_num) / (total_moves) <= (2 / 3):
+            return "Midgame"
+        elif sum(white_castle_num) / (total_moves) <= 1:
+            return "Endgame"
 
     @staticmethod
     def black_castle_phase(black_castle_num: list, total_moves: int) -> str:
@@ -667,15 +627,14 @@ class Game:
         """
         if total_moves == 0:
             return "None"
-        else:
-            if sum(black_castle_num) == 0:
-                return "None"
-            elif sum(black_castle_num) / (total_moves) < (1 / 3):
-                return "Opening"
-            elif sum(black_castle_num) / (total_moves) <= (2 / 3):
-                return "Midgame"
-            elif sum(black_castle_num) / (total_moves) <= 1:
-                return "Endgame"
+        if sum(black_castle_num) == 0:
+            return "None"
+        elif sum(black_castle_num) / (total_moves) < (1 / 3):
+            return "Opening"
+        elif sum(black_castle_num) / (total_moves) <= (2 / 3):
+            return "Midgame"
+        elif sum(black_castle_num) / (total_moves) <= 1:
+            return "Endgame"
 
     @staticmethod
     def get_predicted_win_percentage(player_1: int, player_2: int) -> float:
@@ -689,8 +648,7 @@ class Game:
             float: Predicted win percentage.
         """
         exp_term = (player_2 - player_1) / 400
-        pred_win_percent = round((1 / (1 + 10**exp_term)) * 100, 2)
-        return pred_win_percent
+        return round((1 / (1 + 10**exp_term)) * 100, 2)
 
     @staticmethod
     def get_curr_game_pgn(path_temp: str) -> pd.DataFrame:
@@ -738,14 +696,13 @@ class Prepare:
             input_handler, file_handler, run_handler, iter_metadata, chess_game
         )
         headers = game_headers.collect()
-        game_metadata = {
+        return {
             "headers": headers,
             "game_datetime": headers["Game_datetime"],
             "board": board,
             "chess_game": chess_game,
             "game_lists_dict": game_lists_dict,
         }
-        return game_metadata
 
     def init_game(self, path_temp: str) -> chess.pgn.Game:
         """Initialzies the current temporary game.
@@ -776,7 +733,7 @@ class Prepare:
         Returns:
             dict: Dictionary of empty game lists.
         """
-        game_lists_dict = {
+        return {
             "gm_mv_num": [],
             "gm_mv": [],
             "gm_best_mv": [],
@@ -788,7 +745,6 @@ class Prepare:
             "w_castle_num": [],
             "b_castle_num": [],
         }
-        return game_lists_dict
 
     def all_games(self, path_userlogfile: str) -> datetime:
         """Wrapper for get_last_logged_game function to improve code flow.
@@ -813,8 +769,7 @@ class Prepare:
         game_log_list = self.get_game_log_list(path_userlogfile)
         llog = game_log_list[-1]
         llog_date_str = llog.split("|")[2].strip()
-        llog_date = datetime.strptime(llog_date_str, "%Y-%m-%d %H:%M:%S")
-        return llog_date
+        return datetime.strptime(llog_date_str, "%Y-%m-%d %H:%M:%S")
 
     def get_game_log_list(self, path_userlogfile: str) -> list:
         """Collects the log list.
@@ -838,6 +793,6 @@ class Prepare:
             game_log_list (list): List of log lines
             lines (list[str]): Lines withing the log file.
         """
-        for line in lines:
-            if ("user" in line) or ("game" in line):
-                game_log_list.append(line)
+        game_log_list.extend(
+            line for line in lines if ("user" in line) or ("game" in line)
+        )

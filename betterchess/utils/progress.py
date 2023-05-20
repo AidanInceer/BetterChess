@@ -60,5 +60,4 @@ class Progress:
         """
         analysis_time = end_time - start_time
         time_list.append(analysis_time)
-        avg_game_time = sum(time_list) / len(time_list)
-        return avg_game_time
+        return sum(time_list) / len(time_list)

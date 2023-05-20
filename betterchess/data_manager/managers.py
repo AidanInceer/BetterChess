@@ -1,4 +1,5 @@
 import os
+import pathlib
 from dataclasses import dataclass
 from sqlite3 import Connection
 
@@ -97,9 +98,7 @@ class MySQLManager:
         Returns:
             sql (str): sql query
         """
-        with open(sqlfilepath) as file:
-            sql = file.read()
-        return sql
+        return pathlib.Path(sqlfilepath).read_text()
 
 
 @dataclass
@@ -198,6 +197,4 @@ class SQLiteManager:
         Returns:
             sql (str): sql query
         """
-        with open(sqlfilepath) as file:
-            sql = file.read()
-        return sql
+        return pathlib.Path(sqlfilepath).read_text()

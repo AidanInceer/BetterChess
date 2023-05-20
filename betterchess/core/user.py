@@ -188,9 +188,9 @@ class PrepareUsers:
             game_log_list (list): List of logged games in logfile
             lines (list[str]): Lines in the logfile
         """
-        for line in lines:
-            if ("user" in line) or ("user_analysis" in line):
-                game_log_list.append(line)
+        game_log_list.extend(
+            line for line in lines if ("user" in line) or ("user_analysis" in line)
+        )
 
     def current_game(self, path_temp: str, chess_game: chess.pgn.Game) -> None:
         """Writes the current game to temp.pgn.
@@ -268,8 +268,7 @@ class Cleandown:
         """
         if self.logfile_not_empty(path_userlogfile):
             log_list = self.get_game_log_list(path_userlogfile)
-            last_logged_game_num = int(log_list[-1].split("|")[3].strip())
-            return last_logged_game_num
+            return int(log_list[-1].split("|")[3].strip())
 
     def logfile_not_empty(self, path_userlogfile: str) -> bool:
         """Checks to see if the logfile is empty.
@@ -282,10 +281,7 @@ class Cleandown:
         """
         with open(path_userlogfile, mode="r") as log_file:
             lines = log_file.readlines()
-        if lines:
-            return True
-        else:
-            return False
+        return bool(lines)
 
     def get_game_log_list(self, path_userlogfile: str) -> list:
         """Returns the number of lines in the logfile = "user" or "analysis".
@@ -309,6 +305,6 @@ class Cleandown:
             game_log_list (list):  List of logged games.
             lines (list[str]): Lines in the log file.
         """
-        for line in lines:
-            if ("user" in line) or ("game" in line):
-                game_log_list.append(line)
+        game_log_list.extend(
+            line for line in lines if ("user" in line) or ("game" in line)
+        )
