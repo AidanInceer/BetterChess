@@ -4,7 +4,6 @@ Eventually module to be removed as this will display in the front end.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass
@@ -20,23 +19,19 @@ class Progress:
         """
         avg_game_time = self.timers(start_time, end_time)
         time_r = ((total - (game + 1)) * (avg_game_time)) / 3600
+
         hours_r = int(time_r)
-        if hours_r < 10:
-            hrs = "0" + str(hours_r)
-        else:
-            hrs = str(hours_r)
+        hrs = f"0{hours_r}" if hours_r < 10 else str(hours_r)
+
         mins_tot = (time_r - hours_r) * 60
         mins_r = int(mins_tot)
-        if mins_r < 10:
-            mins = "0" + str(mins_r)
-        else:
-            mins = str(mins_r)
+        mins = f"0{mins_r}" if mins_r < 10 else str(mins_r)
+
         sec_r = int((mins_tot - mins_r) * 60)
-        if sec_r < 10:
-            secs = "0" + str(sec_r)
-        else:
-            secs = str(sec_r)
+        secs = f"0{sec_r}" if sec_r < 10 else str(sec_r)
+
         eta = f"{hrs}:{mins}:{secs}"
+
         per = 100 * ((game + 1) / float(total))
         bar = "❚" * int(per / 2.5) + "-" * (40 - int(per / 2.5))
         print(
@@ -44,14 +39,14 @@ class Progress:
         )
 
     def timers(
-        self, start_time: datetime, end_time: datetime, time_list: list = []
+        self, start_time: float, end_time: float, time_list: list = []
     ) -> float:
         """Time taken to analyse a chess game - used to calculate the time remaining
         for analysis.
 
         Args:
-            start_time (datetime): Start time of the game analysis.
-            end_time (datetime): End time of the game analysis.
+            start_time (float): Start time of the game analysis.
+            end_time (float): End time of the game analysis.
             time_list (list, optional): List of times taken to analyse previous games in
              current run. Defaults to [].
 

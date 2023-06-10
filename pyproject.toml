@@ -1,0 +1,4 @@
+[tool.mypy]
+mypy_path = "./betterchess/"
+ignore_missing_imports = True
+disallow_any_unimported = True
