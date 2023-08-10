@@ -295,4 +295,3 @@ class Headers:
         """
         game_date_time = f"{game_date} {game_time}"
         return datetime.strptime(game_date_time, "%Y.%m.%d %H:%M:%S")
-

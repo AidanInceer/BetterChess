@@ -13,7 +13,8 @@ import pandas as pd
 from chess import Board
 from sqlalchemy import create_engine
 
-from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import (EnvHandler, FileHandler, InputHandler,
+                                        RunHandler)
 
 
 @dataclass
@@ -291,7 +292,7 @@ class Move:
         return "white" if move_num % 2 == 0 else "black"
 
     @staticmethod
-    def castling_type(piece: str, move_col: str, str_ml: str) -> str:
+    def castling_type(piece: str, move_col: str, str_ml: str) -> [str, None]:
         """Determines whether a played castled long, short or not at all.
 
         Args:
@@ -324,11 +325,7 @@ class Move:
         Returns:
             int: Castling move number.
         """
-        if castle_type == "white_short" or castle_type == "white_long":
-            white_castle_move = move_num
-        else:
-            white_castle_move = 0
-        return white_castle_move
+        return move_num if castle_type in ["white_short", "white_long"] else 0
 
     @staticmethod
     def black_castle_move_num(castle_type: Union[str, None], move_num: int) -> int:
@@ -341,11 +338,7 @@ class Move:
         Returns:
             int:  Castling move number.
         """
-        if castle_type == "black_short" or castle_type == "black_long":
-            black_castle_move = move_num
-        else:
-            black_castle_move = 0
-        return black_castle_move
+        return move_num if castle_type in ["black_short", "black_long"] else 0
 
     @staticmethod
     def get_time_spent_on_move(path_temp: str, move_num: int, timers: tuple) -> float:

@@ -15,7 +15,8 @@ from sqlalchemy import create_engine
 
 from betterchess.core.headers import Headers
 from betterchess.core.move import Move
-from betterchess.utils.handlers import EnvHandler, FileHandler, InputHandler, RunHandler
+from betterchess.utils.handlers import (EnvHandler, FileHandler, InputHandler,
+                                        RunHandler)
 from betterchess.utils.progress import Progress
 
 
